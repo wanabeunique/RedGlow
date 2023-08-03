@@ -1,0 +1,216 @@
+openapi: "3.0.2"
+info:
+  title: Gaming Platform
+  version: "1.0"
+servers:
+  - url: https://api.server.test/v1
+paths:
+  /user:
+    post:
+      summary: Регистрация пользователя
+      tags:
+        - Authentication
+      operationId: signUp
+      requestBody:
+        required: true
+        content:
+          text/plain:
+            schema:
+              type: object
+              required:
+                - username
+                - password
+                - email
+                - phoneNumber
+              properties:
+                username:
+                  type: string
+                  example: kirin
+                password:
+                  type: string
+                  example: qwert1234
+                email:
+                  type: string
+                  example: q@gmail.com
+                phoneNumber:
+                  type: string
+                  example: +74447779911
+      responses:
+        200:
+          description: Успешная регистрация
+        default:
+          description: Все остальное
+  /user/phone/code:
+    post:
+      summary: Отправка кода на телефон
+      tags:
+        - Authentication
+      operationId: codePhone
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Code"
+      responses:
+        200:
+          description: Код принят
+        default:
+          description: Все остальное
+
+  /user/email/code:
+    post:
+      summary: Отправка кода на почту
+      tags:
+        - Authentication
+      operationId: codeEmail
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Code"
+      responses:
+        200:
+          description: Код принят
+        default:
+          description: Все остальное
+  /auth:
+    post:
+      summary: Авторизация пользователя
+      tags:
+        - Authentication
+      operationId: logIn
+      requestBody:
+        required: true
+        content:
+          text/plain:
+            schema:
+              type: object
+              required:
+                - username
+                - password
+                - isRemembered
+              properties:
+                username:
+                  type: string
+                  example: kirin
+                password:
+                  type: string
+                  example: qwert1234
+                isRemembered:
+                  type: boolean
+                  example: true
+      responses:
+        "200":
+          description: Успешная авторизация
+        "default":
+          description: Все остальное
+  /user/password:
+    put:
+      summary: Смена пароля
+      tags:
+        - PasswordChange
+      operationId: changePassword
+      requestBody:
+        required: true
+        content:
+          text/plain:
+            schema:
+              type: object
+              required:
+                - oldPassword
+                - newPassword
+                - confirmNewPassword
+              properties:
+                oldPassword:
+                  type: string
+                  example: qwert1234
+                newPassword:
+                  type: string
+                  example: zxcasdf
+                confirmNewPassword:
+                  type: string
+                  example: zxcasdf
+      responses:
+        200:
+          description: Успешная смена пароля
+        default:
+          description: Все остальное
+  /user/password/code:
+    post:
+      summary: Забыли пароль. Отправить код на почту
+      tags:
+        - PasswordChange
+      operationId: sendCodePassword
+      requestBody:
+        required: true
+        content:
+          text/plain:
+            schema:
+              type: object
+              required:
+                - email
+              properties:
+                email:
+                  type: string
+                  example: rt@gmail.com
+      responses:
+        200:
+          description: Код отправлен
+        default:
+          description: Все остальное
+    put:
+      summary: Забыли пароль. Проверить код
+      tags:
+        - PasswordChange
+      operationId: checkCode
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Code"
+      responses:
+        200:
+          description: Код принят
+        default:
+          description: Все остальное
+  /user/password/:
+    put:
+      summary: Сменить забытый пароль
+      tags:
+        - PasswordChange
+      operationId: changeForgotPassword
+      requestBody:
+        required: true
+        content:
+          text/plain:
+            schema:
+              type: object
+              required:
+                - password
+                - confirmPassword
+              properties:
+                password:
+                  type: string
+                  example: qwert1234
+                confirmPassword:
+                  type: string
+                  example: qwert12345
+      responses:
+        200:
+          description: Успешная смена пароля
+        default:
+          description: Все остальное
+
+components:
+  schemas:
+    Code:
+      type: object
+      required:
+        - code
+      properties:
+        code:
+          type: integer
+          example: 12345
