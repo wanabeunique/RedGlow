@@ -4,17 +4,19 @@
   border: 1px solid var(--main-color)
   padding: var(--tiny-offset)
   height: min-content
+  cursor: pointer
   &__top
     display: flex
-    justify-content: space-evenly
-    gap: var(--tiny-offset)
+    gap: var(--small-offset)
     align-items: center
     position: relative
     width: 100%
-
+    p
+      width: 80px
   &__img
     width: 50px
     height: 50px
+  svg
     margin-left: auto
   
 .content
@@ -47,3 +49,7 @@
   &__unitImg
     width: 100px
     height: 100px
+
+.active
+  transform: rotate(180deg)
+  transform-origin: center center
