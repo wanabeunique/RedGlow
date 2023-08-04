@@ -34,7 +34,7 @@ export default function () {
             )
         
         :
-        (<div>Загрузка данных</div>
+        (<p className='text'>Идет загрузка наций...</p>
         )
     }
     </div>
