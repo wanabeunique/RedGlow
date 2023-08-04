@@ -2,25 +2,5 @@
   margin-top: var(--container-offset)
   margin-bottom: var(--container-offset)
   display: grid
-  grid-template-columns: repeat(auto-fit, 140px)
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr))
   gap: var(--big-offset)
-  &__item
-    display: flex
-    justify-content: space-evenly
-    gap: var(--tiny-offset)
-    align-items: center
-    position: relative
-    &:hover
-      .modal
-        display: block
-    
-  &__img
-    width: 50px
-    height: 50px
-    margin-left: auto
-
-.modal
-  position: absolute
-  top: 0
-  left: 0
-  display: none

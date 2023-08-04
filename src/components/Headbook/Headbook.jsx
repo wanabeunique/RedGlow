@@ -14,10 +14,10 @@ export default function () {
           <img className={styles.headbook__img} src="/headbook/civ6.png" alt="" />
         </Link>
       </ul>
-      {/* <Routes>
-        <Route path='/headbook/headbook-civilization5' element={<HeadbookCiv5/>}/>
-      </Routes> */}
-      <HeadbookCiv5/>
+      <Routes>
+        <Route path='headbook-civilization5' element={<HeadbookCiv5/>}/>
+      </Routes>
+      {/* <HeadbookCiv5/> */}
     </div>
 
   )
