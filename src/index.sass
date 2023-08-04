@@ -2,8 +2,7 @@
   --bg-color: #222226
   --main-color: #333336
   --font-color: #999
-  --secondary-font-color: #777 //шрифт на бг
-
+  --secondary-font-color: #777
   --white-color: #fff
   // offsets
   --tiny-offset: 10px
@@ -15,6 +14,9 @@
 
 @import 'fonts.css'
 
+*
+  box-sizing: border-box
+
 body
   font-family: 'Open Sans'
   background: var(--bg-color)
@@ -24,20 +26,47 @@ body
   padding: 0 10px
   margin: 0 auto
 
-.text
-  font-size: 16px
-  font-family: 'Open Sans'
-  color: var(--font-color)
+@Layer components
+  .text
+    font-size: 16px
+    font-family: 'Open Sans'
+    color: var(--font-color)
+    margin: 0
 
-.title
-  font-size: 24px
-  font-family: 'Open Sans'
-  color: var(--font-color)
+  .title
+    font-size: 24px
+    font-family: 'Open Sans'
+    color: var(--font-color)
+    margin: 0
 
-.subtitle
-  font-size: 20px
-  font-family: 'Open Sans'
-  color: var(--font-color)
+  .subtitle
+    font-size: 20px
+    font-family: 'Open Sans'
+    color: var(--font-color)
+    margin: 0
+
+  .button
+    display: flex
+    width: 100%
+    align-items: center
+    justify-content: center
+    background: var(--font-color)
+    color: var(--main-color)
+    font-size: 20px
+    height: 50px
+    border-radius: 10px
+    border: none
+
+  .input
+    width: 100%
+    background: var(--font-color)
+    border-radius: 10px
+    color: var(--main-color)
+    border: none
+    height: 50px
+    padding: 10px
+    &::placeholder
+      color: var(--font-color)
 
 @media (max-width: 768px)
   .text
@@ -47,7 +76,10 @@ body
   .subtitle
     font-size: 16px
   
-a
+a,button
   &:hover
     filter: contrast(2)
     transition: filter .5s ease-out
+
+.active
+  color: var(--white-color)

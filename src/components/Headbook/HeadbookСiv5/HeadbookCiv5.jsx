@@ -32,18 +32,16 @@ export default function () {
                 console.log(nation)
                 return(
                     <div 
+                    key={nation[0]}
                     className={`text ${styles.nation__item}`}
                     // onMouseEnter={handleMouseEnter(nation)}
                     // onMouseLeave={handleMouseLeave}
                     >
                     {nation[0]}
                     <img className={`text ${styles.nation__img}`} src={`/headbook/headbook_civilization5/${nation[1].Флаг}`} alt="" />
-                    { isModalVisible == nation && (
-                      <div className="modal">
-                        <p>This is the modal content!</p>
-                        <button onClick={() => setIsModalVisible(false)}>Close</button>
-                      </div>
-                    )}
+                    <div className={styles.modal}>
+                      <div>Лидер: {nation[0][1][0][1]}</div>
+                    </div>
                   </div>
                 )
               })
