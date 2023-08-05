@@ -17,9 +17,6 @@ export default function Login() {
           <Link to={'/registration'} className={`text ${styles.login__link}`}>Зарегистрироваться</Link>
         </div>
       </div>
-      {/* <Routes>  
-        <Route ></Route>
-      </Routes> */}
     </form>
   )
 }

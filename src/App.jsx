@@ -9,15 +9,19 @@ import { Routes, Route, Link } from 'react-router-dom'
 import Layout from './components/Layout/Layout'
 import Homepage from './components/Homepage/Homepage'
 import Login from './components/Login/Login'
+import Registration from './components/Registration/Registration'
+import NotFound from './components/NotFound/NotFound'
 
 function App() {
   return (
     <>
         <Routes>
           <Route path='/' element={<Layout/>}>
+            <Route path='*' element={<NotFound />}></Route>
             <Route index element={<Homepage />} />
             <Route path='/Headbook/*' element={<Headbook/>} />
             <Route path='/Login' element={<Login />}></Route>
+            <Route path='/registration' element={<Registration />}></Route>
           </Route>
         </Routes>
       <Footer />
