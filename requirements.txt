@@ -1,0 +1,4 @@
+django==4.2.4
+djangorestframework==3.14.0
+redis==3.5.3
+psycopg2==2.9.6

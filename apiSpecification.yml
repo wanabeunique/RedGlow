@@ -5,82 +5,115 @@ info:
 servers:
   - url: https://api.server.test/v1
 paths:
-  /user:
+  /users:
     post:
       summary: Регистрация пользователя
       tags:
         - Authentication
       operationId: signUp
-      requestBody:
-        required: true
-        content:
-          text/plain:
-            schema:
-              type: object
-              required:
-                - username
-                - password
-                - email
-                - phoneNumber
-              properties:
-                username:
-                  type: string
-                  example: kirin
-                password:
-                  type: string
-                  example: qwert1234
-                email:
-                  type: string
-                  example: q@gmail.com
-                phoneNumber:
-                  type: string
-                  example: +74447779911
-      responses:
-        200:
-          description: Успешная регистрация
-        default:
-          description: Все остальное
-  /user/phone/code:
-    post:
-      summary: Отправка кода на телефон
-      tags:
-        - Authentication
-      operationId: codePhone
+      parameters:
+        - in: header
+          name: X-CSRFToken
+          description: CSRF token
+          schema:
+            type: integer
+            example: saf141kncaskn214
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/Code"
+              $ref: "#components/schemas/UserForSignUp"
+            
       responses:
-        200:
-          description: Код принят
+        202:
+          description: Код был выслан на почту
+          content:
+            text/plain:
+              schema:
+                properties:
+                  detail:
+                    type: string
+                    example: Код был выслан на почту
+        403:
+          description: Запрос был послан от авторизованного пользователя
+          content:
+            text/plain:
+              schema:
+                properties:
+                  detail:
+                    type: string
+                    example: You do not have permission to perform this action
+        400:
+          description: Поля не прошли валидацию
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FieldsValidation"
         default:
           description: Все остальное
-
-  /user/email/code:
+  /user/code/:
     post:
-      summary: Отправка кода на почту
+      summary: Проверка кода.
       tags:
         - Authentication
       operationId: codeEmail
+      parameters:
+        - in: header
+          name: X-CSRFToken
+          description: CSRF token
+          schema:
+            type: integer
+            example: saf141kncaskn214
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/Code"
+              $ref: "#components/schemas/CheckCode"
+
       responses:
         200:
-          description: Код принят
+          description: Код принят. Успешная регистрация
+          content:
+            application/json:
+              schema:
+                $ref: "#components/schemas/User"
+        400:
+          description: Время кода истекло или код неверен
+          content:
+            text/plain:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/FieldError"
+        403:
+          description: Запрос был послан от авторизованного пользователя
+          content:
+            text/plain:
+              schema:
+                properties:
+                  detail:
+                    type: string
+                    example: You do not have permission to perform this action
         default:
           description: Все остальное
-  /auth:
+  /user/login/:
     post:
       summary: Авторизация пользователя
       tags:
         - Authentication
-      operationId: logIn
+      operationId: login
+      parameters:
+        - in: header
+          name: X-CSRFToken
+          description: CSRF token
+          schema:
+            type: integer
+            example: saf141kncaskn214
       requestBody:
         required: true
         content:
@@ -90,7 +123,6 @@ paths:
               required:
                 - username
                 - password
-                - isRemembered
               properties:
                 username:
                   type: string
@@ -98,20 +130,79 @@ paths:
                 password:
                   type: string
                   example: qwert1234
-                isRemembered:
-                  type: boolean
-                  example: true
       responses:
-        "200":
+        200:
           description: Успешная авторизация
-        "default":
+          content:
+            text/plain:
+              schema:
+                properties:
+                  username:
+                    type: string
+                    example: kirin
+        400:
+          description: Поля не прошли валидацию
+          content:
+            text/plain:
+              schema:
+                type: object
+                properties:
+                  non_field_errors:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/NonFieldError"
+        403:
+          description: Запрос был послан от авторизованного пользователя
+          content:
+            text/plain:
+              schema:
+                properties:
+                  detail:
+                    type: string
+                    example: You do not have permission to perform this action
+        default:
           description: Все остальное
+  /user/logout/:
+    post:
+      summary: Выйти из аккаунта
+      tags:
+        - Authentication
+      operationId: logout
+      parameters:
+        - in: header
+          name: X-CSRFToken
+          description: CSRF token
+          schema:
+            type: integer
+            example: saf141kncaskn214
+      responses:
+        200:
+          description: Успешный выход
+        403:
+          description: Запрос был послан от неавторизованного пользователя
+          content:
+            text/plain:
+              schema:
+                properties:
+                  detail:
+                    type: string
+                    example: You do not have permission to perform this action
+        default:
+          description: Все остальное
+      
   /user/password:
     put:
       summary: Смена пароля
       tags:
         - PasswordChange
       operationId: changePassword
+      parameters:
+        - in: header
+          name: X-CSRFToken
+          description: CSRF token
+          schema:
+            type: integer
+            example: saf141kncaskn214
       requestBody:
         required: true
         content:
@@ -119,11 +210,11 @@ paths:
             schema:
               type: object
               required:
-                - oldPassword
+                - currentPassword
                 - newPassword
                 - confirmNewPassword
               properties:
-                oldPassword:
+                currentPassword:
                   type: string
                   example: qwert1234
                 newPassword:
@@ -135,9 +226,32 @@ paths:
       responses:
         200:
           description: Успешная смена пароля
+          content:
+            text/plain:
+              schema:
+                properties:
+                  detail:
+                    type: string
+                    example: Пароль был успешно изменён
+        400:
+          description: Поля не прошли валидацию
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FieldsValidation"
+        403:
+          description: Запрос был послан от неавторизованного пользователя
+          content:
+            text/plain:
+              schema:
+                properties:
+                  detail:
+                    type: string
+                    example: You do not have permission to perform this action
         default:
           description: Все остальное
-  /user/password/code:
+  
+  /user/forgot/code/:
     post:
       summary: Забыли пароль. Отправить код на почту
       tags:
@@ -156,8 +270,25 @@ paths:
                   type: string
                   example: rt@gmail.com
       responses:
-        200:
+        202:
           description: Код отправлен
+          content:
+            text/plain:
+              schema:
+                properties:
+                  detail:
+                    type: string
+                    example: Код был выслан на почту
+        400:
+          description: Почта не зарегистрирована
+          content:
+            text/plain:
+              schema:
+                properties:
+                  email:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/FieldError"
         default:
           description: Все остальное
     put:
@@ -168,17 +299,45 @@ paths:
       requestBody:
         required: true
         content:
-          application/json:
+          text/plain:
             schema:
-              $ref: "#/components/schemas/Code"
+              type: object
+              required:
+                - code
+                - email
+              properties:
+                code:
+                  type: string
+                  example: 1241552
+                email:
+                  type: string
+                  example: q@gmail.com
       responses:
-        200:
+        202:
           description: Код принят
+          content:
+            text/plain:
+              schema:
+                properties:
+                  detail:
+                    type: string
+                    example: Код принят
+        400:
+          description: Время кода истекло или код неверен
+          content:
+            text/plain:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/FieldError"
         default:
           description: Все остальное
-  /user/password/:
+  /user/forgot/password/:
     put:
-      summary: Сменить забытый пароль
+      summary: Смена забытого пароля
       tags:
         - PasswordChange
       operationId: changeForgotPassword
@@ -191,6 +350,7 @@ paths:
               required:
                 - password
                 - confirmPassword
+                - email
               properties:
                 password:
                   type: string
@@ -198,19 +358,107 @@ paths:
                 confirmPassword:
                   type: string
                   example: qwert12345
+                email:
+                  type: string
+                  example: q@gmail.com
       responses:
         200:
           description: Успешная смена пароля
+        400:
+          description: Пароли не прошли валидацию
+          content:
+            text/plain:
+              schema:
+                type: object
+                properties:
+                  non_field_errors:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/NonFieldError"
+        403:
+          description: Время выделенное на смену пароля истекло или его вообще не было
+          content:
+            text/plain:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                    example: Время выделенное на смену пароля истекло
         default:
           description: Все остальное
 
 components:
   schemas:
-    Code:
+    UserForSignUp:
       type: object
       required:
-        - code
+        - username
+        - password
+        - confirmPassword
+        - email
+        - phoneNumber
+      properties:
+        username:
+          type: string
+          example: kirin
+        password:
+          type: string
+          example: qwert1234
+        confirmPassword:
+          type: string
+          example: qwert1234
+        email:
+          type: string
+          example: q@gmail.com
+        phoneNumber:
+          type: string
+          example: "+74447779911"
+    CheckCode:
+      type: object
+      required:
+       - code
+       - user
       properties:
         code:
-          type: integer
-          example: 12345
+          type: string
+          example: "1234567"
+        user:
+          $ref: "#components/schemas/UserForSignUp"
+    User:
+      type: object
+      properties:
+        username:
+          type: string
+          example: kirin
+        password:
+          type: string
+          example: qwert1234
+        email:
+          type: string
+          example: q@gmail.com
+        phoneNumber:
+          type: string
+          example: "+74447779911"
+    FieldsValidation:
+      type: object
+      properties:
+        field_name:
+          type: array
+          items:
+            $ref: "#/components/schemas/FieldError"
+        non_field_errors:
+          type: array
+          items:
+            $ref: "#/components/schemas/NonFieldError"
+    FieldError:
+      type: string
+      example: Данное имя пользователя уже используется
+          
+    NonFieldError:
+      type: string
+      example: Пароли должны совпадать!
+          
+
+
+
