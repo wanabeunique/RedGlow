@@ -41,6 +41,8 @@ INSTALLED_APPS = [
     'rest_framework',
     'apps.authentication',
     'apps.passwordChange',
+    'apps.friends',
+    'apps.userProfile'
 ]
 
 MIDDLEWARE = [
@@ -83,10 +85,10 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'gamingplatform',
-        'USER': 'admin',
+        'USER': 'postgres',
         'PASSWORD': 'SeMeN4565',
         'HOST': 'localhost',
-        'PORT': '',
+        'PORT': '5432',
     }
 }
 
@@ -140,7 +142,7 @@ AUTH_USER_MODEL = "authentication.User"
 CACHES = {
     'default': {
         'BACKEND': 'django.core.cache.backends.redis.RedisCache',
-        'LOCATION': 'redis://default:SeMeN4565@127.0.0.1:6379',
+        'LOCATION': 'redis://127.0.0.1:6379',
     }
 }
 
