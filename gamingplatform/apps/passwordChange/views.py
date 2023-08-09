@@ -77,7 +77,7 @@ class ChangeForgotPasswordAPI(APIView):
         data = request.data
         serializer = self.serializer_class(data=request.data)
         email = data.get('email')
-        r = redis.StrictRedis(host='localhost', port=6379, db=0, password='SeMeN4565', socket_timeout=None, connection_pool=None, charset='utf-8', errors='strict', unix_socket_path=None)
+        r = redis.StrictRedis(host='redis', port=6379, db=0, socket_timeout=None, connection_pool=None, charset='utf-8', errors='strict', unix_socket_path=None)
         if r.exists(email):
             r.delete(email)
         else:

@@ -17,7 +17,7 @@ class UserSignUpSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(
                 "Пароли должны совпадать!"
             )
-        r = redis.StrictRedis(host='localhost', port=6379, db=0, password='SeMeN4565', socket_timeout=None, connection_pool=None, charset='utf-8', errors='strict', unix_socket_path=None)
+        r = redis.StrictRedis(host='redis', port=6379, db=0, socket_timeout=None, connection_pool=None, charset='utf-8', errors='strict', unix_socket_path=None)
         if r.exists(data["email"]):
             raise serializers.ValidationError(
                 "Повторите ещё раз, когда срок действия предыдущего кода истечёт"
@@ -37,7 +37,7 @@ class CodeSerializer(serializers.Serializer):
         email = data.get('email')
         code = data.get('code')
         doDelete = data.get('doDelete')
-        r = redis.StrictRedis(host='localhost', port=6379, db=0, password='SeMeN4565', socket_timeout=None, connection_pool=None, charset='utf-8', errors='strict', unix_socket_path=None)
+        r = redis.StrictRedis(host='redis', port=6379, db=0, socket_timeout=None, connection_pool=None, charset='utf-8', errors='strict', unix_socket_path=None)
         if r.exists(email):
             actualCode = r.get(email).decode('utf-8')
 

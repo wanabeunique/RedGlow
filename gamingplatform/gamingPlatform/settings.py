@@ -26,7 +26,7 @@ SECRET_KEY = 'django-insecure-z!zf5ee!nt$n-16et((nsixit%)73i^f2(3kngmfyv4i3#v9f+
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
+    'django.contrib.postgres',
     'apps.authentication',
     'apps.passwordChange',
     'apps.friends',
@@ -87,7 +88,7 @@ DATABASES = {
         'NAME': 'gamingplatform',
         'USER': 'postgres',
         'PASSWORD': 'SeMeN4565',
-        'HOST': 'localhost',
+        'HOST': 'db',
         'PORT': '5432',
     }
 }
@@ -142,7 +143,7 @@ AUTH_USER_MODEL = "authentication.User"
 CACHES = {
     'default': {
         'BACKEND': 'django.core.cache.backends.redis.RedisCache',
-        'LOCATION': 'redis://127.0.0.1:6379',
+        'LOCATION': 'redis://redis:6379',
     }
 }
 
@@ -153,8 +154,8 @@ EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.yandex.ru'
 EMAIL_USE_TLS = False
 EMAIL_USE_SSL = True
-EMAIL_HOST_USER = 'semen.vrazhkin@yandex.ru' 
-EMAIL_HOST_PASSWORD = 'ffuzdheorahypgdn' 
+EMAIL_HOST_USER = 'semen.vrazhkin@yandex.ru'
+EMAIL_HOST_PASSWORD = 'ffuzdheorahypgdn'
 EMAIL_PORT = 465
 
 
@@ -163,4 +164,3 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.SessionAuthentication',
     ]
 }
-

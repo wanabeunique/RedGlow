@@ -1,0 +1,47 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:latest
+    environment:
+      POSTGRES_DB: gamingplatform
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: SeMeN4565
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdbdata:/var/lib/postgresql/data/
+    networks:
+      - djangonetwork
+  redis:
+    image: redis:latest
+    ports:
+      - "6379:6379"
+    networks:
+      - djangonetwork
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: django-container
+    command: ["sh", "-c", "/usr/local/bin/wait-for-it.sh db:5432 -t 60 -- /usr/local/bin/wait-for-it.sh redis:6379 -t 60 -- python manage.py migrate --noinput && python manage.py runserver 0.0.0.0:8000"]
+    volumes:
+      - .:/app
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+      - redis
+    networks:
+      - djangonetwork
+    restart: always
+    links:
+      - db:db
+      - redis:redis
+  
+volumes:
+  pgdbdata: null
+
+networks:
+  djangonetwork:
+    driver: bridge
