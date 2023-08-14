@@ -2,15 +2,13 @@ from rest_framework import generics
 from .serializers import ChangePasswordSerializer, ForgotPasswordCodeSerializer, ForgotPasswordChangeSerializer
 from apps.authentication.models import User
 from rest_framework.permissions import IsAuthenticated, AllowAny
-from .permissions import NotAuthenticated
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.views import APIView
-from apps.authentication.code import sendEmailCode
+from apps.authentication.code import sendEmailCode, connectToRedis
 from apps.authentication.serializers import CodeSerializer
 from rest_framework.viewsets import ViewSet
 from django.contrib.auth import authenticate, login
-import redis
 
 class ChangePasswordAPI(generics.UpdateAPIView):
     serializer_class = ChangePasswordSerializer
@@ -77,7 +75,7 @@ class ChangeForgotPasswordAPI(APIView):
         data = request.data
         serializer = self.serializer_class(data=request.data)
         email = data.get('email')
-        r = redis.StrictRedis(host='redis', port=6379, db=0, socket_timeout=None, connection_pool=None, charset='utf-8', errors='strict', unix_socket_path=None)
+        r = connectToRedis()
         if r.exists(email):
             r.delete(email)
         else:

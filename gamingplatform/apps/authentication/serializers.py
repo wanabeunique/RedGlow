@@ -1,9 +1,8 @@
-from rest_framework.serializers import ModelSerializer
 from rest_framework import serializers
 from django.contrib.auth import authenticate
 from django.contrib.auth.hashers import make_password
 from .models import User
-import redis
+from .code import connectToRedis
 
 class UserSignUpSerializer(serializers.ModelSerializer):
     confirmPassword = serializers.CharField(max_length=128,min_length=8,write_only=True)
@@ -17,7 +16,7 @@ class UserSignUpSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(
                 "Пароли должны совпадать!"
             )
-        r = redis.StrictRedis(host='redis', port=6379, db=0, socket_timeout=None, connection_pool=None, charset='utf-8', errors='strict', unix_socket_path=None)
+        r = connectToRedis()
         if r.exists(data["email"]):
             raise serializers.ValidationError(
                 "Повторите ещё раз, когда срок действия предыдущего кода истечёт"
@@ -37,7 +36,7 @@ class CodeSerializer(serializers.Serializer):
         email = data.get('email')
         code = data.get('code')
         doDelete = data.get('doDelete')
-        r = redis.StrictRedis(host='redis', port=6379, db=0, socket_timeout=None, connection_pool=None, charset='utf-8', errors='strict', unix_socket_path=None)
+        r = connectToRedis()
         if r.exists(email):
             actualCode = r.get(email).decode('utf-8')
 

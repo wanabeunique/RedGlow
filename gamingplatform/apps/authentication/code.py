@@ -7,7 +7,7 @@ def generateCode():
     return ''.join(str(randint(0, 9)) for i in range(7))
 
 def saveEmailCode(email, code):
-    r = redis.StrictRedis(host='redis', port=6379, db=0, socket_timeout=None, connection_pool=None, charset='utf-8', errors='strict', unix_socket_path=None)
+    r = connectToRedis()
 
     r.set(email, code)
     r.expire(email, 900) #900 seconds = 15 min
@@ -27,3 +27,6 @@ def sendEmailCode(email,username, forWhat):
     )
     email = EmailMessage(mail_subject,message, from_email='semen.vrazhkin@yandex.ru',to=[email,])
     email.send()
+
+def connectToRedis():
+    return redis.StrictRedis(host='redis', port=6379, db=0, socket_timeout=None, connection_pool=None, charset='utf-8', errors='strict', unix_socket_path=None) 
