@@ -7,6 +7,7 @@ from .code import connectToRedis
 class UserSignUpSerializer(serializers.ModelSerializer):
     confirmPassword = serializers.CharField(max_length=128,min_length=8,write_only=True)
     password = serializers.CharField(max_length=128,min_length=8,write_only=True)
+
     class Meta:
         model = User
         fields = ('username','password','confirmPassword','email','phoneNumber')
@@ -27,22 +28,23 @@ class UserSignUpSerializer(serializers.ModelSerializer):
         validated_data['password'] = make_password(validated_data.get('password'))
         return super(UserSignUpSerializer, self).create(validated_data)
 
-class CodeSerializer(serializers.Serializer):
-    email = serializers.CharField(max_length=255)
-    code = serializers.CharField()
-    doDelete = serializers.BooleanField()
+class CodeSerializer(serializers.ModelSerializer):
+    code = serializers.CharField(write_only=True)
+    confirmPassword = serializers.CharField(max_length=128,min_length=8,write_only=True)
+    class Meta:
+        model = User
+        fields = ('username','password','confirmPassword','email','phoneNumber','code')
 
     def validate(self, data):
         email = data.get('email')
         code = data.get('code')
-        doDelete = data.get('doDelete')
+
         r = connectToRedis()
         if r.exists(email):
             actualCode = r.get(email).decode('utf-8')
 
             if code == actualCode:
-                if doDelete:
-                    r.delete(email)
+                r.delete(email)
             else:
                 raise serializers.ValidationError(
                     {"code":"Неверный код"}
@@ -52,25 +54,18 @@ class CodeSerializer(serializers.Serializer):
                 {"code":"Время действия кода истекло. Попробуйте ещё раз"}
             )
         r.close()
+        del data['confirmPassword']
+        del data['code']
         return data
+
 
 class UserLogInSerializer(serializers.Serializer):
     username = serializers.CharField(max_length=255)
-    password = serializers.CharField(max_length=255,min_length=8)
+    password = serializers.CharField(max_length=255,min_length=8,write_only=True)
 
     def validate(self,data):
         username = data['username']
         password = data['password']
-
-        if username is None:
-            raise serializers.ValidationError(
-                'Имя пользователя обязательно для авторизации'
-            )
-        
-        if password is None:
-            raise serializers.ValidationError(
-                'Пароль обязателен для авторизации'
-            )
 
         user = authenticate(username=username,password=password)
 

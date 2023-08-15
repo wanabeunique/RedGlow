@@ -24,7 +24,7 @@ services:
       context: .
       dockerfile: Dockerfile
     container_name: django-container
-    command: ["sh", "-c", "/usr/local/bin/wait-for-it.sh db:5432 -t 60 -- /usr/local/bin/wait-for-it.sh redis:6379 -t 60 -- python manage.py migrate --noinput && python manage.py runserver 0.0.0.0:8000"]
+    command: ["sh", "-c", "/usr/local/bin/wait-for-it.sh db:5432 -t 60 -- /usr/local/bin/wait-for-it.sh redis:6379 -t 60 -- python manage.py makemigrations --noinput && python manage.py migrate --noinput && python manage.py runserver 0.0.0.0:8000"]
     volumes:
       - .:/app
     ports:

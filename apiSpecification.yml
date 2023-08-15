@@ -15,8 +15,9 @@ paths:
         - in: header
           name: X-CSRFToken
           description: CSRF token
+          required: true
           schema:
-            type: integer
+            type: string
             example: saf141kncaskn214
       requestBody:
         required: true
@@ -62,8 +63,9 @@ paths:
         - in: header
           name: X-CSRFToken
           description: CSRF token
+          required: true
           schema:
-            type: integer
+            type: string
             example: saf141kncaskn214
       requestBody:
         required: true
@@ -111,8 +113,9 @@ paths:
         - in: header
           name: X-CSRFToken
           description: CSRF token
+          required: true
           schema:
-            type: integer
+            type: string
             example: saf141kncaskn214
       requestBody:
         required: true
@@ -172,8 +175,9 @@ paths:
         - in: header
           name: X-CSRFToken
           description: CSRF token
+          required: true
           schema:
-            type: integer
+            type: string
             example: saf141kncaskn214
       responses:
         200:
@@ -200,8 +204,9 @@ paths:
         - in: header
           name: X-CSRFToken
           description: CSRF token
+          required: true
           schema:
-            type: integer
+            type: string
             example: saf141kncaskn214
       requestBody:
         required: true
@@ -257,6 +262,14 @@ paths:
       tags:
         - PasswordChange
       operationId: sendCodePassword
+      parameters:
+        - in: header
+          name: X-CSRFToken
+          description: CSRF token
+          required: true
+          schema:
+            type: string
+            example: saf141kncaskn214
       requestBody:
         required: true
         content:
@@ -296,6 +309,14 @@ paths:
       tags:
         - PasswordChange
       operationId: checkCode
+      parameters:
+        - in: header
+          name: X-CSRFToken
+          description: CSRF token
+          required: true
+          schema:
+            type: string
+            example: saf141kncaskn214
       requestBody:
         required: true
         content:
@@ -341,6 +362,14 @@ paths:
       tags:
         - PasswordChange
       operationId: changeForgotPassword
+      parameters:
+        - in: header
+          name: X-CSRFToken
+          description: CSRF token
+          required: true
+          schema:
+            type: string
+            example: saf141kncaskn214
       requestBody:
         required: true
         content:
@@ -387,6 +416,101 @@ paths:
                     example: Время выделенное на смену пароля истекло
         default:
           description: Все остальное
+  /user/friends:
+    post:
+      summary: Отправка заявки в друзья
+      tags:
+        - Friends
+      operationId: inviteFriend
+      parameters:
+        - in: header
+          name: X-CSRFToken
+          description: CSRF token
+          required: true
+          schema:
+            type: string
+            example: saf141kncaskn214
+      requestBody:
+        required: true
+        content:
+          text/plain:
+            schema:
+              type: object
+              required:
+                - targetName
+              properties:
+                targetName:
+                  type: string
+                  example: kirin
+      responses:
+        200:
+          description: Заявка была успешно отправлена
+        202:
+          description: Заявка была отправлена, пользователи стали друзьями, т.к. существовала входящая заявка
+        400:
+          description: Поля не прошли валидацию
+        403:
+          description: Запрос от неавторизованного пользователя
+        default:
+          description: Все остальное
+  /user/{username}/friends:  
+    get:
+      summary: Получить список друзей пользователя
+      operationId: getFriendList
+      tags:
+        - Friends
+      parameters:
+        - in: header
+          name: X-CSRFToken
+          description: CSRF token
+          required: true
+          schema:
+            type: string
+            example: saf141kncaskn214
+        - in: path
+          required: true
+          name: username
+          description: Имя пользователя
+          schema:
+            type: string
+            example: kirin
+      responses:
+        200:
+          description: Успешно получен список друзей
+        400:
+          description: Поля не прошли валидацию
+        403:
+          description: Запрос от неавторизованного пользователя
+  /users/{findValue}/:
+    get:
+      summary: Получить список пользователей, который начинаются на {findValue}
+      operationId: findUsers
+      tags:
+        - Friends
+      parameters:
+        - in: header
+          name: X-CSRFToken
+          description: CSRF token
+          required: true
+          schema:
+            type: string
+            example: saf141kncaskn214
+        - in: path
+          name: findValue
+          description: Значение, по которому искать пользователя
+          required: true
+          schema:
+            type: string
+            example: kir
+      responses:
+        200:
+          description: Ответ с пользователями
+        400:
+          description: Не нашлось пользователей
+        403:
+          description: Запрос от неавторизованного пользователя
+
+      
 
 components:
   schemas:

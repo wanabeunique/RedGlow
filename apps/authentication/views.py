@@ -15,27 +15,22 @@ class SignUpAPI(APIView):
     serializer_class = UserSignUpSerializer
     def post(self,request):
         user = request.data
-        serializer = self.serializer_class(data=user)
+        serializer = self.serializer_class(data=user,context={'request':request})
         serializer.is_valid(raise_exception=True)
         sendEmailCode(user['email'],user['username'],"Код для прохождения регистрации на нашей платформе")
         return Response({"detail":"Код был выслан на почту"},status=status.HTTP_202_ACCEPTED)
 
 class CheckCodeEmailAPI(APIView):
     permission_classes = (NotAuthenticated,)
-    serializer_class = UserSignUpSerializer
+    serializer_class = CodeSerializer
     def post(self, request):
         code = request.data.get('code')
         user = request.data.get('user')
-        email = user.get('email')
-        codeSerializer = CodeSerializer(data={"email":email,"code":code,"doDelete":False})
-        codeSerializer.is_valid(raise_exception=True)
-        userSerializer = self.serializer_class(data=user)
-        userSerializer.is_valid(raise_exception=True)
-        del userSerializer.validated_data['confirmPassword']
-        userSerializer.save()
-        userAuth = authenticate(username=user.get('username'),password=user.get('password'))
-        login(request,userAuth)
-        return Response(userSerializer.data,status=status.HTTP_200_OK)
+        serializer = CodeSerializer(data={"code":code,**user},context={'request':request})
+        serializer.is_valid(raise_exception=True)
+        user = serializer.save()
+        login(request,user)
+        return Response(serializer.data,status=status.HTTP_200_OK)
 
 class LogInAPI(APIView):
     permission_classes = (NotAuthenticated,)
