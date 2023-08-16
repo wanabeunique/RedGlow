@@ -1,5 +1,5 @@
 from rest_framework import generics
-from .serializers import ChangePasswordSerializer, ForgotPasswordCodeSerializer, ForgotPasswordChangeSerializer
+from .serializers import ChangePasswordSerializer, ForgotPasswordLinkSerializer, ForgotPasswordChangeSerializer, HashSerializer
 from apps.authentication.models import User
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
@@ -23,7 +23,7 @@ class ChangePasswordAPI(generics.UpdateAPIView):
         self.object = self.get_object()
         serializer = self.get_serializer(data=request.data)
 
-        serializer.is_valid()
+        serializer.is_valid(raise_exeption=True)
         if not self.object.check_password(serializer.data.get("currentPassword")):
             return Response(
                 {"currentPassword": "Неправильный текущий пароль"}, status=status.HTTP_400_BAD_REQUEST
@@ -38,56 +38,39 @@ class ChangePasswordAPI(generics.UpdateAPIView):
             {"detail":"Пароль был успешно изменён"},status=status.HTTP_200_OK
         )
 
-class ForgotPasswordAPI(ViewSet):
+class ForgotPasswordAPI(APIView):
     permission_classes = (AllowAny,)
-    serializer_class = ForgotPasswordCodeSerializer
+    serializer_class = ForgotPasswordLinkSerializer
 
-    def create(self, request):
+    def post(self, request):
 
         serializer = self.serializer_class(data=request.data)
         serializer.is_valid(raise_exception=True)
-        email = serializer.data.get('email')
-        sendEmailCode(email,User.objects.get(email=email).username,"Код для смены пароля на нашей платформе")
+        serializer.save()
         return Response(
-            {"detail":"Код был выслан на почту"},status=status.HTTP_202_ACCEPTED
+            {"detail":"Ссылка для восстановления пароля была выслана на почту"},status=status.HTTP_202_ACCEPTED
         )
 
-        
-    def update(self, request):
-        request.data.update({"doDelete":False})
+class CheckHashAPI(APIView):
+    serializer_class = HashSerializer
+    permission_classes = (AllowAny, )
 
-        data = request.data
-
-        serializer = CodeSerializer(data=data)
-        serializer.is_valid(raise_exception=True)
-
-        return Response(
-            {"detail":"Код принят"}, status=status.HTTP_202_ACCEPTED
-        )
-
-    
+    def put(self, request):
+        serializer = self.serializer_class(data=request.data)
+        if serializer.is_valid():
+            return Response(serializer.data,status=status.HTTP_202_ACCEPTED)
+        else:
+            return Response(serializer.errors,status=status.HTTP_404_NOT_FOUND)
 class ChangeForgotPasswordAPI(APIView):
     serializer_class = ForgotPasswordChangeSerializer
     permission_classes = (AllowAny,)
     
-    def put(self, request, *args, **kwargs):
+    def put(self, request):
        
-        data = request.data
         serializer = self.serializer_class(data=request.data)
-        email = data.get('email')
-        r = connectToRedis()
-        if r.exists(email):
-            r.delete(email)
-        else:
-            return Response(
-                {"detail":"Время выделенное на смену пароля истекло"},status=status.HTTP_403_FORBIDDEN
-            )
-        r.close()
-        serializer.is_valid(raise_exception=True)
-        user = User.objects.get(email=data['email'])
-        user.set_password(serializer.data.get("password"))
-        user.save()
 
+        serializer.save(raise_exeption=True)
         return Response(
-            {"detail":"Пароль был успешно изменён"},status=status.HTTP_200_OK
+            {"detail":"Пароль был успешно изменён. Войдите в аккаунт с новыми данными"},status=status.HTTP_200_OK
         )
+

@@ -29,14 +29,14 @@ def sendEmailCode(email,username, forWhat):
     email.send()
 
 def sendLink(email, username, forWhat):
-    hashEmail = hash(email)
-    saveSmth(email, hashEmail)
+    hashEmail = f"fnox+{hash(email)}+{hash(username)}+{email}"
+    saveSmth(email,hashEmail)
 
     mail_subject = 'Ссылка для смены пароля'
     message = render_to_string('emailMessage.html',
         {
             'username': username,
-            'code': f'http://localhost:5173/{hashEmail}',
+            'code': f'http://localhost:5173/forgot/password?key={hashEmail}',
             'forWhat':forWhat,
         }
     )
@@ -44,4 +44,4 @@ def sendLink(email, username, forWhat):
     email.send()
 
 def connectToRedis():
-    return redis.StrictRedis(host='redis', port=6379, db=0, socket_timeout=None, connection_pool=None, charset='utf-8', errors='strict', unix_socket_path=None) 
+    return redis.StrictRedis(host='redis', port=6379, db=0, socket_timeout=None, connection_pool=None, charset='utf-8', errors='strict', unix_socket_path=None)
