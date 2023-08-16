@@ -256,9 +256,9 @@ paths:
         default:
           description: Все остальное
   
-  /user/forgot/code/:
+  /user/forgot/link/:
     post:
-      summary: Забыли пароль. Отправить код на почту
+      summary: Забыли пароль. Отправить ссылку на почту
       tags:
         - PasswordChange
       operationId: sendCodePassword
@@ -284,14 +284,14 @@ paths:
                   example: rt@gmail.com
       responses:
         202:
-          description: Код отправлен
+          description: Ссылка отправлена
           content:
             text/plain:
               schema:
                 properties:
                   detail:
                     type: string
-                    example: Код был выслан на почту
+                    example: Ссылка была выслана на почту
         400:
           description: Почта не зарегистрирована
           content:
@@ -304,11 +304,12 @@ paths:
                       $ref: "#/components/schemas/FieldError"
         default:
           description: Все остальное
-    put:
-      summary: Забыли пароль. Проверить код
+  /user/forgot/key/{key}/:
+    get:
+      summary: Забыли пароль. Проверить ключ
       tags:
         - PasswordChange
-      operationId: checkCode
+      operationId: checkKey
       parameters:
         - in: header
           name: X-CSRFToken
@@ -317,43 +318,29 @@ paths:
           schema:
             type: string
             example: saf141kncaskn214
-      requestBody:
-        required: true
-        content:
-          text/plain:
-            schema:
-              type: object
-              required:
-                - code
-                - email
-              properties:
-                code:
-                  type: string
-                  example: 1241552
-                email:
-                  type: string
-                  example: q@gmail.com
+        - in: path
+          name: key
+          description: Key
+          required: true
+          schema:
+            type: string
+            example: fnox+214214+2141+asfasg
       responses:
         202:
-          description: Код принят
+          description: Ключ принят
           content:
             text/plain:
               schema:
                 properties:
-                  detail:
+                  key:
                     type: string
-                    example: Код принят
-        400:
-          description: Время кода истекло или код неверен
+                    example: fnox+214214+2141+asfasg
+        404:
+          description: Время действия ссылки истекло или ссылка не верна
           content:
-            text/plain:
+            application/json:
               schema:
-                type: object
-                properties:
-                  code:
-                    type: array
-                    items:
-                      $ref: "#/components/schemas/FieldError"
+                $ref: "#/components/schemas/NonFieldError"
         default:
           description: Все остальное
   /user/forgot/password/:
@@ -379,7 +366,7 @@ paths:
               required:
                 - password
                 - confirmPassword
-                - email
+                - key
               properties:
                 password:
                   type: string
@@ -387,14 +374,14 @@ paths:
                 confirmPassword:
                   type: string
                   example: qwert12345
-                email:
+                key:
                   type: string
-                  example: q@gmail.com
+                  example: fnox+asfagsa+-124125+25125
       responses:
         200:
           description: Успешная смена пароля
         400:
-          description: Пароли не прошли валидацию
+          description: Пароли не прошли валидацию или срок действия ссылки истек
           content:
             text/plain:
               schema:
@@ -404,16 +391,6 @@ paths:
                     type: array
                     items:
                       $ref: "#/components/schemas/NonFieldError"
-        403:
-          description: Время выделенное на смену пароля истекло или его вообще не было
-          content:
-            text/plain:
-              schema:
-                type: object
-                properties:
-                  detail:
-                    type: string
-                    example: Время выделенное на смену пароля истекло
         default:
           description: Все остальное
   /user/friends:

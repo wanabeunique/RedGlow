@@ -55,8 +55,8 @@ class CheckHashAPI(APIView):
     serializer_class = HashSerializer
     permission_classes = (AllowAny, )
 
-    def put(self, request):
-        serializer = self.serializer_class(data=request.data)
+    def get(self, request,key=None):
+        serializer = self.serializer_class(data={'key':key})
         if serializer.is_valid():
             return Response(serializer.data,status=status.HTTP_202_ACCEPTED)
         else:

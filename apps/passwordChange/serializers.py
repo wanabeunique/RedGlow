@@ -36,10 +36,10 @@ class ForgotPasswordLinkSerializer(serializers.Serializer):
         sendLink(email,username,"Ссылка для смены пароля на нашей платформе")
 
 class HashSerializer(serializers.Serializer):
-    hashValue = serializers.CharField(max_length=255)
+    key = serializers.CharField(max_length=255)
     def validate(self, data):
         r = connectToRedis()
-        if not r.exists(data['hashValue'].split("+")[-1]):
+        if not r.exists(data['key'].split("+")[-1]):
             raise serializers.ValidationError(
                 'Неверная ссылка или срок действия ссылки истек',code=404
             )
@@ -49,9 +49,9 @@ class HashSerializer(serializers.Serializer):
 class ForgotPasswordChangeSerializer(serializers.Serializer):
     password = serializers.CharField(max_length=255, min_length=8)
     confirmPassword = serializers.CharField(max_length=255, min_length=8)
-    hashValue = serializers.CharField(max_length=255)
+    key = serializers.CharField(max_length=255)
     def validate(self, data):
-        email = data['hashValue'].split("+")[-1]
+        email = data['key'].split("+")[-1]
         if data.get('password') is None:
             raise serializers.ValidationError(
                 {"password":'Пароль обязателен'}
@@ -63,8 +63,8 @@ class ForgotPasswordChangeSerializer(serializers.Serializer):
                 'Срок действия ссылки истек'
             )
         if r.exists(email):
-            actualHashValue = r.get(email).decode('utf-8')
-            if actualHashValue != data['hashValue']:
+            actualkey = r.get(email).decode('utf-8')
+            if actualkey != data['key']:
                 raise serializers.ValidationError(
                     'Некорректная ссылка'
                 )
@@ -80,7 +80,7 @@ class ForgotPasswordChangeSerializer(serializers.Serializer):
         return data
     
     def save(self):
-        email = self.validated_data['hashValue'].split("+")[-1]
+        email = self.validated_data['key'].split("+")[-1]
         r = connectToRedis()
         r.delete(email)
         r.close()

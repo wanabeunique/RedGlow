@@ -15,7 +15,7 @@ class SignUpAPI(APIView):
     serializer_class = UserSignUpSerializer
     def post(self,request):
         user = request.data
-        serializer = self.serializer_class(data=user,context={'request':request})
+        serializer = self.serializer_class(data=user)
         serializer.is_valid(raise_exception=True)
         sendEmailCode(user['email'],user['username'],"Код для прохождения регистрации на нашей платформе")
         return Response({"detail":"Код был выслан на почту"},status=status.HTTP_202_ACCEPTED)
