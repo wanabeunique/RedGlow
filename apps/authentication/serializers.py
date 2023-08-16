@@ -24,13 +24,10 @@ class UserSignUpSerializer(serializers.ModelSerializer):
             )
         return data
     
-    def create(self, validated_data):
-        validated_data['password'] = make_password(validated_data.get('password'))
-        return super(UserSignUpSerializer, self).create(validated_data)
-
 class CodeSerializer(serializers.ModelSerializer):
     code = serializers.CharField(write_only=True)
     confirmPassword = serializers.CharField(max_length=128,min_length=8,write_only=True)
+    password = serializers.CharField(max_length=128,min_length=8,write_only=True)
     class Meta:
         model = User
         fields = ('username','password','confirmPassword','email','phoneNumber','code')
@@ -57,7 +54,11 @@ class CodeSerializer(serializers.ModelSerializer):
         del data['confirmPassword']
         del data['code']
         return data
-
+    def create(self, validated_data):
+        user = User.objects.create(**validated_data)
+        user.set_password(validated_data['password'])
+        user.save()
+        return user
 
 class UserLogInSerializer(serializers.Serializer):
     username = serializers.CharField(max_length=255)

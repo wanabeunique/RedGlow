@@ -38,12 +38,10 @@ class LogInAPI(APIView):
     serializer_class = UserLogInSerializer
     def post(self,request):
         user = request.data
-
         serializer = self.serializer_class(data=user)
         serializer.is_valid(raise_exception=True)
         login(request,serializer.validated_data)
         dataToResponse = serializer.data
-        del dataToResponse['password']
         return Response(dataToResponse, status=status.HTTP_200_OK)
     
 class LogOutAPI(APIView):

@@ -68,8 +68,8 @@ class ChangeForgotPasswordAPI(APIView):
     def put(self, request):
        
         serializer = self.serializer_class(data=request.data)
-
-        serializer.save(raise_exeption=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
         return Response(
             {"detail":"Пароль был успешно изменён. Войдите в аккаунт с новыми данными"},status=status.HTTP_200_OK
         )

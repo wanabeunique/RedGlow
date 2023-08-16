@@ -86,3 +86,4 @@ class ForgotPasswordChangeSerializer(serializers.Serializer):
         r.close()
         user = User.objects.get(email=email)
         user.set_password(self.validated_data['password'])
+        user.save()

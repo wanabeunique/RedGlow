@@ -3,6 +3,8 @@ from rest_framework.views import APIView
 from rest_framework.viewsets import ViewSet
 from rest_framework.permissions import IsAuthenticated
 from apps.authentication.models import User
+from rest_framework.response import Response
+from rest_framework import status
 
 class InviteFriendView(ViewSet):
     serializer_class = RelationSerializer
@@ -19,3 +21,8 @@ class InviteFriendView(ViewSet):
         serializer = self.serializer_class(data={'user_1':user_1,'user_2':user_2})
         serializer.is_valid(raise_exception=True)
         return serializer.update()
+    def retrieve(self, request):
+        user_1 = request.user
+        user_2 = User.objects.get(username=request.data['targetName'])
+        serializer = self.serializer_class(data={'user_1':user_1,'user_2':user_2})
+        return Response(serializer.data,status=status.HTTP_200_OK)
