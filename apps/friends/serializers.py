@@ -1,14 +1,14 @@
-from .models import Relation
+from .models import Friendship
 from apps.authentication.models import User
 from rest_framework import serializers
 from rest_framework.response import Response
 from rest_framework import status
 
-class RelationSerializer(serializers.ModelSerializer):
+class FriendshipSerializer(serializers.ModelSerializer):
     inviter = serializers.SlugRelatedField(queryset=User.objects.all(),slug_field='username')
     accepter = serializers.SlugRelatedField(queryset=User.objects.all(),slug_field='username')
     class Meta:
-        model = Relation
+        model = Friendship
         fields = ('inviter','accepter')
 
     def validate(self,data):
@@ -24,23 +24,30 @@ class RelationSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         user_1 = validated_data['inviter']
         user_2 = validated_data['accepter']
-        if Relation.objects.filter(inviter=user_2,accepter=user_1).exists():
-            Relation.objects.filter(inviter=user_2,accepter=user_1).update(status=Relation.Status.FRIENDS)
+        if Friendship.objects.filter(inviter=user_2,accepter=user_1).exists():
+            Friendship.objects.filter(inviter=user_2,accepter=user_1).update(status=Friendship.Status.FRIENDS)
             return Response({"detail":'Заявка успешно принята'},status=status.HTTP_202_ACCEPTED)
         else:
-            Relation.objects.create(inviter=user_1,accepter=user_2,status=Relation.Status.INVITED)
+            Friendship.objects.create(inviter=user_1,accepter=user_2,status=Friendship.Status.INVITED)
             return Response({"detail":'Заявка успешно отправлена'},status=status.HTTP_201_CREATED)
 
     def update(self, validated_data):
         user_1 = validated_data['inviter']
         user_2 = validated_data['accepter']
-        relation = Relation.objects.get(inviter=user_1,accepter=user_2)
-        if relation.status == Relation.Status.INVITED:
-            relation.delete()
+        friendship = Friendship.objects.get(inviter=user_1,accepter=user_2)
+        if friendship.status == Friendship.Status.INVITED:
+            friendship.delete()
             return Response({"detail":'Заявка успешно отменена'},status=status.HTTP_200_OK)
-        if relation.status == Relation.Status.FRIENDS:
-            relation.status = Relation.Status.INVITED
-            relation.inviter = user_2
-            relation.accepter = user_1
-            relation.save()
+        if friendship.status == Friendship.Status.FRIENDS:
+            friendship.status = Friendship.Status.INVITED
+            friendship.inviter = user_2
+            friendship.accepter = user_1
+            friendship.save()
             return Response({"detail":"Пользователь успешно удален из друзей"}, status=status.HTTP_202_ACCEPTED)
+
+
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ('username','photo')
+        read_only_fields = ('username',)

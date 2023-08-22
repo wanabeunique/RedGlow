@@ -1,6 +1,8 @@
 from rest_framework import serializers
 from apps.authentication.models import User
-from apps.authentication.code import sendLink, connectToRedis
+from apps.authentication.sending import sendLink, connectToRedis
+from cryptography.fernet import Fernet, InvalidToken
+from django.conf import settings
 
 class ChangePasswordSerializer(serializers.Serializer):
     currentPassword = serializers.CharField(max_length=255,min_length=8)
@@ -14,7 +16,7 @@ class ChangePasswordSerializer(serializers.Serializer):
             )
         return data
 
-class ForgotPasswordLinkSerializer(serializers.Serializer):
+class ForgotPasswordEmailSerializer(serializers.Serializer):
     email = serializers.CharField(max_length=255)
 
     def validate(self, data):
@@ -33,41 +35,33 @@ class ForgotPasswordLinkSerializer(serializers.Serializer):
     def save(self):
         email = self.validated_data.get('email')
         username = User.objects.get(email=email).username
-        sendLink(email,username,"Ссылка для смены пароля на нашей платформе")
-
-class HashSerializer(serializers.Serializer):
-    key = serializers.CharField(max_length=255)
-    def validate(self, data):
-        r = connectToRedis()
-        if not r.exists(data['key'].split("+")[-1]):
-            raise serializers.ValidationError(
-                'Неверная ссылка или срок действия ссылки истек',code=404
-            )
-        r.close()
-        return data
+        sendLink(
+            email,username,"Ссылка для смены пароля на нашей платформе.",
+            "Восстановление пароля",username,"/forgot/password/"
+        )
 
 class ForgotPasswordChangeSerializer(serializers.Serializer):
     password = serializers.CharField(max_length=255, min_length=8)
     confirmPassword = serializers.CharField(max_length=255, min_length=8)
-    key = serializers.CharField(max_length=255)
-    def validate(self, data):
-        email = data['key'].split("+")[-1]
-        if data.get('password') is None:
-            raise serializers.ValidationError(
-                {"password":'Пароль обязателен'}
-            )
+    key = serializers.CharField()
 
-        r = connectToRedis()
-        if not r.exists(email):
+    def validate(self, data):
+        key = data.get('key')
+        f = Fernet(settings.CR_KEY)
+        try:
+            email = f.decrypt(bytes(key,encoding='utf-8')).decode()
+        except InvalidToken as error:
             raise serializers.ValidationError(
-                'Срок действия ссылки истек'
+                "Срок действия кода истёк"
             )
+        r = connectToRedis()
         if r.exists(email):
-            actualkey = r.get(email).decode('utf-8')
-            if actualkey != data['key']:
-                raise serializers.ValidationError(
-                    'Некорректная ссылка'
-                )
+            data['email'] = email
+            r.delete(email)
+        else:
+            raise serializers.ValidationError(
+                "Срок действия кода истёк"
+            )
         r.close()
 
         password = data.get('password')
@@ -77,13 +71,10 @@ class ForgotPasswordChangeSerializer(serializers.Serializer):
             raise serializers.ValidationError(
                 'Пароли должны совпадать'
             )
+        
         return data
     
     def save(self):
-        email = self.validated_data['key'].split("+")[-1]
-        r = connectToRedis()
-        r.delete(email)
-        r.close()
-        user = User.objects.get(email=email)
+        user = User.objects.get(email=self.validated_data['email'])
         user.set_password(self.validated_data['password'])
         user.save()

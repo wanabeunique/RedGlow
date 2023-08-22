@@ -1,12 +1,15 @@
 from rest_framework import serializers
 from django.contrib.auth import authenticate
-from django.contrib.auth.hashers import make_password
 from .models import User
-from .code import connectToRedis
+from .sending import connectToRedis, sendLink
+from cryptography.fernet import Fernet, InvalidToken
+from django.conf import settings
+import json
 
 class UserSignUpSerializer(serializers.ModelSerializer):
-    confirmPassword = serializers.CharField(max_length=128,min_length=8,write_only=True)
-    password = serializers.CharField(max_length=128,min_length=8,write_only=True)
+    username = serializers.CharField(min_length=8,max_length=255)
+    confirmPassword = serializers.CharField(max_length=255,min_length=8,write_only=True)
+    password = serializers.CharField(max_length=255,min_length=8,write_only=True)
 
     class Meta:
         model = User
@@ -22,38 +25,64 @@ class UserSignUpSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(
                 "Повторите ещё раз, когда срок действия предыдущего кода истечёт"
             )
+        data.pop('confirmPassword')
         return data
-    
-class CodeSerializer(serializers.ModelSerializer):
-    code = serializers.CharField(write_only=True)
-    confirmPassword = serializers.CharField(max_length=128,min_length=8,write_only=True)
-    password = serializers.CharField(max_length=128,min_length=8,write_only=True)
-    class Meta:
-        model = User
-        fields = ('username','password','confirmPassword','email','phoneNumber','code')
+    def save(self):
+        sendLink(
+            self.validated_data['email'],self.validated_data['username'],
+            "Ссылка для завершения регистрации на нашей платформе","Завершение регистрации на нашей платформе",
+            self.validated_data, '/signUp/confirm'
+        )
+
+class KeySerializer(serializers.Serializer):
+    key = serializers.CharField()
 
     def validate(self, data):
-        email = data.get('email')
-        code = data.get('code')
+        key = data.get('key')
 
-        r = connectToRedis()
-        if r.exists(email):
-            actualCode = r.get(email).decode('utf-8')
-
-            if code == actualCode:
-                r.delete(email)
-            else:
-                raise serializers.ValidationError(
-                    {"code":"Неверный код"}
-                )
-        else:
+        f = Fernet(settings.CR_KEY)
+        try:
+            email = f.decrypt(bytes(key,encoding='utf-8')).decode()
+        except InvalidToken as error:
             raise serializers.ValidationError(
-                {"code":"Время действия кода истекло. Попробуйте ещё раз"}
+                "Неверный код"
+            )
+        r = connectToRedis()
+        if not r.exists(email):
+            raise serializers.ValidationError(
+                "Срок действия кода истёк"
             )
         r.close()
-        del data['confirmPassword']
-        del data['code']
         return data
+    
+
+class KeySignUpSerializer(serializers.Serializer):
+    key = serializers.CharField(required=False)
+    username = serializers.CharField(required=False)
+    password = serializers.CharField(write_only=True,required=False)
+    email = serializers.CharField(required=False)
+    phoneNumber = serializers.CharField(required=False)
+
+    def validate(self, data):
+        key = data.get('key')
+        f = Fernet(settings.CR_KEY)
+        try:
+            email = f.decrypt(bytes(key,encoding='utf-8')).decode()
+        except InvalidToken as error:
+            raise serializers.ValidationError(
+                "Срок действия кода истёк"
+            )
+        r = connectToRedis()
+        if r.exists(email):
+            data = json.loads(r.get(email))
+            r.delete(email)
+        else:
+            raise serializers.ValidationError(
+                "Срок действия кода истёк"
+            )
+        r.close()
+        return data
+    
     def create(self, validated_data):
         user = User.objects.create(**validated_data)
         user.set_password(validated_data['password'])

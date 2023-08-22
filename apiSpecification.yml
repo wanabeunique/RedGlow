@@ -5,7 +5,7 @@ info:
 servers:
   - url: https://api.server.test/v1
 paths:
-  /users:
+  /users/:
     post:
       summary: Регистрация пользователя
       tags:
@@ -28,7 +28,7 @@ paths:
             
       responses:
         202:
-          description: Код был выслан на почту
+          description: Ссылка была выслан на почту
           content:
             text/plain:
               schema:
@@ -53,12 +53,13 @@ paths:
                 $ref: "#/components/schemas/FieldsValidation"
         default:
           description: Все остальное
-  /user/code/:
-    post:
-      summary: Проверка кода.
+  /key/{key}/:
+    get:
+      summary: Проверка ключа.
       tags:
         - Authentication
-      operationId: codeEmail
+        - PasswordChange
+      operationId: checkKey
       parameters:
         - in: header
           name: X-CSRFToken
@@ -67,22 +68,22 @@ paths:
           schema:
             type: string
             example: saf141kncaskn214
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#components/schemas/CheckCode"
-
+        - in: path
+          name: key
+          required: true
+          schema:
+            type: string
+            example: Qmasmfjajfj128141841hjafhh
       responses:
         200:
-          description: Код принят. Успешная регистрация
+          description: Ключ принят
           content:
-            application/json:
+            text/plain:
               schema:
-                $ref: "#components/schemas/User"
-        400:
-          description: Время кода истекло или код неверен
+                type: string
+                example: Qmasmfjajfj128141841hjafhh
+        404:
+          description: Время действия ключа истекло или он неверен
           content:
             text/plain:
               schema:
@@ -103,7 +104,49 @@ paths:
                     example: You do not have permission to perform this action
         default:
           description: Все остальное
-  /user/login/:
+  /users/confirm/:
+    put:
+      summary: Подтверждение регистрации
+      tags:
+        - Authentication
+      operationId: confirmSignUp
+      parameters:
+        - in: header
+          name: X-CSRFToken
+          description: CSRF token
+          required: true
+          schema:
+            type: string
+            example: saf141kncaskn214
+      requestBody:
+        required: true
+        content:
+          text/plain:
+            schema:
+              type: object
+              required:
+                - key
+              properties:
+                key:
+                  type: string
+                  example: Qmasmfjajfj128141841hjafhh
+      responses:
+        200:
+          description: Успешная регистрация
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        400:
+          description: Срок действия ключа истек
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NonFieldError"
+        403:
+          description: Запрос был послан от авторизованного пользователя
+
+  /user/session/:
     post:
       summary: Авторизация пользователя
       tags:
@@ -165,8 +208,7 @@ paths:
                     example: You do not have permission to perform this action
         default:
           description: Все остальное
-  /user/logout/:
-    post:
+    put:
       summary: Выйти из аккаунта
       tags:
         - Authentication
@@ -194,7 +236,7 @@ paths:
         default:
           description: Все остальное
       
-  /user/password:
+  /user/password/:
     put:
       summary: Смена пароля
       tags:
@@ -304,45 +346,7 @@ paths:
                       $ref: "#/components/schemas/FieldError"
         default:
           description: Все остальное
-  /user/forgot/key/{key}/:
-    get:
-      summary: Забыли пароль. Проверить ключ
-      tags:
-        - PasswordChange
-      operationId: checkKey
-      parameters:
-        - in: header
-          name: X-CSRFToken
-          description: CSRF token
-          required: true
-          schema:
-            type: string
-            example: saf141kncaskn214
-        - in: path
-          name: key
-          description: Key
-          required: true
-          schema:
-            type: string
-            example: fnox+214214+2141+asfasg
-      responses:
-        202:
-          description: Ключ принят
-          content:
-            text/plain:
-              schema:
-                properties:
-                  key:
-                    type: string
-                    example: fnox+214214+2141+asfasg
-        404:
-          description: Время действия ссылки истекло или ссылка не верна
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/NonFieldError"
-        default:
-          description: Все остальное
+  
   /user/forgot/password/:
     put:
       summary: Смена забытого пароля
@@ -376,7 +380,7 @@ paths:
                   example: qwert12345
                 key:
                   type: string
-                  example: fnox+asfagsa+-124125+25125
+                  example: Qmasmfjajfj128141841hjafhh
       responses:
         200:
           description: Успешная смена пароля
@@ -390,12 +394,12 @@ paths:
                   non_field_errors:
                     type: array
                     items:
-                      $ref: "#/components/schemas/NonFieldError"
+                      $ref: "#/components/schemas/FieldsValidation"
         default:
           description: Все остальное
-  /user/friends:
+  /user/friend/:
     post:
-      summary: Отправка заявки в друзья
+      summary: Отправка заявки в друзья или ее принятие
       tags:
         - Friends
       operationId: inviteFriend
@@ -414,23 +418,76 @@ paths:
             schema:
               type: object
               required:
-                - targetName
+                - accepter
               properties:
-                targetName:
+                accepter:
                   type: string
                   example: kirin
       responses:
-        200:
+        201:
           description: Заявка была успешно отправлена
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FriendshipStatus"
         202:
-          description: Заявка была отправлена, пользователи стали друзьями, т.к. существовала входящая заявка
+          description: Заявка была отправлена, пользователи стали друзьями, т.к. существовала входящая заявка(принятие заявки, если просто)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FriendshipStatus"
         400:
           description: Поля не прошли валидацию
         403:
           description: Запрос от неавторизованного пользователя
         default:
           description: Все остальное
-  /user/{username}/friends:  
+    put:
+      summary: Отменить заявку или удалить друга
+      tags:
+        - Friends
+      operationId: inviteFriend
+      parameters:
+        - in: header
+          name: X-CSRFToken
+          description: CSRF token
+          required: true
+          schema:
+            type: string
+            example: saf141kncaskn214
+      requestBody:
+        required: true
+        content:
+          text/plain:
+            schema:
+              type: object
+              required:
+                - accepter
+              properties:
+                accepter:
+                  type: string
+                  example: kirin
+      responses:
+        200:
+          description: Заявка отменена
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FriendshipStatus"
+        202:
+          description: Пользователь удален из друзей
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FriendshipStatus"
+        400:
+          description: Поля не прошли валидацию
+        403:
+          description: Запрос от неавторизованного пользователя
+        default:
+          description: Все остальное
+
+  /user/{username}/friend:  
     get:
       summary: Получить список друзей пользователя
       operationId: getFriendList
@@ -454,13 +511,19 @@ paths:
       responses:
         200:
           description: Успешно получен список друзей
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Friends"
         400:
           description: Поля не прошли валидацию
         403:
           description: Запрос от неавторизованного пользователя
-  /users/{findValue}/:
+        default:
+          description: Все остальное
+  /users/search/{value}/:
     get:
-      summary: Получить список пользователей, который начинаются на {findValue}
+      summary: Получить список пользователей, который начинаются на {value}
       operationId: findUsers
       tags:
         - Friends
@@ -482,59 +545,56 @@ paths:
       responses:
         200:
           description: Ответ с пользователями
-        400:
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Friends"
+        404:
           description: Не нашлось пользователей
         403:
           description: Запрос от неавторизованного пользователя
+  /user/friendship/{username}/:
+    get:
+      summary: Получить статус дружбы с пользователем
+      operationId: getFriendship
+      tags:
+        - Friends
+      parameters:
+          - in: header
+            name: X-CSRFToken
+            description: CSRF token
+            required: true
+            schema:
+              type: string
+              example: saf141kncaskn214
+          - in: path
+            name: username
+            description: Имя пользователя
+            required: true
+            schema:
+              type: string
+              example: kirin
+      responses:
+        200:
+          description: Ответ со статусом дружбы
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FriendshipStatus"
+        default:
+          description: Все остальное
+    
 
       
 
 components:
   schemas:
-    UserForSignUp:
-      type: object
-      required:
-        - username
-        - password
-        - confirmPassword
-        - email
-        - phoneNumber
-      properties:
-        username:
-          type: string
-          example: kirin
-        password:
-          type: string
-          example: qwert1234
-        confirmPassword:
-          type: string
-          example: qwert1234
-        email:
-          type: string
-          example: q@gmail.com
-        phoneNumber:
-          type: string
-          example: "+74447779911"
-    CheckCode:
-      type: object
-      required:
-       - code
-       - user
-      properties:
-        code:
-          type: string
-          example: "1234567"
-        user:
-          $ref: "#components/schemas/UserForSignUp"
     User:
       type: object
       properties:
         username:
           type: string
           example: kirin
-        password:
-          type: string
-          example: qwert1234
         email:
           type: string
           example: q@gmail.com
@@ -559,7 +619,25 @@ components:
     NonFieldError:
       type: string
       example: Пароли должны совпадать!
-          
+    FriendshipStatus:
+      type: object
+      properties:
+        detail:
+          type: string
+          example: Заявка успешно отправлена
+    Friends:
+      type: array
+      items:
+        $ref: "#/components/schemas/Friend"
+    Friend:
+      type: object
+      properties:
+        username:
+          type: string
+          example: kirin
+        photo:
+          type: string
+          example: (poka net example, potom dobavlu)
 
 
 

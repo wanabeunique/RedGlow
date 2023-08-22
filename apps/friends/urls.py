@@ -1,7 +1,9 @@
 from django.urls import path
-from .views import *
+from .views import InviteFriendView, GetFriendshipStatusView, FriendListView, FindUserView
 
 urlpatterns = [
     path('user/friend/',InviteFriendView.as_view({"post":"create","put":"update"})),
-    path('user/friend/<str:targetName>/',GetRelationStatusView.as_view())
+    path('user/friendship/<str:username>/',GetFriendshipStatusView.as_view()),
+    path('user/<str:username>/friend',FriendListView.as_view()),
+    path('user/search/<str:value>/',FindUserView.as_view())
 ]

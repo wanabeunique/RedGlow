@@ -1,13 +1,10 @@
 from rest_framework import generics
-from .serializers import ChangePasswordSerializer, ForgotPasswordLinkSerializer, ForgotPasswordChangeSerializer, HashSerializer
+from .serializers import ChangePasswordSerializer, ForgotPasswordEmailSerializer, ForgotPasswordChangeSerializer
 from apps.authentication.models import User
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.views import APIView
-from apps.authentication.code import sendEmailCode, connectToRedis
-from apps.authentication.serializers import CodeSerializer
-from rest_framework.viewsets import ViewSet
 from django.contrib.auth import authenticate, login
 
 class ChangePasswordAPI(generics.UpdateAPIView):
@@ -40,7 +37,7 @@ class ChangePasswordAPI(generics.UpdateAPIView):
 
 class ForgotPasswordAPI(APIView):
     permission_classes = (AllowAny,)
-    serializer_class = ForgotPasswordLinkSerializer
+    serializer_class = ForgotPasswordEmailSerializer
 
     def post(self, request):
 
@@ -51,16 +48,6 @@ class ForgotPasswordAPI(APIView):
             {"detail":"Ссылка для восстановления пароля была выслана на почту"},status=status.HTTP_202_ACCEPTED
         )
 
-class CheckHashAPI(APIView):
-    serializer_class = HashSerializer
-    permission_classes = (AllowAny, )
-
-    def get(self, request,key=None):
-        serializer = self.serializer_class(data={'key':key})
-        if serializer.is_valid():
-            return Response(serializer.data,status=status.HTTP_202_ACCEPTED)
-        else:
-            return Response(serializer.errors,status=status.HTTP_404_NOT_FOUND)
 class ChangeForgotPasswordAPI(APIView):
     serializer_class = ForgotPasswordChangeSerializer
     permission_classes = (AllowAny,)
