@@ -57,7 +57,6 @@ paths:
     get:
       summary: Проверка ключа.
       tags:
-        - Authentication
         - PasswordChange
       operationId: checkKey
       parameters:
@@ -80,8 +79,11 @@ paths:
           content:
             text/plain:
               schema:
-                type: string
-                example: Qmasmfjajfj128141841hjafhh
+                type: object
+                properties:
+                  key:
+                    type: string
+                    example: Qmasmfjajfj128141841hjafhh
         404:
           description: Время действия ключа истекло или он неверен
           content:
@@ -589,6 +591,25 @@ paths:
 
 components:
   schemas:
+    UserForSignUp:
+      type: object
+      properties:
+        username:
+          type: string
+          example: kirin
+        password:
+          type: string
+          example: asd124af
+        passwordConfirm:
+          type: string
+          example: asfanasf
+        email:
+          type: string
+          example: q@gmail.com
+        phoneNumber:
+          type: string
+          example: "+74447779911"
+        
     User:
       type: object
       properties:
