@@ -20,7 +20,7 @@ class ChangePasswordAPI(generics.UpdateAPIView):
         self.object = self.get_object()
         serializer = self.get_serializer(data=request.data)
 
-        serializer.is_valid(raise_exeption=True)
+        serializer.is_valid(raise_exception=True)
         if not self.object.check_password(serializer.data.get("currentPassword")):
             return Response(
                 {"currentPassword": "Неправильный текущий пароль"}, status=status.HTTP_400_BAD_REQUEST
