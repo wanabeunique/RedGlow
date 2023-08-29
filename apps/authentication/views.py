@@ -5,6 +5,7 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.authentication import SessionAuthentication
 from .serializers import UserSignUpSerializer, UserLogInSerializer, KeySerializer, KeySignUpSerializer
+from apps.passwordChange.permissions import NotAuthenticated
 from rest_framework import status
 from apps.passwordChange.permissions import NotAuthenticated
 
@@ -37,7 +38,7 @@ class ConfirmSignUpView(APIView):
         return Response(serializer.data,status=status.HTTP_200_OK)
 
 class SessionView(ViewSet):
-    authentication_classes = (SessionAuthentication,)
+    authentication_classes = (NotAuthenticated,)
     serializer_class = UserLogInSerializer
     def create(self,request):
         if bool(not request.user.is_authenticated):
