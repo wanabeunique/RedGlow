@@ -4,9 +4,12 @@ import styles from './HeadbookCiv5.module.sass';
 import axios from 'axios';
 import HeadbookCiv5Item from './HeadbookCiv5Item/HeadbookCiv5Item';
 
+
 export default function () {
   const [input, setInput] = useState('');
   const [jsonData, setJsonData] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
   
   useEffect(() => {
     const jsonFilePath = '/headbook/headbook_civilization5/allCivs.json';
@@ -35,7 +38,7 @@ export default function () {
             {          
               Object.entries(jsonData).map(nation => (
                 nation[0].toLowerCase().includes(input.toLowerCase()) ? (
-                  <HeadbookCiv5Item key={nation[0]} nation={nation}/> 
+                  <HeadbookCiv5Item key={nation[0]} nation={nation} className={styles.nation__item}/> 
                 ) : null
               ))
             }

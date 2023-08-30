@@ -16,7 +16,18 @@
     gap: var(--small-offset)
   &__link
     text-decoration: none
+    &:hover
+      color: var(--white-color)
+      transition: color .5s linear
   &__logo
     color: var(--font-color)
     font-size: 30px
     text-decoration: none
+  &__item
+    display: flex
+    align-items: center
+    justify-content: center
+  &__profile
+    display: flex
+    gap: var(--tiny-offset)
+    align-items: center

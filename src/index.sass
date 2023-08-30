@@ -21,12 +21,12 @@ body
   font-family: 'Open Sans'
   background: var(--bg-color)
 
-.container
-  max-width: 1540px
-  padding: 0 10px
-  margin: 0 auto
-
 @Layer components
+  .container
+    max-width: 1540px
+    padding: 0 10px
+    margin: 0 auto
+    
   .text
     font-size: 16px
     font-family: 'Open Sans'
@@ -66,7 +66,7 @@ body
     height: 50px
     padding: 10px
     &::placeholder
-      color: var(--main-color)
+      color: var(--secondary-font-color)
 
 @media (max-width: 768px)
   .text
@@ -79,7 +79,7 @@ body
 a,button
   &:hover
     filter: contrast(2)
-    transition: filter .5s ease-out
+    transition: filter 3s ease-out
 
 .active
   color: var(--white-color)
