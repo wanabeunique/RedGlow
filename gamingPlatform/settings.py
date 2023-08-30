@@ -55,7 +55,6 @@ MIDDLEWARE = [
     'django.middleware.cache.UpdateCacheMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
-    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -173,14 +172,12 @@ REST_FRAMEWORK = {
 
 CORS_ALLOWED_ORIGINS = [
     'http://localhost:5173',
-    'http://127.0.0.1:8000'
 ]
 
 CORS_ALLOW_CREDENTIALS = True
 
 CSRF_TRUSTED_ORIGINS = [
     'http://localhost:5173',
-    'http://127.0.0.1:8000'
 ]
 
 CORS_ALLOW_HEADERS = (
@@ -194,5 +191,6 @@ CORS_ALLOW_HEADERS = (
 )
 
 
-#SESSION_COOKIE_HTTPONLY = False
-#SESSION_COOKIE_SAMESITE = False
+SESSION_COOKIE_HTTPONLY = False
+CSRF_COOKIE_HTTPONLY = False
+CSRF_COOKIE_SECURE = False
