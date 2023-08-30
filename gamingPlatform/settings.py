@@ -51,6 +51,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    "corsheaders.middleware.CorsMiddleware",
     'django.middleware.cache.UpdateCacheMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -182,4 +183,16 @@ CSRF_TRUSTED_ORIGINS = [
     'http://127.0.0.1:8000'
 ]
 
-SESSION_COOKIE_HTTPONLY = False
+CORS_ALLOW_HEADERS = (
+    "accept",
+    "authorization",
+    "content-type",
+    "user-agent",
+    "x-csrftoken",
+    "x-requested-with",
+    "sessionid"
+)
+
+
+#SESSION_COOKIE_HTTPONLY = False
+#SESSION_COOKIE_SAMESITE = False
