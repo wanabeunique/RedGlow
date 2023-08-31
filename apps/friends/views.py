@@ -2,7 +2,7 @@ from itertools import chain
 from .serializers import FriendshipSerializer, UserSerializer
 from rest_framework.views import APIView
 from rest_framework.viewsets import ViewSet
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from apps.authentication.models import User
 from rest_framework.response import Response
 from rest_framework import status
@@ -59,7 +59,7 @@ class FriendListView(APIView):
             return Response({'detail':"Not found"},status=status.HTTP_404_NOT_FOUND)
         
 class FindUserView(APIView):
-    permission_classes = (IsAuthenticated, )
+    permission_classes = (AllowAny, )
     serializer_class = UserSerializer
     def get(self, request,value=None):
         users = User.objects.filter(username__startswith=value).exclude(id=request.user.id) 

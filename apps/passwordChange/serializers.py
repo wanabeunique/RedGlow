@@ -5,14 +5,16 @@ from cryptography.fernet import Fernet, InvalidToken
 from django.conf import settings
 
 class ChangePasswordSerializer(serializers.Serializer):
-    currentPassword = serializers.CharField(max_length=255,min_length=8)
-    newPassword = serializers.CharField(max_length=255,min_length=8)
-    confirmNewPassword = serializers.CharField(max_length=255,min_length=8)
-
+    currentPassword = serializers.CharField(max_length=255, min_length=8)
+    newPassword = serializers.CharField(max_length=255, min_length=8)
     def validate(self, data):
-        if data.get('newPassword') != data.get('confirmNewPassword'):
+        if data.get('currentPassword') is None:
             raise serializers.ValidationError(
-                'Поля Новый пароль, Подтвердите новый пароль должный совпадать'
+                'Поле "Текущий пароль" не может быть пустым'
+            )
+        if data.get('newPassword') is None:
+            raise serializers.ValidationError(
+                'Поле "Новый пароль" не может быть пустым'
             )
         return data
 
@@ -21,6 +23,10 @@ class ForgotPasswordEmailSerializer(serializers.Serializer):
 
     def validate(self, data):
         email = data.get('email')
+        if email is None:
+            raise serializers.ValidationError(
+                "Почта обязательна"
+            )
         r = connectToRedis()
         if r.exists(email):
             raise serializers.ValidationError(
@@ -41,12 +47,20 @@ class ForgotPasswordEmailSerializer(serializers.Serializer):
         )
 
 class ForgotPasswordChangeSerializer(serializers.Serializer):
-    password = serializers.CharField(max_length=255, min_length=8)
-    confirmPassword = serializers.CharField(max_length=255, min_length=8)
+    password = serializers.CharField(max_length=255, min_length=8,write_only=True)
     key = serializers.CharField()
 
     def validate(self, data):
         key = data.get('key')
+        password = data.get('password')
+        if key is None:
+            raise serializers.ValidationError(
+                'Некорректная ссылка'
+            )
+        if password is None:
+            raise serializers.ValidationError(
+                'Пароль обязателен'
+            )
         f = Fernet(settings.CR_KEY)
         try:
             email = f.decrypt(bytes(key,encoding='utf-8')).decode()
@@ -64,14 +78,6 @@ class ForgotPasswordChangeSerializer(serializers.Serializer):
             )
         r.close()
 
-        password = data.get('password')
-        confirmPassword = data.get('confirmPassword')
-        
-        if password != confirmPassword:
-            raise serializers.ValidationError(
-                'Пароли должны совпадать'
-            )
-        
         return data
     
     def save(self):

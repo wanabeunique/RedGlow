@@ -3,7 +3,7 @@ info:
   title: Gaming Platform
   version: "1.0"
 servers:
-  - url: https://api.server.test/v1
+  - url: https://127.0.0.1:8000
 paths:
   /users/:
     post:
@@ -53,6 +53,46 @@ paths:
                 $ref: "#/components/schemas/FieldsValidation"
         default:
           description: Все остальное
+    put:
+      summary: Подтверждение регистрации
+      tags:
+        - Authentication
+      operationId: confirmSignUp
+      parameters:
+        - in: header
+          name: X-CSRFToken
+          description: CSRF token
+          required: true
+          schema:
+            type: string
+            example: saf141kncaskn214
+      requestBody:
+        required: true
+        content:
+          text/plain:
+            schema:
+              type: object
+              required:
+                - key
+              properties:
+                key:
+                  type: string
+                  example: Qmasmfjajfj128141841hjafhh
+      responses:
+        200:
+          description: Успешная регистрация
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        400:
+          description: Срок действия ключа истек или он неправильный
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NonFieldError"
+        403:
+          description: Запрос был послан от авторизованного пользователя
   /key/{key}/:
     get:
       summary: Проверка ключа.
@@ -106,48 +146,6 @@ paths:
                     example: You do not have permission to perform this action
         default:
           description: Все остальное
-  /users/confirm/:
-    put:
-      summary: Подтверждение регистрации
-      tags:
-        - Authentication
-      operationId: confirmSignUp
-      parameters:
-        - in: header
-          name: X-CSRFToken
-          description: CSRF token
-          required: true
-          schema:
-            type: string
-            example: saf141kncaskn214
-      requestBody:
-        required: true
-        content:
-          text/plain:
-            schema:
-              type: object
-              required:
-                - key
-              properties:
-                key:
-                  type: string
-                  example: Qmasmfjajfj128141841hjafhh
-      responses:
-        200:
-          description: Успешная регистрация
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/User"
-        400:
-          description: Срок действия ключа истек
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/NonFieldError"
-        403:
-          description: Запрос был послан от авторизованного пользователя
-
   /user/session/:
     post:
       summary: Авторизация пользователя
@@ -237,7 +235,17 @@ paths:
                     example: You do not have permission to perform this action
         default:
           description: Все остальное
-      
+  /user/checker/:
+    get:
+      summary: Проверка, авторизован ли юзер
+      tags:
+        - Authentication
+      responses:
+        200:
+          description: Авторизован
+        403:
+          description: Не авторизован
+    
   /user/password/:
     put:
       summary: Смена пароля
@@ -261,15 +269,11 @@ paths:
               required:
                 - currentPassword
                 - newPassword
-                - confirmNewPassword
               properties:
                 currentPassword:
                   type: string
                   example: qwert1234
                 newPassword:
-                  type: string
-                  example: zxcasdf
-                confirmNewPassword:
                   type: string
                   example: zxcasdf
       responses:
@@ -300,7 +304,7 @@ paths:
         default:
           description: Все остальное
   
-  /user/forgot/link/:
+  /user/help/link/:
     post:
       summary: Забыли пароль. Отправить ссылку на почту
       tags:
@@ -349,7 +353,7 @@ paths:
         default:
           description: Все остальное
   
-  /user/forgot/password/:
+  /user/help/password/:
     put:
       summary: Смена забытого пароля
       tags:
@@ -371,15 +375,11 @@ paths:
               type: object
               required:
                 - password
-                - confirmPassword
                 - key
               properties:
                 password:
                   type: string
                   example: qwert1234
-                confirmPassword:
-                  type: string
-                  example: qwert12345
                 key:
                   type: string
                   example: Qmasmfjajfj128141841hjafhh
@@ -523,7 +523,7 @@ paths:
           description: Запрос от неавторизованного пользователя
         default:
           description: Все остальное
-  /users/search/{value}/:
+  /users/prefix/{value}/:
     get:
       summary: Получить список пользователей, который начинаются на {value}
       operationId: findUsers
@@ -600,9 +600,6 @@ components:
         password:
           type: string
           example: asd124af
-        passwordConfirm:
-          type: string
-          example: asfanasf
         email:
           type: string
           example: q@gmail.com

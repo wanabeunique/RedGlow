@@ -7,25 +7,19 @@ from django.conf import settings
 import json
 
 class UserSignUpSerializer(serializers.ModelSerializer):
-    username = serializers.CharField(min_length=8,max_length=255)
-    confirmPassword = serializers.CharField(max_length=255,min_length=8,write_only=True)
-    password = serializers.CharField(max_length=255,min_length=8,write_only=True)
+    username = serializers.CharField(max_length=255, min_length=5)
+    password = serializers.CharField(max_length=255, min_length=8,write_only=True)
 
     class Meta:
         model = User
-        fields = ('username','password','confirmPassword','email','phoneNumber')
+        fields = ('username','password','email','phoneNumber')
 
     def validate(self,data):
-        if data['password'] != data['confirmPassword']:
-            raise serializers.ValidationError(
-                "Пароли должны совпадать!"
-            )
         r = connectToRedis()
         if r.exists(data["email"]):
             raise serializers.ValidationError(
-                "Повторите ещё раз, когда срок действия предыдущего кода истечёт"
+                "Повторите ещё раз, когда срок действия предыдущей ссылки истечёт"
             )
-        data.pop('confirmPassword')
         return data
     def save(self):
         sendLink(
@@ -39,18 +33,22 @@ class KeySerializer(serializers.Serializer):
 
     def validate(self, data):
         key = data.get('key')
+        if key is None:
+            raise serializers.ValidationError(
+                'Некорректная ссылка'
+            )
 
         f = Fernet(settings.CR_KEY)
         try:
             email = f.decrypt(bytes(key,encoding='utf-8')).decode()
         except InvalidToken as error:
             raise serializers.ValidationError(
-                "Неверный код"
+                "Некорректная ссылка"
             )
         r = connectToRedis()
         if not r.exists(email):
             raise serializers.ValidationError(
-                "Срок действия кода истёк"
+                "Срок действия ссылки истёк"
             )
         r.close()
         return data
@@ -65,12 +63,16 @@ class KeySignUpSerializer(serializers.Serializer):
 
     def validate(self, data):
         key = data.get('key')
+        if key is None:
+            raise serializers.ValidationError(
+                'Некорректная ссылка'
+            )
         f = Fernet(settings.CR_KEY)
         try:
             email = f.decrypt(bytes(key,encoding='utf-8')).decode()
         except InvalidToken as error:
             raise serializers.ValidationError(
-                "Срок действия кода истёк"
+                "Код неверный или срок его действия истек"
             )
         r = connectToRedis()
         if r.exists(email):
@@ -78,7 +80,7 @@ class KeySignUpSerializer(serializers.Serializer):
             r.delete(email)
         else:
             raise serializers.ValidationError(
-                "Срок действия кода истёк"
+                "Код неверный или срок его действия истек"
             )
         r.close()
         return data
@@ -91,11 +93,19 @@ class KeySignUpSerializer(serializers.Serializer):
 
 class UserLogInSerializer(serializers.Serializer):
     username = serializers.CharField(max_length=255)
-    password = serializers.CharField(max_length=255,min_length=8,write_only=True)
+    password = serializers.CharField(max_length=255,write_only=True)
 
     def validate(self,data):
-        username = data['username']
-        password = data['password']
+        username = data.get('username')
+        password = data.get('password')
+        if password is None:
+            raise serializers.ValidationError(
+                'Имя пользователя обязательно'
+            )
+        if username is None:
+            raise serializers.ValidationError(
+                'Пароль обязателен'
+            )
 
         user = authenticate(username=username,password=password)
 

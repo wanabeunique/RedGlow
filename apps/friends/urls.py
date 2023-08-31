@@ -5,5 +5,5 @@ urlpatterns = [
     path('user/friend/',InviteFriendView.as_view({"post":"create","put":"update"})),
     path('user/friendship/<str:username>/',GetFriendshipStatusView.as_view()),
     path('user/<str:username>/friend',FriendListView.as_view()),
-    path('user/search/<str:value>/',FindUserView.as_view())
+    path('user/prefix/<str:value>/',FindUserView.as_view())
 ]

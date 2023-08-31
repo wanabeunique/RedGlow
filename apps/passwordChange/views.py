@@ -25,10 +25,10 @@ class ChangePasswordAPI(generics.UpdateAPIView):
             return Response(
                 {"currentPassword": "Неправильный текущий пароль"}, status=status.HTTP_400_BAD_REQUEST
             )
-        
-        self.object.set_password(serializer.data.get("newPassword"))
+        newPassword = serializer.data.get("newPassword")
+        self.object.set_password(newPassword)
         self.object.save()
-        userAuth = authenticate(username=self.object.username,password=request.data.get("newPassword"))
+        userAuth = authenticate(username=self.object.username,password=newPassword)
         login(request,userAuth)
 
         return Response(
