@@ -11,10 +11,16 @@ import Profile from './components/Profile/Profile'
 import Friends from './components/Friends/Friends'
 import EmailConfirm from './components/EmailConfirm/EmailConfirm'
 import Generate from './components/Genarate/Generate'
+import { useEffect } from 'react'
+// import { UseSelector } from 'react-redux/es/hooks/useSelector'
+import getIsAuth from './api/getIsAuth'
+import { useDispatch } from 'react-redux'
 
 function App() {
-  // axios.defaults.headers.common['X-CSRFToken'] = csrfToken;
-
+  const dispatch = useDispatch()
+  useEffect(() => {
+    getIsAuth(dispatch)
+  }, [])
   return (
     <>
         <Routes>

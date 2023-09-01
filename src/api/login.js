@@ -1,15 +1,16 @@
 import axios from "axios";
+import { setIsAuth } from "../store/reducers/isAuthSlice";
 
-export default async function login(data){
+
+export default async function login(data, dispatch){
   axios.post(
-    'http://127.0.0.1:8000/user/session/',
+    'api/user/session/',
     data,
     {withCredentials: true}
   )
   .then( (response) => {
+    dispatch(setIsAuth(true))
     console.log(response)
-    const headerKeys = Object.keys(response.headers);
-    console.log(headerKeys);
-    console.log('Set-Cookie:', response.headers['set-cookie'])
+    return response.status
   })
 }

@@ -1,15 +1,21 @@
 import React from 'react'
 import styles from './Login.module.sass'
-import { Link, Routes } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import login from '../../api/login'
 import {useForm } from "react-hook-form"
+import { useSelector } from 'react-redux'
+import { Navigate } from 'react-router-dom';
+import { useDispatch } from "react-redux";
 
 export default function Login() {
+  const  dispatch = useDispatch()
+  const isAuth = useSelector((state) => state.authReducer.data)
   const {register, handleSubmit} = useForm()
-  return (
-    <form 
+  if (!isAuth) {
+    return (
+      <form 
       className={styles.login} 
-      onSubmit={handleSubmit(data => login(data))}
+      onSubmit={handleSubmit(data => login(data, dispatch))}
     >
       <div className={styles.login__wrapper}>
         <p className={`${styles.login__title} title`}>Авторизация</p>
@@ -22,5 +28,11 @@ export default function Login() {
         </div>
       </div>
     </form>
-  )
+    )
+  }
+  else{
+    return (
+      <Navigate to='/' />
+    )
+  }
 }
