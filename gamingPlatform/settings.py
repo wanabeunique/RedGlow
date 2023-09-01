@@ -29,8 +29,7 @@ DEBUG = True
 
 CR_KEY = Fernet.generate_key()
 
-ALLOWED_HOSTS = ['*']
-
+ALLOWED_HOSTS = ['127.0.0.1', 'localhost']
 
 # Application definition
 
@@ -41,6 +40,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'sslserver',
     'rest_framework',
     'django.contrib.postgres',
     'corsheaders',
@@ -51,14 +51,16 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
-    "corsheaders.middleware.CorsMiddleware",
-    'django.contrib.sessions.middleware.SessionMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
-    'django.middleware.common.CommonMiddleware',
-    'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'django.middleware.security.SecurityMiddleware',
+    
     'django.middleware.cache.UpdateCacheMiddleware',
+    'django.contrib.sessions.middleware.SessionMiddleware',
+    "corsheaders.middleware.CorsMiddleware",
+    'django.middleware.common.CommonMiddleware',
+    'django.middleware.csrf.CsrfViewMiddleware',
+    'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.cache.FetchFromCacheMiddleware',
-    'django.contrib.messages.middleware.MessageMiddleware'
     
 ]
 
@@ -169,17 +171,35 @@ REST_FRAMEWORK = {
     ]
 }
 
-CORS_ALLOWED_ORIGINS = [
-    'http://localhost:5173',
-]
-
-CORS_ALLOW_CREDENTIALS = True
-
 CSRF_TRUSTED_ORIGINS = [
     'http://localhost:5173',
 ]
 
+SESSION_COOKIE_HTTPONLY = True
+CSRF_COOKIE_HTTPONLY = True
 CSRF_COOKIE_SECURE = True
 SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SAMESITE = 'None'
 SESSION_COOKIE_SAMESITE = 'None'
+CSRF_USE_SESSIONS = True
+CORS_ORIGIN_ALLOW_ALL = False
+CORS_ALLOW_CREDENTIALS = True
+CORS_ORIGIN_WHITELIST = ['http://localhost:5173',]
+CORS_ALLOWED_ORIGINS = ['http://localhost:5173',]
+CORS_ALLOWED_METHODS = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS']
+CORS_PREFLIGHT_MAX_AGE = 86400
+# Настройки SSL
+SECURE_SSL_REDIRECT = True
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+SECURE_HSTS_SECONDS = 3600
+SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+SECURE_HSTS_PRELOAD = True
+SECURE_REFERRER_POLICY = 'strict-origin-when-cross-origin'
+SECURE_CONTENT_TYPE_NOSNIFF = True
+SECURE_BROWSER_XSS_FILTER = True
+
+# Настройки SSL сертификата
+SSL_CERTIFICATE = 'server.crt'
+SSL_KEY = 'server.key'
+
+# Добавьте домен, используемый для доступа к вашему приложению

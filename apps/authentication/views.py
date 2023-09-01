@@ -2,11 +2,11 @@ from django.contrib.auth import login, logout
 from rest_framework.views import APIView
 from rest_framework.viewsets import ViewSet
 from rest_framework.response import Response
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from .serializers import UserSignUpSerializer, UserLogInSerializer, KeySerializer, KeySignUpSerializer
 from apps.passwordChange.permissions import NotAuthenticated
 from rest_framework import status
-from apps.passwordChange.permissions import NotAuthenticated
+from django.http import HttpRequest
 
 class SignUpView(ViewSet):
     permission_classes = (NotAuthenticated,)
@@ -36,11 +36,13 @@ class SessionView(ViewSet):
     permission_classes = (AllowAny,)
     serializer_class = UserLogInSerializer
     def create(self,request):
-        user = request.data
-        serializer = self.serializer_class(data=user)
-        serializer.is_valid(raise_exception=True)
-        login(request,serializer.validated_data)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        if not bool(request.user.is_authenticated):
+            user = request.data
+            serializer = self.serializer_class(data=user)
+            serializer.is_valid(raise_exception=True)
+            login(request,serializer.validated_data)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(status=status.HTTP_403_FORBIDDEN)
     def update(self, request):
         if bool(request.user and request.user.is_authenticated):
             logout(request)
@@ -49,7 +51,8 @@ class SessionView(ViewSet):
     
 class AuthCheckerView(APIView):
     permission_classes = (AllowAny, )
-    def get(self,request):
+    def put(self,request:HttpRequest):
+        print(request.session.session_key)
         if bool(request.user and request.user.is_authenticated):
-            return Response(None,status=status.HTTP_200_OK)
-        return Response(None, status=status.HTTP_403_FORBIDDEN)
+            return Response(status=status.HTTP_200_OK)
+        return Response(status=status.HTTP_403_FORBIDDEN)
