@@ -107,7 +107,7 @@ class UserLogInSerializer(serializers.Serializer):
                 'Пароль обязателен'
             )
 
-        user = authenticate(username=username,password=password)
+        user = authenticate(self.context['request'],username=username,password=password)
 
         if user is None:
             raise serializers.ValidationError(

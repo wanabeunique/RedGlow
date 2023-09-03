@@ -172,22 +172,32 @@ REST_FRAMEWORK = {
 }
 
 CSRF_TRUSTED_ORIGINS = [
-    'http://localhost:5173',
+    'https://localhost'
 ]
 
 SESSION_COOKIE_HTTPONLY = True
-CSRF_COOKIE_HTTPONLY = True
+CSRF_COOKIE_HTTPONLY = False
 CSRF_COOKIE_SECURE = True
 SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SAMESITE = 'None'
 SESSION_COOKIE_SAMESITE = 'None'
-CSRF_USE_SESSIONS = True
+SESSION_SAVE_EVERY_REQUEST = True
+# CSRF_USE_SESSIONS = True
 CORS_ORIGIN_ALLOW_ALL = False
 CORS_ALLOW_CREDENTIALS = True
-CORS_ORIGIN_WHITELIST = ['http://localhost:5173',]
-CORS_ALLOWED_ORIGINS = ['http://localhost:5173',]
+CORS_ORIGIN_WHITELIST = ['http://localhost:5173','https://localhost']
+CORS_ALLOWED_ORIGINS = ['http://localhost:5173','https://localhost']
 CORS_ALLOWED_METHODS = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS']
 CORS_PREFLIGHT_MAX_AGE = 86400
+CORS_ALLOW_HEADERS = (
+    "accept",
+    "authorization",
+    "content-type",
+    "user-agent",
+    "X-CSRFTOKEN",
+    'csrftoken',
+    "x-requested-with",
+)
 # Настройки SSL
 SECURE_SSL_REDIRECT = True
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')

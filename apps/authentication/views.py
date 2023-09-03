@@ -38,7 +38,7 @@ class SessionView(ViewSet):
     def create(self,request):
         if not bool(request.user.is_authenticated):
             user = request.data
-            serializer = self.serializer_class(data=user)
+            serializer = self.serializer_class(data=user,context={"request":request})
             serializer.is_valid(raise_exception=True)
             login(request,serializer.validated_data)
             return Response(serializer.data, status=status.HTTP_200_OK)
@@ -50,9 +50,6 @@ class SessionView(ViewSet):
         return Response(status=status.HTTP_403_FORBIDDEN)
     
 class AuthCheckerView(APIView):
-    permission_classes = (AllowAny, )
+    permission_classes = (IsAuthenticated, )
     def put(self,request:HttpRequest):
-        print(request.session.session_key)
-        if bool(request.user and request.user.is_authenticated):
-            return Response(status=status.HTTP_200_OK)
-        return Response(status=status.HTTP_403_FORBIDDEN)
+        return Response(status=status.HTTP_202_ACCEPTED)
