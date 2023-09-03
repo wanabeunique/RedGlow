@@ -6,7 +6,7 @@ export default async function getIsAuth(dispatch){
   axios.defaults.headers.common['X-CSRFToken'] = Cookies.get('csrftoken')
   try{
     const response = await axios.put(
-      'api/user/checker/',
+      `${import.meta.env.VITE_API_SERVER}/user/checker/`,
       {withCredentials: true}
     )
     if (response.status == 200){

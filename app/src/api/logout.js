@@ -7,7 +7,7 @@ export default async function logout(dispatch){
   console.log(Cookies.get('csrftoken'))
   axios.defaults.headers.common['X-CSRFToken'] = Cookies.get('csrftoken')
   const response = await axios.put(
-    'api/user/session/',
+    `${import.meta.env.VITE_API_SERVER}/user/session/`,
     {},
     {
       withCredentials: true,
