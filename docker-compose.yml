@@ -3,12 +3,15 @@ services:
     image: node:latest
     volumes:
       - ./app:/app
+      - '/app/node_modules'
     working_dir: /app
     ports:
       - "5173:5173"
     command: "npm run docker -- --host 0.0.0.0"
     networks:
     - main_network
+    environment:
+      - CHOKIDAR_USEPOLLING=true
   nginx:
     image: nginx:latest
     ports:

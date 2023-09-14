@@ -1,5 +1,6 @@
 import axios from "axios";
 import { setIsAuth } from "../store/reducers/isAuthSlice";
+import { setUsername } from "../store/reducers/userSlice";
 import Cookies from "js-cookie";
 
 export default async function getIsAuth(dispatch){
@@ -11,8 +12,10 @@ export default async function getIsAuth(dispatch){
       {withCredentials: true,headers:{"X-CSRFTOKEN":Cookies.get('csrftoken')}}
     )
     if (response.status == 202){
+      dispatch(setUsername(response.data.username))
       dispatch(setIsAuth(true))
     }
+    console.log(response)
   }
   catch(error){
     console.log(Cookies.get('csrftoken'))

@@ -9,7 +9,7 @@ import { useDispatch } from "react-redux";
 export default function Header() {
   const dispatch = useDispatch()
   const isAuth = useSelector((state) => state.authReducer.data)
-  const nickname = 'wanabeunique'
+  const nickname = useSelector((state) => state.userReducer.username)
   return (
     <header className={styles.header}>
       <div className={`container ${styles.header__container}`}>

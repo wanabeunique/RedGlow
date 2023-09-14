@@ -11,6 +11,7 @@ import Profile from './components/Profile/Profile'
 import Friends from './components/Friends/Friends'
 import EmailConfirm from './components/EmailConfirm/EmailConfirm'
 import Generate from './components/Genarate/Generate'
+import Recovery from './components/Recovery/Recovery'
 import { useEffect } from 'react'
 // import { UseSelector } from 'react-redux/es/hooks/useSelector'
 import getIsAuth from './api/getIsAuth'
@@ -33,7 +34,8 @@ function App() {
             <Route path='/Registration' element={<Registration />}></Route>
             <Route path='/Profile' element={<Profile />}></Route>
             <Route path='/Friends' element={<Friends />}></Route>
-            <Route path='/Generate' element={<Generate />}></Route>      
+            <Route path='/Generate' element={<Generate />}></Route>   
+            <Route path='/Recovery'element={<Recovery />}/>   
           </Route>
         </Routes>
       <Footer />

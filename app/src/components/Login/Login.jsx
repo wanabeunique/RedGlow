@@ -21,6 +21,7 @@ export default function Login() {
         <p className={`${styles.login__title} title`}>Авторизация</p>
         <input placeholder='Логин' className={`${styles.login__input} input`} type="text" {...register("username")}/>
         <input placeholder='Пароль' className={`${styles.login__input} input`} type="text" {...register("password")}/>
+        <Link to={'/recovery'} className={`text ${styles.login__link}`}>Забыл Пароль?</Link>
         <button type='submit' className={`${styles.login__button} button`}>Войти</button>
         <div className={styles.login__reg}>
           <p className='text'>Нет аккаунта?</p>
