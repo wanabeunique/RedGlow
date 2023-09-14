@@ -6,6 +6,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.views import APIView
 from django.contrib.auth import authenticate, login
+from apps.authentication.sending import sendInfo
 
 class ChangePasswordAPI(generics.UpdateAPIView):
     serializer_class = ChangePasswordSerializer
@@ -28,6 +29,10 @@ class ChangePasswordAPI(generics.UpdateAPIView):
         newPassword = serializer.data.get("newPassword")
         self.object.set_password(newPassword)
         self.object.save()
+        sendInfo(request.user.email,request.user.username,
+                info="Пароль от вашего аккаунта был изменён",
+                subject='Смена пароля'
+        )
         userAuth = authenticate(username=self.object.username,password=newPassword)
         login(request,userAuth)
 

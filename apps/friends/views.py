@@ -8,13 +8,20 @@ from rest_framework.response import Response
 from rest_framework import status
 from .models import Friendship
 from django.db.models import Q
+from channels.layers import get_channel_layer
+from asgiref.sync import async_to_sync
+from django.shortcuts import render
 
 class InviteFriendView(ViewSet):
     serializer_class = FriendshipSerializer
     permission_classes = (IsAuthenticated,)
     def create(self,request):
-        serializer = self.serializer_class(data={'inviter':request.user.username,'accepter':request.data['accepter']})
+        inviter = request.user.username
+        accepter = request.data['accepter']
+        serializer = self.serializer_class(data={'inviter': inviter,'accepter': accepter})
         serializer.is_valid(raise_exception=True)
+        channel_layer = get_channel_layer()
+        async_to_sync(channel_layer.group_send)(f"friends_{accepter}",{'type':'friend.invite','invite':{'username':inviter}})
         return serializer.create(serializer.validated_data)
     def update(self,request):
         serializer = self.serializer_class(data={'inviter':request.user.username,'accepter':request.data['accepter']})
@@ -39,9 +46,9 @@ class GetFriendshipStatusView(APIView):
 class FriendListView(APIView):
     permission_classes = (IsAuthenticated, )
     serializer_class = UserSerializer
-    def get(self, request, targetName=None):
+    def get(self, request, username=None):
         try:
-            targetId = User.objects.get(username=targetName).id
+            targetId = User.objects.get(username=username).id
             friendships = Friendship.objects.filter(
                 (Q(inviter=targetId) | Q(accepter=targetId)) & Q(status=1)
             )
@@ -49,12 +56,11 @@ class FriendListView(APIView):
             friends = [
                 {
                     'username': friendship.inviter.username if friendship.inviter != request.user else friendship.accepter.username,
-                    'photo': friendship.inviter.photo.url if friendship.inviter != request.user else friendship.accepter.photo.url
                 }
                 for friendship in friendships
             ]
 
-            return Response({'friend_usernames': friends}, status=status.HTTP_200_OK)
+            return Response(friends, status=status.HTTP_200_OK)
         except User.DoesNotExist:
             return Response({'detail':"Not found"},status=status.HTTP_404_NOT_FOUND)
         
@@ -66,3 +72,8 @@ class FindUserView(APIView):
         if not users.exists():
             return Response({"detail":"Not found"},status=status.HTTP_404_NOT_FOUND)
         return Response(users.values('username','photo'),status=status.HTTP_200_OK)
+        
+
+def test(request):
+    return render(request,template_name='test.html')
+    

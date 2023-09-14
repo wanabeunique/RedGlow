@@ -1,10 +1,11 @@
 from rest_framework import serializers
 from django.contrib.auth import authenticate
 from .models import User
-from .sending import connectToRedis, sendLink
+from .sending import connectToRedis, sendLink, sendInfo
 from cryptography.fernet import Fernet, InvalidToken
 from django.conf import settings
 import json
+from django.contrib.gis.geoip2 import GeoIP2
 
 class UserSignUpSerializer(serializers.ModelSerializer):
     username = serializers.CharField(max_length=255, min_length=5)
@@ -60,8 +61,17 @@ class KeySignUpSerializer(serializers.Serializer):
     password = serializers.CharField(write_only=True,required=False)
     email = serializers.CharField(required=False)
     phoneNumber = serializers.CharField(required=False)
+    country = serializers.CharField(required=False)
 
     def validate(self, data):
+        request = self.context.get('request')
+        x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+        if x_forwarded_for:
+            ip = x_forwarded_for.split(',')[0]
+        else:
+            ip = request.META.get('REMOTE_ADDR')
+        g = GeoIP2()
+        country_code = g.country_code(ip)
         key = data.get('key')
         if key is None:
             raise serializers.ValidationError(
@@ -76,7 +86,8 @@ class KeySignUpSerializer(serializers.Serializer):
             )
         r = connectToRedis()
         if r.exists(email):
-            data = json.loads(r.get(email))
+            tmp = json.loads(r.get(email))
+            data = tmp | {"country":country_code}
             r.delete(email)
         else:
             raise serializers.ValidationError(
@@ -89,6 +100,10 @@ class KeySignUpSerializer(serializers.Serializer):
         user = User.objects.create(**validated_data)
         user.set_password(validated_data['password'])
         user.save()
+        sendInfo(user.email, user.username,
+                info="Вы успешно зарегистрировались на нашей платформе!",
+                subject='Успешная регистрция на нашей платформе'
+        )
         return user
 
 class UserLogInSerializer(serializers.Serializer):

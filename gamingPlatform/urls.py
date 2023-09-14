@@ -25,3 +25,4 @@ urlpatterns = [
     path('',include('apps.userProfile.urls')),
     path('',include('apps.friends.urls')),
 ]
+

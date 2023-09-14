@@ -7,7 +7,7 @@ import urllib.parse
 import json
 
 
-domen = 'http://localhost:5173'
+domen = 'https://localhost'
 
 def generateKey(email):
     f = Fernet(settings.CR_KEY)
@@ -28,7 +28,7 @@ def sendLink(email, username, forWhat, subject,toSave, urlStructure):
 
     url = f"{domen}{urlStructure}?key={key}"
     forWhat = url + "\n" + forWhat 
-    message = render_to_string('emailMessage.html',
+    message = render_to_string('emailMessageLink.html',
         {
             'username': username,
             'forWhat':forWhat,
@@ -37,8 +37,15 @@ def sendLink(email, username, forWhat, subject,toSave, urlStructure):
     email = EmailMessage(subject,message, from_email='semen.vrazhkin@yandex.ru',to=[email,])
     email.send()
 
-def sendSmth(email, username, smth, subject):
-    pass
+def sendInfo(email, username, info, subject):
+    message = render_to_string('emailMessageInfo.html',
+        {
+            'username': username,
+            'info': info
+        }
+    )
+    email = EmailMessage(subject,message, from_email='semen.vrazhkin@yandex.ru',to=[email,])
+    email.send()
 
 def connectToRedis():
     return redis.StrictRedis(host='redis', port=6379, db=1, socket_timeout=None, connection_pool=None, charset='utf-8', errors='strict', unix_socket_path=None)

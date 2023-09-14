@@ -24,11 +24,11 @@ services:
       context: .
       dockerfile: Dockerfile
     container_name: django-container
-    command: ["sh", "-c", "/usr/local/bin/wait-for-it.sh db:5432 -t 60 -- /usr/local/bin/wait-for-it.sh redis:6379 -t 60 -- python manage.py makemigrations --noinput && python manage.py migrate --noinput && python manage.py runsslserver 0.0.0.0:8000 --certificate server.crt --key server.key"]
     volumes:
       - .:/app
     environment:
       - DJANGO_ALLOWED_HOSTS=127.0.0.1,localhost
+    command: ["sh", "-c", "/usr/local/bin/wait-for-it.sh db:5432 -t 15 -- /usr/local/bin/wait-for-it.sh redis:6379 -t 15 -- python manage.py makemigrations --noinput && python manage.py migrate --noinput && daphne -e ssl:8000:server.key:server.crt gamingPlatform.asgi:application"]
     ports:
       - "8000:8000"
     depends_on:

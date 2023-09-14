@@ -4,9 +4,9 @@ from apps.authentication.models import User
 class UserProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ('username','phoneNumber','email','photo','decency','reports','subExpiresIn')
+        fields = ('username','phoneNumber','email','decency','reports','subExpiresIn')
 
 class UserPhotoSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ('photo')
+        fields = ('photo',)

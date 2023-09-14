@@ -562,20 +562,20 @@ paths:
       tags:
         - Friends
       parameters:
-          - in: header
-            name: X-CSRFToken
-            description: CSRF token
-            required: true
-            schema:
-              type: string
-              example: saf141kncaskn214
-          - in: path
-            name: username
-            description: Имя пользователя
-            required: true
-            schema:
-              type: string
-              example: kirin
+        - in: header
+          name: X-CSRFToken
+          description: CSRF token
+          required: true
+          schema:
+            type: string
+            example: saf141kncaskn214
+        - in: path
+          name: username
+          description: Имя пользователя
+          required: true
+          schema:
+            type: string
+            example: kirin
       responses:
         200:
           description: Ответ со статусом дружбы
@@ -585,7 +585,109 @@ paths:
                 $ref: "#/components/schemas/FriendshipStatus"
         default:
           description: Все остальное
-    
+  /user:
+    get:
+      summary: Получение данных пользователя
+      operationId: getUser
+      tags:
+        - UserProfile
+      parameters:
+        - in: header
+          name: X-CSRFToken
+          description: CSRF token
+          required: true
+          schema:
+            type: string
+            example: saf141kncaskn214
+      responses:
+        200:
+          description: Данные пользователя
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserProfile"
+        403:
+          description: Запрос от неавторизованного пользователя
+        default:
+          description: Все остальное
+  /user/photo/:
+    put:
+      summary: Сменить аватарку пользователя
+      operationId: changeUserPhoto
+      tags:
+        - UserProfile
+      parameters:
+        - in: header
+          name: X-CSRFToken
+          description: CSRF token
+          required: true
+          schema:
+            type: string
+            example: saf141kncaskn214
+      requestBody:
+        required: true
+        content:
+          text/plain:
+            schema:
+              type: object
+              properties:
+                photo:
+                  type: string
+                  format: binary
+                  example: КАРТИНКА ТУТ!
+      responses:
+        200:
+          description: Успешная смена аватарки
+          content:
+            text/plain:
+              schema:
+                type: object
+                properties:
+                  photo:
+                    type: string
+                    example: https://127.0.0.1:8000/image.img
+        403:
+          description: Запрос от неавторизованного пользователя
+        default:
+          description: Все остальное
+  /user/{username}/photo:
+    get:
+      summary: Получение фото пользователя
+      tags:
+        - UserProfile
+      operationId: getUserPhoto
+      parameters:
+        - in: header
+          name: X-CSRFToken
+          description: CSRF token
+          required: true
+          schema:
+            type: string
+            example: saf141kncaskn214
+        - in: path
+          name: username
+          description: Имя пользователя
+          required: true
+          schema:
+            type: string
+            example: kirin
+      responses:
+        200:
+          description: Успешно полученная аватарка
+          content:
+            text/plain:
+              schema:
+                type: object
+                properties:
+                  photo:
+                    type: string
+                    example: https://127.0.0.1:8000/image.img
+        403:
+          description: Запрос от неавторизованного пользователя
+        404:
+          description: Юзер не найден
+        default:
+          description: Все остальное
 
       
 
@@ -653,9 +755,28 @@ components:
         username:
           type: string
           example: kirin
-        photo:
+    UserProfile:
+      type: object
+      properties:
+        username:
           type: string
-          example: (poka net example, potom dobavlu)
+          example: kirin
+        phoneNumber:
+          type: string
+          example: +79001234512
+        email:
+          type: string
+          example: 123@gmail.com
+        decency:
+          type: integer
+          example: 10000
+        reports:
+          type: integer
+          example: 8
+        subExpiresIn:
+          type: string
+          example: 00:00:00
 
+        
 
 

@@ -14,7 +14,8 @@ class User(AbstractUser):
     isAdmin = models.BooleanField(default=False)
     subExpiresIn = models.TimeField(default='00:00:00')
     inGame = models.BooleanField(default=False)
-    isBanned = models.BooleanField(default=False)
+    country = models.CharField(null=True)
+    banExpiresIn = models.TimeField(default='00:00:00')
     voteExpiresIn = models.TimeField(default='00:00:00')
     is_staff = None
     first_name = None

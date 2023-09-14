@@ -17,7 +17,7 @@ class SignUpView(ViewSet):
         serializer.save()
         return Response({"detail":"Ссылка для подтверждения регистрации отправлена вам на почту"},status=status.HTTP_202_ACCEPTED)
     def update(self, request):
-        serializer = KeySignUpSerializer(data=request.data)
+        serializer = KeySignUpSerializer(data=request.data,context={'request':request})
         serializer.is_valid(raise_exception=True)
         user = serializer.save()
         login(request,user)

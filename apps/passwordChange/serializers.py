@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from apps.authentication.models import User
-from apps.authentication.sending import sendLink, connectToRedis
+from apps.authentication.sending import sendLink, connectToRedis, sendInfo
 from cryptography.fernet import Fernet, InvalidToken
 from django.conf import settings
 
@@ -84,3 +84,7 @@ class ForgotPasswordChangeSerializer(serializers.Serializer):
         user = User.objects.get(email=self.validated_data['email'])
         user.set_password(self.validated_data['password'])
         user.save()
+        sendInfo(user.email,user.username,
+                info="Пароль от вашего аккаунта был изменён",
+                subject='Смена пароля'
+        )

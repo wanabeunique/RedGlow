@@ -7,3 +7,12 @@ django-cors-headers==4.2.0
 cryptography==3.4.8
 django-cors-headers==4.2.0
 django-sslserver==0.22
+channels==4.0.0
+daphne==4.0.0
+channels_redis==4.1.0
+django-debug-toolbar==4.2.0
+django-channels-panel==0.0.5
+watchdog==3.0.0
+asgiref==3.7.2
+whitenoise==6.5.0
+geoip2==4.7.0
