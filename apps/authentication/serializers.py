@@ -5,7 +5,7 @@ from .sending import connectToRedis, sendLink, sendInfo
 from cryptography.fernet import Fernet, InvalidToken
 from django.conf import settings
 import json
-from django.contrib.gis.geoip2 import GeoIP2
+import requests
 
 class UserSignUpSerializer(serializers.ModelSerializer):
     username = serializers.CharField(max_length=255, min_length=5)
@@ -61,7 +61,7 @@ class KeySignUpSerializer(serializers.Serializer):
     password = serializers.CharField(write_only=True,required=False)
     email = serializers.CharField(required=False)
     phoneNumber = serializers.CharField(required=False)
-    country = serializers.CharField(required=False)
+    country = serializers.CharField(required=False, write_only=True)
 
     def validate(self, data):
         request = self.context.get('request')
@@ -70,8 +70,11 @@ class KeySignUpSerializer(serializers.Serializer):
             ip = x_forwarded_for.split(',')[0]
         else:
             ip = request.META.get('REMOTE_ADDR')
-        g = GeoIP2()
-        country_code = g.country_code(ip)
+        apiResponse = requests.get(f'http://ip-api.com/json/{ip}').json()
+        if apiResponse.get('status') == 'success':
+            country = apiResponse.get("country")
+        else:
+            country = None
         key = data.get('key')
         if key is None:
             raise serializers.ValidationError(
@@ -87,7 +90,7 @@ class KeySignUpSerializer(serializers.Serializer):
         r = connectToRedis()
         if r.exists(email):
             tmp = json.loads(r.get(email))
-            data = tmp | {"country":country_code}
+            data = tmp | {"country":country}
             r.delete(email)
         else:
             raise serializers.ValidationError(

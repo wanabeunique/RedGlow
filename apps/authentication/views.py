@@ -7,6 +7,8 @@ from .serializers import UserSignUpSerializer, UserLogInSerializer, KeySerialize
 from apps.passwordChange.permissions import NotAuthenticated
 from rest_framework import status
 from django.http import HttpRequest
+from ipware import get_client_ip
+import requests
 
 class SignUpView(ViewSet):
     permission_classes = (NotAuthenticated,)

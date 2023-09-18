@@ -49,10 +49,3 @@ def sendInfo(email, username, info, subject):
 
 def connectToRedis():
     return redis.StrictRedis(host='redis', port=6379, db=1, socket_timeout=None, connection_pool=None, charset='utf-8', errors='strict', unix_socket_path=None)
-
-# CR_KEY = Fernet.generate_key()
-# while True:
-#     f = Fernet(CR_KEY)
-#     token = f.encrypt(b"kirin3243@gmail.com") 
-#     print(token.decode('utf-8'))
-#     print(f.decrypt(token).decode('utf-8'))

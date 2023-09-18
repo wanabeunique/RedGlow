@@ -28,22 +28,20 @@ services:
       - .:/app
     environment:
       - DJANGO_ALLOWED_HOSTS=127.0.0.1,localhost
-    command: ["sh", "-c", "/usr/local/bin/wait-for-it.sh db:5432 -t 15 -- /usr/local/bin/wait-for-it.sh redis:6379 -t 15 -- python manage.py makemigrations --noinput && python manage.py migrate --noinput && daphne -e ssl:8000:server.key:server.crt gamingPlatform.asgi:application"]
+    command: ["sh", "-c", "/usr/local/bin/wait-for-it.sh db:5432 -t 5 -- /usr/local/bin/wait-for-it.sh redis:6379 -t 5 -- python manage.py makemigrations --noinput && python manage.py migrate --noinput && daphne -e ssl:8000:server.key:server.crt gamingPlatform.asgi:application"]
     ports:
       - "8000:8000"
     depends_on:
       - db
       - redis
-    networks:
-      - djangonetwork
     restart: always
     links:
       - db:db
       - redis:redis
-  
+    networks:
+      - djangonetwork
 volumes:
   pgdbdata: null
-
 networks:
   djangonetwork:
     driver: bridge
