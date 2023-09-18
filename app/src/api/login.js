@@ -2,6 +2,7 @@ import axios from "axios";
 import { setIsAuth } from "../store/reducers/isAuthSlice";
 import { setUsername } from "../store/reducers/userSlice";
 import { toast } from "react-toastify";
+import connectSockets from "../socket/connectSockets";
 
 export default async function login(data, dispatch){
   axios.post(
@@ -14,6 +15,7 @@ export default async function login(data, dispatch){
     dispatch(setUsername(response.data.username))
     console.log(response)
     toast.success('Вы успешно авторизировались')
+    connectSockets()
     return response.status
   })
 }

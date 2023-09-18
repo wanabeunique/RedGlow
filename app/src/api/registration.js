@@ -5,7 +5,7 @@ import { toast } from "react-toastify";
 export default async function registrationSubmit(data) {
   try {
     const response = await axios.post(
-      `${import.meta.env.VITE_API_SERVER}/users`,
+      `${import.meta.env.VITE_API_SERVER}/users/`,
       data);
     toast.success('Потверждение регистрации было отправлено на почту');
     return response; // Возвращаем объект ответа

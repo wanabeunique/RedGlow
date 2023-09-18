@@ -1,7 +1,12 @@
 import './App.sass'
+
+import { useEffect } from 'react'
+import { Routes, Route} from 'react-router-dom'
+import { useDispatch } from 'react-redux'
+import { ToastContainer } from 'react-toastify'
+
 import Footer from './components/Footer/Footer'
 import Headbook from './components/Headbook/Headbook'
-import { Routes, Route} from 'react-router-dom'
 import Layout from './components/Layout/Layout'
 import Homepage from './components/Homepage/Homepage'
 import Login from './components/Login/Login'
@@ -12,20 +17,27 @@ import Friends from './components/Friends/Friends'
 import EmailConfirm from './components/EmailConfirm/EmailConfirm'
 import Generate from './components/Genarate/Generate'
 import Recovery from './components/Recovery/Recovery'
-import { useEffect } from 'react'
-// import { UseSelector } from 'react-redux/es/hooks/useSelector'
 import getIsAuth from './api/getIsAuth'
-import { useDispatch } from 'react-redux'
+import connectSockets from './socket/connectSockets'
+import { useSelector } from 'react-redux'
+
+
 
 function App() {
+  const isAuth = useSelector((state) => state.authReducer.data)
   const dispatch = useDispatch()
   useEffect(() => {
     getIsAuth(dispatch)
   }, [])
+  useEffect(() => {
+    if (isAuth){
+      connectSockets()
+    }
+  }, [isAuth])
   return (
     <>
         <Routes>
-          <Route path='/' element={<Layout/>}>
+            <Route path='/' element={<Layout/>}>
             <Route path='/signUp/confirm' element={<EmailConfirm />}/>
             <Route path='*' element={<NotFound />}></Route>
             <Route index element={<Homepage />} />
@@ -38,6 +50,7 @@ function App() {
             <Route path='/Recovery'element={<Recovery />}/>   
           </Route>
         </Routes>
+      <ToastContainer />
       <Footer />
     </>
   )
