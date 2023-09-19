@@ -3,11 +3,7 @@ import Cookies from "js-cookie"
 import { toast } from "react-toastify"
 
 export default async function sendFriendRequest(nickname) {
-  nickname.trim()
-  const data = {"accepter": nickname}
-  console.log(data)
-  console.log(nickname)
-  console.log(typeof(nickname))
+  const data = {"accepter": nickname.trim()}
   axios.defaults.headers.common['csrftoken'] = Cookies.get('csrftoken')
   try {
     const response = await axios.post(
@@ -15,10 +11,8 @@ export default async function sendFriendRequest(nickname) {
       data,
       {withCredentials: true, headers:{"X-CSRFTOKEN":Cookies.get('csrftoken')}}
     )
-    console.log(response)
-    toast.success('Запрос успешно отправлен')
+    toast.success(`Запрос пользователю ${data.accepter} отправлен`)
   } catch (error) {
-    console.log(error)
     toast.error('Ошибка в запросе')
   }
 }
