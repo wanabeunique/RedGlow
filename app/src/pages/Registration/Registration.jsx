@@ -6,6 +6,7 @@ import { set, useForm } from "react-hook-form"
 import registrationSubmit from "../../api/registration"
 import { ToastContainer} from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { Link } from 'react-router-dom'
 
 export default function Registration() {
   const [isCaptchaSuccessful, setIsCaptchaSuccess] = useState(false)
@@ -32,7 +33,7 @@ export default function Registration() {
         <div className={`${styles.registration__left} ${styles.left}`}>
           <p className={`title ${styles.left__title}`}>Добро пожаловать!</p>
           <p className={`text ${styles.left__subtitle}`}>Чтобы оставаться с нами, пожалуйста войдите в свой аккаунт.</p>
-          <p className={`button ${styles.left__button}`}>Войти</p>
+          <Link to='/login' className={`button ${styles.left__button}`}>Войти</Link>
         </div>
         <div className={`${styles.registration__right} ${styles.right}`}>
           <p className={`title ${styles.right__title}`}>Создайте Аккаунт</p>

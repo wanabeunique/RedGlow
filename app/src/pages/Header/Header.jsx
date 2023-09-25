@@ -22,19 +22,38 @@ export default function Header() {
           <li className={styles.header__item}><NavLink to='/' className={`text ${styles.header__link}`}>Главная</NavLink></li>
           <li className={styles.header__item}><NavLink to='/Generate' className={`text ${styles.header__link}`}>Генерация наций</NavLink></li>
           <li className={styles.header__item}><NavLink to='/headbook' className={`text ${styles.header__link}`}>Справочник</NavLink></li>
+          {isAuth ?
+          (
+            <>
+              <li className={styles.header__item}><NavLink to='/Friends' className={`text ${styles.header__link}`}>Друзья</NavLink></li>
+              <li className={styles.header__item}><NavLink to='/Play' className={`text ${styles.header__link}`}>Играть</NavLink></li>
+              <li className={styles.header__item} onClick={() => {logout(dispatch)}}><NavLink to='/headbook' className={`text ${styles.header__link}`}>Выйти</NavLink></li>
+            </>
+          )
+          :  (
+            <>
+            </>
+          )     
+          }
         </div>
         <div className="header__right">
         <ul className={styles.header__items}>
           {isAuth ?
           (
             <>
-              <li className={styles.header__item} onClick={() => {logout(dispatch)}}><NavLink to='/headbook' className={`text ${styles.header__link}`}>Выйти</NavLink></li>
-              <li className={styles.header__item}><NavLink to='/Friends' className={`text ${styles.header__link}`}>Друзья</NavLink></li>
-              <li className={styles.header__item}><NavLink to='/Play' className={`text ${styles.header__link}`}>Играть</NavLink></li>
               <li className={`${styles.header__item}`}>
                 <NavLink to='/Profile' className={`text ${styles.header__link} ${styles.header__profile}`}>
-                  <p className='text'>{nickname}</p>
-                  <Avatar />
+                  {/* <Avatar /> */}
+                  <svg xmlns="http://www.w3.org/2000/svg" width="43" height="43" viewBox="0 0 43 43" fill="none">
+                    <circle cx="21.5" cy="21.5" r="20.5" stroke="white" stroke-width="2"/>
+                    <path opacity="0.16" d="M11.4667 28.4235C11.4667 27.0714 12.0038 25.7746 12.9599 24.8186C13.916 23.8625 15.2127 23.3254 16.5648 23.3254H26.761C28.1131 23.3254 29.4098 23.8625 30.3659 24.8186C31.322 25.7746 31.8591 27.0714 31.8591 28.4235C31.8591 29.0995 31.5906 29.7479 31.1125 30.2259C30.6345 30.704 29.9861 30.9725 29.3101 30.9725H14.0157C13.3397 30.9725 12.6913 30.704 12.2133 30.2259C11.7352 29.7479 11.4667 29.0995 11.4667 28.4235Z" fill="white"/>
+                    <path d="M11.4667 28.4235C11.4667 27.0714 12.0038 25.7746 12.9599 24.8186C13.916 23.8625 15.2127 23.3254 16.5648 23.3254H26.761C28.1131 23.3254 29.4098 23.8625 30.3659 24.8186C31.322 25.7746 31.8591 27.0714 31.8591 28.4235C31.8591 29.0995 31.5906 29.7479 31.1125 30.2259C30.6345 30.704 29.9861 30.9725 29.3101 30.9725H14.0157C13.3397 30.9725 12.6913 30.704 12.2133 30.2259C11.7352 29.7479 11.4667 29.0995 11.4667 28.4235Z" stroke="white" stroke-width="2" stroke-linejoin="round"/>
+                    <path d="M21.2196 20.333C23.668 20.333 25.6528 18.3482 25.6528 15.8998C25.6528 13.4515 23.668 11.4667 21.2196 11.4667C18.7713 11.4667 16.7865 13.4515 16.7865 15.8998C16.7865 18.3482 18.7713 20.333 21.2196 20.333Z" stroke="white" stroke-width="2"/>
+                  </svg>
+                  <div className={styles.header__profile_fields}>
+                    <p className={`text ${styles.header__profile_nick}`}>{nickname}</p>
+                    <p className={styles.header__profile_points}>R 0</p>
+                  </div>
                 </NavLink>
               </li>
             </>
