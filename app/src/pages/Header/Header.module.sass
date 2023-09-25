@@ -1,5 +1,5 @@
 .header
-  height: 70px
+  height: var(--header-height)
   background: var(--main-color)
   width: 100%
   &__container
@@ -15,12 +15,10 @@
     padding: 0
     gap: var(--small-offset)
   &__link
+    color: var(--secondary-color)
     text-decoration: none
-    &:hover
-      color: var(--white-color)
-      transition: color .5s linear
   &__logo
-    color: var(--font-color)
+    color: var(--secondary-color)
     font-size: 30px
     text-decoration: none
   &__item
@@ -31,3 +29,7 @@
     display: flex
     gap: var(--tiny-offset)
     align-items: center
+  &__left
+    display: flex
+    align-items: center
+    gap: var(--middle-offset)

@@ -13,13 +13,18 @@ export default function Header() {
   return (
     <header className={styles.header}>
       <div className={`container ${styles.header__container}`}>
-        <Link to={'/'} className={styles.header__logo}>
-          LOGO
-        </Link>
-        <ul className={styles.header__items}>
+        <div className={`${styles.header__left}`}>
+          <Link to={'/'} className={styles.header__logo}>
+            <svg xmlns="http://www.w3.org/2000/svg" width="27" height="37" viewBox="0 0 27 37" fill="none">
+              <path d="M25.5939 13.4688H17.0275L26.4791 21.8672C26.6836 22.0475 26.8284 22.2858 26.8943 22.5503C26.9601 22.8149 26.944 23.0932 26.8479 23.3484C26.7519 23.6036 26.5805 23.8235 26.3565 23.9789C26.1325 24.1344 25.8666 24.218 25.5939 24.2188H14.8439V34.9688C14.8441 35.2347 14.7654 35.4947 14.6178 35.7159C14.4702 35.937 14.2602 36.1094 14.0146 36.2112C13.7689 36.313 13.4985 36.3396 13.2377 36.2877C12.9769 36.2357 12.7374 36.1076 12.5495 35.9195L0.455728 23.8257C0.330982 23.7008 0.232063 23.5526 0.164623 23.3895C0.0971827 23.2263 0.0625427 23.0515 0.0626815 22.875V12.125C0.0626815 11.7686 0.204255 11.4268 0.456257 11.1748C0.708259 10.9228 1.05005 10.7813 1.40643 10.7813H9.97284L0.514517 2.38282C0.309609 2.20211 0.164654 1.96323 0.0989755 1.69803C0.0332975 1.43283 0.0500179 1.15391 0.146907 0.898461C0.243797 0.643008 0.416252 0.423158 0.641281 0.268221C0.866311 0.113283 1.13322 0.0306211 1.40643 0.0312536H25.5939C25.9503 0.0312536 26.2921 0.172827 26.5441 0.424829C26.7961 0.676831 26.9377 1.01862 26.9377 1.375V12.125C26.9377 12.4814 26.7961 12.8232 26.5441 13.0752C26.2921 13.3272 25.9503 13.4688 25.5939 13.4688Z" fill="#B32428"/>
+            </svg>
+          </Link>
           <li className={styles.header__item}><NavLink to='/' className={`text ${styles.header__link}`}>Главная</NavLink></li>
           <li className={styles.header__item}><NavLink to='/Generate' className={`text ${styles.header__link}`}>Генерация наций</NavLink></li>
           <li className={styles.header__item}><NavLink to='/headbook' className={`text ${styles.header__link}`}>Справочник</NavLink></li>
+        </div>
+        <div className="header__right">
+        <ul className={styles.header__items}>
           {isAuth ?
           (
             <>
@@ -42,6 +47,7 @@ export default function Header() {
           )     
           }
         </ul>
+        </div>
       </div>
     </header>
   )

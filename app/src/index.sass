@@ -1,17 +1,24 @@
 :root 
-  --bg-color: #222226
-  --main-color: #333336
-  --font-color: #999
-  --secondary-font-color: #777
-  --white-color: #fff
+  --main-color: #1C1C1C
+  --secondary-color: #FFF
+
+  --main-red-color: #B32428
+  --secondary-red-color: #D32C07
+
+  --gray-color: #D9D9D9
   // offsets
   --tiny-offset: 10px
   --small-offset: 20px
-  --middle-offset: 30px
+  --middle-offset: 40px
   --big-offset: 50px
 
   --container-offset: 70px
 
+  --header-height: 90px
+
+  --red-gradient: linear-gradient(90deg, #B32428 3.09%, rgba(198, 46, 31, 0.93) 41.44%, #B33E24 95.13%)
+
+  --border-radius: 20px
 @import 'fonts.css'
 
 *
@@ -21,52 +28,75 @@ body
   font-family: 'Open Sans'
   background: var(--bg-color)
 
+#root
+  min-height: 100vh
+  position: relative
+  &::before
+    z-index: -1
+    content: ''
+    position: absolute
+    height: 100%
+    width: 100%
+    display: block
+    background: radial-gradient(65% 60.16% at 50% 44.19%, rgba(0, 0, 0, 0.00) 0%, rgba(0, 0, 0, 0.62) 0.01%, rgba(0, 0, 0, 0.83) 100%)
+    background-image: url('./../public/bg.png')
+    filter: blur(50px)
+    background-repeat: no-repeat
+    background-size: cover
+
 @Layer components
   .container
-    max-width: 1540px
+    max-width: 1260px
     padding: 0 10px
     margin: 0 auto
     
   .text
-    font-size: 16px
+    font-size: 21px
     font-family: 'Open Sans'
-    color: var(--font-color)
+    color: var(--secondary-color)
     margin: 0
 
   .title
-    font-size: 24px
+    font-size: 34px
+    font-weight: 700
+    letter-spacing: 0.6px
     font-family: 'Open Sans'
-    color: var(--font-color)
     margin: 0
 
   .subtitle
     font-size: 20px
     font-family: 'Open Sans'
-    color: var(--font-color)
     margin: 0
 
+  .active
+    color: var(--secondary-red-color)
+
+  .modal-wrapper
+    height: max-content
+    min-height: calc(70vh - var(--header-height))
+    width: 60vw
+    margin: auto
+    margin-top: calc((30vh  - var(--header-height)) / 2)
+
   .button
-    display: flex
-    width: 100%
-    align-items: center
-    justify-content: center
-    background: var(--font-color)
-    color: var(--main-color)
-    font-size: 20px
-    height: 50px
-    border-radius: 10px
-    border: none
+    cursor: pointer
+    padding: 15px 59px
+    border-radius: var(--border-radius)
+    background: none
+    border: 1px solid var(--secondary-color)
+    color: var(--secondary-color)
+    font-size: 16px
+    font-weight: 500
 
   .input
     width: 100%
-    background: var(--font-color)
-    border-radius: 10px
-    color: var(--main-color)
+    background: var(--gray-color)
+    color: rgba(0, 0, 0, 0.40)
+    padding: 14px 12px
     border: none
-    height: 50px
-    padding: 10px
+    font-weight: 700
     &::placeholder
-      color: var(--secondary-font-color)
+      color: rgba(0, 0, 0, 0.40)
 
 @media (max-width: 768px)
   .text
@@ -81,5 +111,3 @@ a,button
     filter: contrast(2)
     transition: filter 3s ease-out
 
-.active
-  color: var(--white-color)
