@@ -1,0 +1,51 @@
+.header
+  height: var(--header-height)
+  background: var(--main-color)
+  width: 100%
+  &__container
+    display: flex
+    justify-content: space-between
+    gap: var(--small-offset)
+    height: 100%
+    align-items: center
+  &__items
+    list-style: none
+    display: flex
+    margin: 0
+    padding: 0
+    gap: var(--small-offset)
+  &__link
+    color: var(--secondary-color)
+    text-decoration: none
+  &__logo
+    color: var(--secondary-color)
+    font-size: 30px
+    text-decoration: none
+  &__item
+    display: flex
+    align-items: center
+    justify-content: center
+  &__profile
+    display: flex
+    gap: var(--tiny-offset)
+    align-items: center
+    max-height: 43px
+    &_fields
+      display: flex
+      flex-direction: column
+      justify-content: space-between
+      height: 43px
+    &_nick
+      font-weight: 500
+      font-size: 14px
+      letter-spacing: .3px
+    &_points
+      font-size: 15px
+      color: var(--main-red-color)
+      font-weight: 500
+      letter-spacing: .3px
+      margin: 0
+  &__left
+    display: flex
+    align-items: center
+    gap: var(--middle-offset)
