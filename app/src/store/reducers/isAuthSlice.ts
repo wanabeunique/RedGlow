@@ -1,6 +1,10 @@
-import { createSlice } from '@reduxjs/toolkit'
+import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 
-const initialState = {
+type isAuthState = {
+  data: false
+}
+
+const initialState: isAuthState = {
   data: false,
 }
 
@@ -8,7 +12,7 @@ export const isAuthSlice = createSlice({
   name: 'isAuth',
   initialState,
   reducers: {
-    setIsAuth(state, action) {
+    setIsAuth(state, action: PayloadAction<boolean>) {
       state.data = action.payload;
     },
   }

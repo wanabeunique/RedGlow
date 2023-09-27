@@ -6,8 +6,18 @@ import { useState } from 'react'
 import getProfile from '../../api/getProfile'
 import { useEffect } from 'react'
 
+interface IUser{
+  username: string,
+  phoneNumber: string,
+  email: string,
+  decency: number, 
+  reports: number,
+  subExpiresIn: string
+}
+
 export default function Profile() {
-  const [user, setUser] = useState('')
+  const [user, setUser] = useState<IUser>()
+
   const [isModalOpen, setIsModalOpen] = useState(false);
   useEffect(() => {
     const getUser = async () => {
@@ -26,6 +36,7 @@ export default function Profile() {
   const handleCancel = () => {
     setIsModalOpen(false);
   };
+  
   return (
     <div className={`${styles.profile}`}>
       <div className={styles.profile__top}> 
@@ -35,21 +46,31 @@ export default function Profile() {
             <Avatar size={160} />
           </div>
           <div className={styles.profile__top_text}>
-            <p className={`${styles.profile__top_nickname} title`}>{user.username}</p>
+            <p className={`${styles.profile__top_nickname} title`}>
+              {
+                user?
+                (<span>{user.username}</span>)
+                :null
+              }
+            </p>
             <p className={`${styles.profile__top_registratedTime} text`}>На сайте с 03.01.2005</p>
           </div>
         </div>
       </div>
       <div className={`container ${styles.profile__content}`}>
         <div className={`${styles.profile__settings} ${styles.settings}`}>
-          <div className={styles.settings__change_password}>
-            <div>
-              <p className='text'>{user.phoneNumber}</p>
-              <p className='text'>{user.email}</p>
-              <p className='text'>{user.decency}</p>
-              <p className='text'>{user.reports}</p>
-              <p className='text'>{user.subExpiresIn}</p>
-            </div>
+          <div className={styles.settings__change_password}>     
+            {
+              user? (
+              <div>
+                <p className='text'>{user.phoneNumber}</p>
+                <p className='text'>{user.email}</p>
+                <p className='text'>{user.decency}</p>
+                <p className='text'>{user.reports}</p>
+                <p className='text'>{user.subExpiresIn}</p>
+              </div>
+              ):null     
+            }
             <Button type="primary" onClick={showModal}>
               Изменить пароль
             </Button>
