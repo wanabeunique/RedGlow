@@ -5,15 +5,8 @@ import {  Button, Modal  } from 'antd'
 import { useState } from 'react'
 import getProfile from '../../api/getProfile'
 import { useEffect } from 'react'
+import IUser from '../../interfaces/IUser'
 
-interface IUser{
-  username: string,
-  phoneNumber: string,
-  email: string,
-  decency: number, 
-  reports: number,
-  subExpiresIn: string
-}
 
 export default function Profile() {
   const [user, setUser] = useState<IUser>()

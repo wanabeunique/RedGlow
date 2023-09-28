@@ -11,3 +11,27 @@
 
 .list
   margin-top: var(--small-offset)
+
+
+.friends
+  &__items
+    margin-top: 20px
+    display: grid
+    grid-template-columns: 1fr 1fr 1fr
+    gap: 20px
+  &__item
+    cursor: pointer
+    width: max-content
+    padding: 10px
+    border-radius: 10px
+    background: var(--main-color)
+    display: flex
+    align-items: center
+    gap: 10px
+  &__tools
+    display: flex
+    align-items: center
+    gap: 10px
+    svg
+      cursor: pointer
+      fill: var(--secondary-color)
