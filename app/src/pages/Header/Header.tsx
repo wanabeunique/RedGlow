@@ -2,14 +2,13 @@ import React from 'react'
 import styles from './Header.module.sass'
 import { Link, NavLink } from 'react-router-dom'
 import { Avatar } from 'antd'
-import { useSelector } from 'react-redux'
 import logout from '../../api/logout'
-import { useDispatch } from "react-redux";
+import { useAppDispatch, useAppSelector } from '../../hooks'
 
 export default function Header() {
-  const dispatch = useDispatch()
-  const isAuth = useSelector((state) => state.authReducer.data)
-  const nickname = useSelector((state) => state.userReducer.username)
+  const dispatch = useAppDispatch()
+  const isAuth = useAppSelector((state) => state.authReducer.data)
+  const nickname = useAppSelector((state) => state.userReducer.username)
   return (
     <header className={styles.header}>
       <div className={`container ${styles.header__container}`}>

@@ -8,7 +8,7 @@ export default function EmailConfirm() {
   const location = useLocation();
   const searchParams = new URLSearchParams(location.search);
   const key = searchParams.get('key');
-  const [status, setStatus] = useState('');
+  const [status, setStatus] = useState<number>();
 
   useEffect(() => {
     async function fetchData(){

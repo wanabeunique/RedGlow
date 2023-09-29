@@ -3,7 +3,7 @@ import { setIsAuth } from "../store/reducers/isAuthSlice";
 import { setUsername } from "../store/reducers/userSlice";
 import Cookies from "js-cookie";
 
-export default async function getIsAuth(dispatch){
+export default async function getIsAuth(dispatch: any){
   axios.defaults.headers.common['csrftoken'] = Cookies.get('csrftoken')
   try{
     const response = await axios.put(

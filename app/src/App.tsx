@@ -1,5 +1,3 @@
-import './App.sass'
-
 import { useEffect } from 'react'
 import { Routes, Route} from 'react-router-dom'
 import { useDispatch } from 'react-redux'
@@ -19,12 +17,10 @@ import Generate from './pages/Genarate/Generate'
 import Recovery from './pages/Recovery/Recovery'
 import getIsAuth from './api/getIsAuth'
 import connectSockets from './socket/connectSockets'
-import { useSelector } from 'react-redux'
-
-
+import { useAppSelector } from './hooks'
 
 function App() {
-  const isAuth = useSelector((state) => state.authReducer.data)
+  const isAuth = useAppSelector((state) => state.authReducer.data)
   const dispatch = useDispatch()
   useEffect(() => {
     getIsAuth(dispatch)

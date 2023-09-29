@@ -5,13 +5,15 @@ import login from '../../api/login'
 import {useForm } from "react-hook-form"
 import { Navigate } from 'react-router-dom';
 import { useAppDispatch, useAppSelector } from '../../hooks'
+import ILogin from '../../interfaces/ILogin'
+
 
 export default function Login() {
   const dispatch = useAppDispatch()
   const isAuth = useAppSelector((state) => state.authReducer.data)
 
+  const {register, handleSubmit} = useForm<ILogin>()
 
-  const {register, handleSubmit} = useForm()
   if (!isAuth) {
     return (
       <form 

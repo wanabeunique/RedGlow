@@ -1,4 +1,4 @@
-import { createSlice, PayLoadAction } from '@reduxjs/toolkit'
+import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 
 interface ISocket{
   data: boolean
@@ -12,7 +12,7 @@ export const isSocketsActive = createSlice({
   name: 'isSocketsActive',
   initialState,
   reducers: {
-    setSocketsActive(state, action: PayLoadAction<boolean>) {
+    setSocketsActive(state, action: PayloadAction<boolean>) {
       state.data = action.payload;
     },
   }

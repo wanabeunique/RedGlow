@@ -10,9 +10,9 @@ import IUsername from '../../interfaces/IUsername'
 export default function Friends() {
   function setUsersByValue(value: string){
     // TODO: Всегда приходит пустая строка
-    let res: any
-    //  : Array<string>;
-    const search = async (value) => {
+    let res: string[]
+    //: Array<string>;
+    const search = async (value: string) => {
       res = await getUsersByValue(value)
       console.log(res)
       setSearchedUsers(res)
@@ -23,7 +23,7 @@ export default function Friends() {
 
   const username: string = useSelector((state: RootState) => state.userReducer.username)
   
-  const [searchedUsers, setSearchedUsers] = useState([])
+  const [searchedUsers, setSearchedUsers] = useState<Array<string>>([])
   const [friendsData, setFriendsData] = useState<any>([])
 
   const [queryNickname, setQueryNickname] = useState('')
