@@ -1,4 +1,4 @@
-export default interface IUser{
+export default interface IProfile{
   username: string,
   phoneNumber: string,
   email: string,

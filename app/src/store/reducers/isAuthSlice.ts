@@ -1,7 +1,7 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 
 type isAuthState = {
-  data: false
+  data: boolean
 }
 
 const initialState: isAuthState = {

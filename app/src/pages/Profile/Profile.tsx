@@ -5,7 +5,7 @@ import {  Button, Modal  } from 'antd'
 import { useState } from 'react'
 import getProfile from '../../api/getProfile'
 import { useEffect } from 'react'
-import IUser from '../../interfaces/IUser'
+import IUser from '../../interfaces/IProfile'
 
 
 export default function Profile() {

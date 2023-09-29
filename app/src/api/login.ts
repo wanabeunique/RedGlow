@@ -13,7 +13,6 @@ export default async function login(data, dispatch){
   .then( (response) => {
     dispatch(setIsAuth(true))
     dispatch(setUsername(response.data.username))
-    console.log(response)
     toast.success('Вы успешно авторизировались')
     connectSockets()
     return response.status
