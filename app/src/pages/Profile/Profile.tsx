@@ -15,7 +15,7 @@ export default function Profile() {
   useEffect(() => {
     const getUser = async () => {
       const userData = await getProfile()
-      setUser(userData.data)
+      setUser(userData)
     }
     getUser()
   }, [])

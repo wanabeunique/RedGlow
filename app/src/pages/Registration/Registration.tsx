@@ -7,16 +7,17 @@ import registrationSubmit from "../../api/registration"
 import { ToastContainer} from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { Link } from 'react-router-dom'
+import IRegistration from '../../interfaces/IRegistration';
 
 export default function Registration() {
   const [isCaptchaSuccessful, setIsCaptchaSuccess] = useState(false)
-  const {register, handleSubmit} = useForm()
+  const {register, handleSubmit} = useForm<IRegistration>()
   const [modal, setModal] = useState(false)
-  const [registrationStatus, setRegistrationStatus] = useState(null); // Добавленное состояние
+  const [registrationStatus, setRegistrationStatus] = useState<number>(); // Добавленное состояние
   const [code, setCode] = useState('')
   
 
-  const handleRegistration = async (data) => {
+  const handleRegistration = async (data: IRegistration) => {
     const response = await registrationSubmit(data)
     console.log(response)
     setRegistrationStatus(response.status);
