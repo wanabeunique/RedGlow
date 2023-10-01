@@ -6,6 +6,7 @@ import sendFriendRequest from '../../api/sendFriendRequest'
 import getUsersByValue from '../../api/getUsersByValue'
 import { RootState } from '../../store/store'
 import IUsername from '../../interfaces/IUsername'
+import { useDebounce } from '@uidotdev/usehooks'
 
 export default function Friends() {
   function setUsersByValue(value: string){
@@ -14,7 +15,6 @@ export default function Friends() {
     //: Array<string>;
     const search = async (value: string) => {
       res = await getUsersByValue(value)
-      console.log(res)
       setSearchedUsers(res)
     }
     search(value)

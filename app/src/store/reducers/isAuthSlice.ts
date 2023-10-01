@@ -1,4 +1,5 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
+import { setLogout } from '../../api/setLogout';
 
 type isAuthState = {
   data: boolean
@@ -15,7 +16,12 @@ export const isAuthSlice = createSlice({
     setIsAuth(state, action: PayloadAction<boolean>) {
       state.data = action.payload;
     },
-  }
+  },
+  extraReducers: (builder) => {
+    builder.addCase(setLogout.fulfilled, (state, action) => {
+      state.data = false
+    })
+  },
 });
 
 

@@ -1,8 +1,6 @@
-import React from 'react'
 import styles from './Header.module.sass'
 import { Link, NavLink } from 'react-router-dom'
-import { Avatar } from 'antd'
-import logout from '../../api/logout'
+import { setLogout } from '../../api/setLogout'
 import { useAppDispatch, useAppSelector } from '../../hooks'
 
 export default function Header() {
@@ -26,7 +24,7 @@ export default function Header() {
             <>
               <li className={styles.header__item}><NavLink to='/Friends' className={`text ${styles.header__link}`}>Друзья</NavLink></li>
               <li className={styles.header__item}><NavLink to='/Play' className={`text ${styles.header__link}`}>Играть</NavLink></li>
-              <li className={styles.header__item} onClick={() => {logout(dispatch)}}><NavLink to='/headbook' className={`text ${styles.header__link}`}>Выйти</NavLink></li>
+              <li className={styles.header__item} onClick={() => {dispatch<any>(setLogout())}}><NavLink to='/headbook' className={`text ${styles.header__link}`}>Выйти</NavLink></li>
             </>
           )
           :  (
