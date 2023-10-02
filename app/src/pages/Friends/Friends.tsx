@@ -6,34 +6,39 @@ import sendFriendRequest from '../../api/sendFriendRequest'
 import getUsersByValue from '../../api/getUsersByValue'
 import { RootState } from '../../store/store'
 import IUsername from '../../interfaces/IUsername'
-import { useDebounce } from '@uidotdev/usehooks'
+import { useDebounce } from '../../hooks'
 
 export default function Friends() {
-  function setUsersByValue(value: string){
-    // TODO: Всегда приходит пустая строка
-    let res: string[]
-    //: Array<string>;
-    const search = async (value: string) => {
-      res = await getUsersByValue(value)
-      setSearchedUsers(res)
-    }
-    search(value)
-    console.log(searchedUsers, `:Найденные юзеры`)
-  }
-
   const username: string = useSelector((state: RootState) => state.userReducer.username)
-  
   const [searchedUsers, setSearchedUsers] = useState<Array<string>>([])
   const [friendsData, setFriendsData] = useState<any>([])
-
   const [queryNickname, setQueryNickname] = useState('')
+  const debouncedSearchUsers = useDebounce(queryNickname)
   
+  useEffect(() => {
+    async function getSearchedUsers() {
+      if (queryNickname.length > 2) {
+        async function getRequest(){
+          await getUsersByValue(debouncedSearchUsers)
+            .then(res => {
+              setSearchedUsers(res)
+            })
+        }
+        getRequest()
+      }
+      
+      else{
+        setSearchedUsers([])
+      }
+    }
+    getSearchedUsers()
+  }, [debouncedSearchUsers])
+
+
   useEffect(() => {
     const friends = async () => {
       const friendsDataValue: Array<string> = await getUserFriends(username)
-      if (friendsDataValue) {
-        setFriendsData(friendsDataValue)
-      }
+      setFriendsData(friendsDataValue)
     }
     friends()
     console.log(friendsData)
@@ -45,7 +50,7 @@ export default function Friends() {
         <input onChange={
           (event) => {
           setQueryNickname(event.target.value);
-          setUsersByValue(queryNickname)
+          setSearchedUsers
           }}
           value={queryNickname} 
           className={`${styles.search__input} input`} 
