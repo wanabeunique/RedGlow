@@ -1,15 +1,12 @@
-import React from 'react'
 import styles from './Header.module.sass'
 import { Link, NavLink } from 'react-router-dom'
-import { Avatar } from 'antd'
-import { useSelector } from 'react-redux'
-import logout from '../../api/logout'
-import { useDispatch } from "react-redux";
+import { setLogout } from '../../api/setLogout'
+import { useAppDispatch, useAppSelector } from '../../hooks'
 
 export default function Header() {
-  const dispatch = useDispatch()
-  const isAuth = useSelector((state) => state.authReducer.data)
-  const nickname = useSelector((state) => state.userReducer.username)
+  const dispatch = useAppDispatch()
+  const isAuth = useAppSelector((state) => state.authReducer.data)
+  const nickname = useAppSelector((state) => state.userReducer.username)
   return (
     <header className={styles.header}>
       <div className={`container ${styles.header__container}`}>
@@ -27,7 +24,7 @@ export default function Header() {
             <>
               <li className={styles.header__item}><NavLink to='/Friends' className={`text ${styles.header__link}`}>Друзья</NavLink></li>
               <li className={styles.header__item}><NavLink to='/Play' className={`text ${styles.header__link}`}>Играть</NavLink></li>
-              <li className={styles.header__item} onClick={() => {logout(dispatch)}}><NavLink to='/headbook' className={`text ${styles.header__link}`}>Выйти</NavLink></li>
+              <li className={styles.header__item} onClick={() => {dispatch<any>(setLogout())}}><NavLink to='/headbook' className={`text ${styles.header__link}`}>Выйти</NavLink></li>
             </>
           )
           :  (

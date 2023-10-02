@@ -3,14 +3,17 @@ import styles from './Login.module.sass'
 import { Link } from 'react-router-dom'
 import login from '../../api/login'
 import {useForm } from "react-hook-form"
-import { useSelector } from 'react-redux'
 import { Navigate } from 'react-router-dom';
-import { useDispatch } from "react-redux";
+import { useAppDispatch, useAppSelector } from '../../hooks'
+import ILogin from '../../interfaces/ILogin'
+
 
 export default function Login() {
-  const  dispatch = useDispatch()
-  const isAuth = useSelector((state) => state.authReducer.data)
-  const {register, handleSubmit} = useForm()
+  const dispatch = useAppDispatch()
+  const isAuth = useAppSelector((state) => state.authReducer.data)
+
+  const {register, handleSubmit} = useForm<ILogin>()
+
   if (!isAuth) {
     return (
       <form 

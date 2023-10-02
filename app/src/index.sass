@@ -19,13 +19,15 @@
   --red-gradient: linear-gradient(90deg, #B32428 3.09%, rgba(198, 46, 31, 0.93) 41.44%, #B33E24 95.13%)
 
   --border-radius: 20px
+  
 @import 'fonts.css'
+@improt cfg
 
 *
   box-sizing: border-box
 
 body
-  font-family: 'Open Sans'
+  font-family: 'Montserrat'
   background: var(--bg-color)
 
 #root
@@ -52,7 +54,7 @@ body
     
   .text
     font-size: 21px
-    font-family: 'Open Sans'
+    font-family: 'Montserrat'
     color: var(--secondary-color)
     margin: 0
 
@@ -60,12 +62,12 @@ body
     font-size: 34px
     font-weight: 700
     letter-spacing: 0.6px
-    font-family: 'Open Sans'
+    font-family: 'Montserrat'
     margin: 0
 
   .subtitle
     font-size: 20px
-    font-family: 'Open Sans'
+    font-family: 'Montserrat'
     margin: 0
 
   .active
@@ -113,4 +115,15 @@ a,button
   &:hover
     filter: contrast(2)
     transition: filter 3s ease-out
+
+
+.friend
+  cursor: pointer
+  width: max-content
+  padding: 10px 20px
+  border-radius: 10px
+  background: var(--main-color)
+  display: flex
+  align-items: center
+  gap: 10px
 

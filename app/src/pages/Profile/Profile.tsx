@@ -3,9 +3,23 @@ import styles from './Proflie.module.sass'
 import Avatar from 'antd/es/avatar/avatar'
 import {  Button, Modal  } from 'antd'
 import { useState } from 'react'
+import getProfile from '../../api/getProfile'
+import { useEffect } from 'react'
+import IUser from '../../interfaces/IProfile'
+
 
 export default function Profile() {
+  const [user, setUser] = useState<IUser>()
+
   const [isModalOpen, setIsModalOpen] = useState(false);
+  useEffect(() => {
+    const getUser = async () => {
+      const userData = await getProfile()
+      setUser(userData)
+    }
+    getUser()
+  }, [])
+
   const showModal = () => {
     setIsModalOpen(true);
   };
@@ -15,6 +29,7 @@ export default function Profile() {
   const handleCancel = () => {
     setIsModalOpen(false);
   };
+  
   return (
     <div className={`${styles.profile}`}>
       <div className={styles.profile__top}> 
@@ -24,14 +39,31 @@ export default function Profile() {
             <Avatar size={160} />
           </div>
           <div className={styles.profile__top_text}>
-            <p className={`${styles.profile__top_nickname} title`}>wanabeunique</p>
+            <p className={`${styles.profile__top_nickname} title`}>
+              {
+                user?
+                (<span>{user.username}</span>)
+                :null
+              }
+            </p>
             <p className={`${styles.profile__top_registratedTime} text`}>На сайте с 03.01.2005</p>
           </div>
         </div>
       </div>
       <div className={`container ${styles.profile__content}`}>
         <div className={`${styles.profile__settings} ${styles.settings}`}>
-          <div className={styles.settings__change_password}>
+          <div className={styles.settings__change_password}>     
+            {
+              user? (
+              <div>
+                <p className='text'>{user.phoneNumber}</p>
+                <p className='text'>{user.email}</p>
+                <p className='text'>{user.decency}</p>
+                <p className='text'>{user.reports}</p>
+                <p className='text'>{user.subExpiresIn}</p>
+              </div>
+              ):null     
+            }
             <Button type="primary" onClick={showModal}>
               Изменить пароль
             </Button>
