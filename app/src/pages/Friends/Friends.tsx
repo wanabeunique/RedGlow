@@ -26,7 +26,7 @@ export default function Friends() {
         }
         getRequest()
       }
-      
+
       else{
         setSearchedUsers([])
       }
@@ -58,13 +58,34 @@ export default function Friends() {
           placeholder='Введите имя друга...'/>
         <button onClick= {() => {sendFriendRequest(queryNickname)}} className={`${styles.search__button} button`}>Отправить заявку</button>
       </div>
+      <div className={`${styles.list_search}`}>
+        <>
+        {searchedUsers.map((user: any) => (
+                <div className={`${styles.friends__item} friend`}>
+                  <p className={`${styles.friends__title} text`}>{user.username}</p>
+                  <div className={styles.friends__tools}>
+                    <div className={styles.friends__chat}>
+                      <svg width="40px" height="40px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M17 3.33782C15.5291 2.48697 13.8214 2 12 2C6.47715 2 2 6.47715 2 12C2 13.5997 2.37562 15.1116 3.04346 16.4525C3.22094 16.8088 3.28001 17.2161 3.17712 17.6006L2.58151 19.8267C2.32295 20.793 3.20701 21.677 4.17335 21.4185L6.39939 20.8229C6.78393 20.72 7.19121 20.7791 7.54753 20.9565C8.88837 21.6244 10.4003 22 12 22C17.5228 22 22 17.5228 22 12C22 10.1786 21.513 8.47087 20.6622 7" stroke="#1C274C" stroke-width="1.5" stroke-linecap="round"/>
+                        <path d="M8 12H8.009M11.991 12H12M15.991 12H16" stroke="#1C274C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                      </svg>
+                    </div>
+                    <div className={styles.friend__remove}>
+                      <svg fill="#000000" width="40px" height="40px" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M1,20a1,1,0,0,0,1,1h8a1,1,0,0,0,0-2H3.071A7.011,7.011,0,0,1,10,13a5.044,5.044,0,1,0-3.377-1.337A9.01,9.01,0,0,0,1,20ZM10,5A3,3,0,1,1,7,8,3,3,0,0,1,10,5Zm12.707,9.707L20.414,17l2.293,2.293a1,1,0,1,1-1.414,1.414L19,18.414l-2.293,2.293a1,1,0,0,1-1.414-1.414L17.586,17l-2.293-2.293a1,1,0,0,1,1.414-1.414L19,15.586l2.293-2.293a1,1,0,0,1,1.414,1.414Z"/></svg>
+                    </div>
+                  </div>
+                </div>
+                )
+              )}
+        </>
+      </div>
       <div className={`${styles.list}`}>
         <p className='title'>Список друзей:</p>
         {friendsData ?
           (
             <div className={styles.friends__items}>
               {friendsData.map((friend: IUsername) => (
-                <div className={styles.friends__item}>
+                <div className={`${styles.friends__item} friend`}>
                   <p className={`${styles.friends__title} text`}>{friend.username}</p>
                   <div className={styles.friends__tools}>
                     <div className={styles.friends__chat}>
