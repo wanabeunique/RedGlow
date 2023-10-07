@@ -6,7 +6,7 @@ class User(AbstractUser):
     username = models.CharField(max_length=255,unique=True,error_messages={"unique":"Данное имя пользователя занято"})
     password = models.CharField(max_length=255)
     email = models.EmailField(unique=True,error_messages={"unique":"Данный адрес электронной почты уже зарегистрирован"})
-    phoneNumber = models.CharField(max_length=25,unique=True,error_messages={"unique":"Данный номер телефона уже используется"})
+    phoneNumber = models.CharField(max_length=25,unique=True,error_messages={"unique":"Данный номер телефона уже используется"},null=True)
     steamId = models.CharField(max_length=255,null=True)
     photo = models.ImageField(default="", upload_to='images/userPhoto/',null=True)
     decency = models.IntegerField(default=10000)

@@ -1,6 +1,8 @@
+import json
 from rest_framework import serializers
 from apps.authentication.models import User
-from apps.authentication.sending import sendLink, connectToRedis, sendInfo
+from apps.authentication.sending import connectToRedis
+from apps.authentication.tasks import sendInfo, sendLink
 from cryptography.fernet import Fernet, InvalidToken
 from django.conf import settings
 
@@ -35,25 +37,26 @@ class ForgotPasswordEmailSerializer(serializers.Serializer):
         r.close()
         if not User.objects.filter(email=email).exists():
             raise serializers.ValidationError(
-                {"email":"Неправильный адрес электронной почты"}
+                "Неправильный адрес электронной почты"
             )
         return data
     def save(self):
         email = self.validated_data.get('email')
         username = User.objects.get(email=email).username
-        sendLink(
-            email,username,"Ссылка для смены пароля на нашей платформе.",
-            "Восстановление пароля",username,"/forgot/password/"
+        sendLink.delay(
+            username,"Ссылка для смены пароля на нашей платформе.",
+            "Восстановление пароля",{"email":email},"/forgot/password/"
         )
 
 class ForgotPasswordChangeSerializer(serializers.Serializer):
     password = serializers.CharField(max_length=255, min_length=8,write_only=True)
-    key = serializers.CharField()
+    code = serializers.CharField()
+
 
     def validate(self, data):
-        key = data.get('key')
+        code = data.get('code')
         password = data.get('password')
-        if key is None:
+        if code is None:
             raise serializers.ValidationError(
                 'Некорректная ссылка'
             )
@@ -61,21 +64,15 @@ class ForgotPasswordChangeSerializer(serializers.Serializer):
             raise serializers.ValidationError(
                 'Пароль обязателен'
             )
-        f = Fernet(settings.CR_KEY)
-        try:
-            email = f.decrypt(bytes(key,encoding='utf-8')).decode()
-        except InvalidToken as error:
-            raise serializers.ValidationError(
-                "Срок действия кода истёк"
-            )
+
         r = connectToRedis()
-        if r.exists(email):
-            data['email'] = email
-            r.delete(email)
-        else:
+        if not r.exists(code):
             raise serializers.ValidationError(
-                "Срок действия кода истёк"
+                'Срок действия ссылки истек'
             )
+        data['email'] = json.loads(r.get(code)).get('email')
+        r.delete(code)
+
         r.close()
 
         return data
@@ -84,7 +81,7 @@ class ForgotPasswordChangeSerializer(serializers.Serializer):
         user = User.objects.get(email=self.validated_data['email'])
         user.set_password(self.validated_data['password'])
         user.save()
-        sendInfo(user.email,user.username,
+        sendInfo.delay(user.email,user.username,
                 info="Пароль от вашего аккаунта был изменён",
                 subject='Смена пароля'
         )

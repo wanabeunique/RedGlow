@@ -12,21 +12,21 @@ class FriendConsumer(AsyncJsonWebsocketConsumer):
             await self.channel_layer.group_add(self.group_name, self.channel_name)
             await self.accept()
         else:
-            await self.close(code=4003)
+            await self.close()
     
     async def disconnect(self, close_code):
         await self.channel_layer.group_discard(self.group_name, self.channel_name)
     
-    async def receive(self, text_data):
+    # async def receive(self, text_data):
 
-        user = await get_user(self.scope)
+    #     user = await get_user(self.scope)
 
-        dataJson = json.loads(text_data)
+    #     dataJson = json.loads(text_data)
 
-        await self.channel_layer.group_send(
-            self.group_name,
-            text_data=json.dumps({'type':'friend.invite',"invite": dataJson['invite']})
-        )
+    #     await self.channel_layer.group_send(
+    #         self.group_name,
+    #         text_data=json.dumps({'type':'friend.invite',"invite": dataJson['invite']})
+    #     )
 
         
     async def friend_invite(self,event):

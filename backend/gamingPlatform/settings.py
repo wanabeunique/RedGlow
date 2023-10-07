@@ -17,6 +17,17 @@ from cryptography.fernet import Fernet
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+CELERY_BROKER_URL = os.environ.get("CELERY_BROKER_URL", "redis://redis:6379/2")
+CELERY_RESULT_BACKEND = os.environ.get("CELERY_RESULT_BACKEND", "redis://redis:6379/2")
+CELERY_TASK_ALWAYS_EAGER = False
+CELERY_TASK_EAGER_PROPAGATES = False
+CELERY_BROKER_CONNECTION_RETRY_ON_STARTUP = True
+CELERY_CACHE_BACKEND = 'django-cache'
+CELERY_TASK_TRACK_STARTED = True
+CELERY_RESULT_BACKEND_ALWAYS_RETRY = True
+CELERY_RESULT_BACKEND_MAX_RETRIES = 10
+CELERY_WORKER_SEND_TASK_EVENTS = True
+CELERY_TASK_SEND_SENT_EVENT = True
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.1/howto/deployment/checklist/
@@ -27,7 +38,7 @@ SECRET_KEY = 'django-insecure-z!zf5ee!nt$n-16et((nsixit%)73i^f2(3kngmfyv4i3#v9f+
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-CR_KEY = Fernet.generate_key()
+CR_KEY = b'ECGIx1Ex2NJTM-_EPF4hWANEZJ-sDDPAt7w0chLLbkY='
 
 ALLOWED_HOSTS = ['127.0.0.1', 'localhost']
 
@@ -191,7 +202,7 @@ REST_FRAMEWORK = {
 }
 
 CSRF_TRUSTED_ORIGINS = [
-    'https://localhost'
+    'https://localhost','https://127.0.0.1:1212'
 ]
 
 SESSION_COOKIE_HTTPONLY = True
@@ -201,11 +212,10 @@ SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SAMESITE = 'None'
 SESSION_COOKIE_SAMESITE = 'None'
 SESSION_SAVE_EVERY_REQUEST = True
-# CSRF_USE_SESSIONS = True
 CORS_ORIGIN_ALLOW_ALL = False
 CORS_ALLOW_CREDENTIALS = True
-CORS_ORIGIN_WHITELIST = ['http://localhost:5173','https://localhost']
-CORS_ALLOWED_ORIGINS = ['http://localhost:5173','https://localhost']
+CORS_ORIGIN_WHITELIST = ['http://localhost:5173','https://localhost','https://127.0.0.1:1212']
+CORS_ALLOWED_ORIGINS = ['http://localhost:5173','https://localhost','https://127.0.0.1:1212']
 CORS_ALLOWED_METHODS = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS']
 CORS_PREFLIGHT_MAX_AGE = 86400
 CORS_ALLOW_HEADERS = (
@@ -217,7 +227,7 @@ CORS_ALLOW_HEADERS = (
     'csrftoken',
     "x-requested-with",
 )
-# Настройки SSL
+
 SECURE_SSL_REDIRECT = True
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 SECURE_HSTS_SECONDS = 3600
@@ -227,8 +237,5 @@ SECURE_REFERRER_POLICY = 'strict-origin-when-cross-origin'
 SECURE_CONTENT_TYPE_NOSNIFF = True
 SECURE_BROWSER_XSS_FILTER = True
 
-# Настройки SSL сертификата
 SSL_CERTIFICATE = 'server.crt'
 SSL_KEY = 'server.key'
-
-# Добавьте домен, используемый для доступа к вашему приложению

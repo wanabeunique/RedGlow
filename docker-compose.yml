@@ -21,14 +21,24 @@ services:
       - djangonetwork
   web:
     build:
-      context: .
-      dockerfile: Dockerfile
+      context: ./backend
+      dockerfile: Dockerfile.django
     container_name: django-container
     volumes:
-      - .:/app
+      - ./backend:/app 
     environment:
       - DJANGO_ALLOWED_HOSTS=127.0.0.1,localhost
-    command: ["sh", "-c", "/usr/local/bin/wait-for-it.sh db:5432 -t 5 -- /usr/local/bin/wait-for-it.sh redis:6379 -t 5 -- python manage.py makemigrations --noinput && python manage.py migrate --noinput && daphne -e ssl:8000:server.key:server.crt gamingPlatform.asgi:application"]
+      - CELERY_BROKER_URL=redis://redis:6379/2
+      - CELERY_RESULT_BACKEND=redis://redis:6379/2
+    command:
+      - sh
+      - -c
+      - |
+        /usr/local/bin/wait-for-it.sh db:5432 -t 5 --
+        /usr/local/bin/wait-for-it.sh redis:6379 -t 5 --
+        python manage.py makemigrations --noinput
+        python manage.py migrate --noinput
+        gunicorn gamingPlatform.asgi -k uvicorn.workers.UvicornWorker -c gunicorn_config.py --reload
     ports:
       - "8000:8000"
     depends_on:
@@ -40,6 +50,38 @@ services:
       - redis:redis
     networks:
       - djangonetwork
+  celery:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.django
+    volumes:
+      - /app
+    command: 
+      - sh
+      - -c
+      - start-celery.sh
+    environment:
+      - CELERY_BROKER_URL=redis://redis:6379/2
+      - CELERY_RESULT_BACKEND=redis://redis:6379/2
+    ports:
+      - "5555:5555"
+    depends_on:
+      - db
+      - redis
+      - web
+    networks:
+      - djangonetwork
+  # nginx_backend:
+  #   image: nginx:latest
+  #   container_name: nginx_backend
+  #   volumes:
+  #     - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+  #     - ./nginx/ssl:/etc/nginx/ssl
+  #   ports:
+  #     - "1212:1212"
+  #   depends_on:
+  #     - web
+  #     - celery
 volumes:
   pgdbdata: null
 networks:

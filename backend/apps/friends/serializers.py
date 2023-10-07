@@ -19,6 +19,10 @@ class FriendshipSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(
                 'Нельзя быть своим другом'
             )
+        if Friendship.objects.filter(inviter=user_1,accepter=user_2).exists():
+            raise serializers.ValidationError(
+                'Заявка уже отправлена!'
+            )
         return data
 
     def create(self, validated_data):

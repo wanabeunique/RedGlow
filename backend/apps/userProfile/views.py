@@ -2,6 +2,7 @@ from rest_framework.generics import RetrieveAPIView, UpdateAPIView
 from .serializers import UserProfileSerializer, UserPhotoSerializer
 from rest_framework.permissions import IsAuthenticated
 from apps.authentication.models import User
+
 class RetrieveUserProfileView(RetrieveAPIView):
     serializer_class = UserProfileSerializer
     permission_classes = (IsAuthenticated,)

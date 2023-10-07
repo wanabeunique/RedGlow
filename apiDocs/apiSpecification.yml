@@ -11,14 +11,6 @@ paths:
       tags:
         - Authentication
       operationId: signUp
-      parameters:
-        - in: header
-          name: X-CSRFToken
-          description: CSRF token
-          required: true
-          schema:
-            type: string
-            example: saf141kncaskn214
       requestBody:
         required: true
         content:
@@ -58,14 +50,6 @@ paths:
       tags:
         - Authentication
       operationId: confirmSignUp
-      parameters:
-        - in: header
-          name: X-CSRFToken
-          description: CSRF token
-          required: true
-          schema:
-            type: string
-            example: saf141kncaskn214
       requestBody:
         required: true
         content:
@@ -74,10 +58,14 @@ paths:
               type: object
               required:
                 - key
+                - code
               properties:
                 key:
                   type: string
                   example: Qmasmfjajfj128141841hjafhh
+                code:
+                  type: string
+                  example: asif124AF
       responses:
         200:
           description: Успешная регистрация
@@ -93,26 +81,25 @@ paths:
                 $ref: "#/components/schemas/NonFieldError"
         403:
           description: Запрос был послан от авторизованного пользователя
-  /key/{key}/:
+  /key/{key}/code/{code}:
     get:
       summary: Проверка ключа.
       tags:
         - PasswordChange
       operationId: checkKey
       parameters:
-        - in: header
-          name: X-CSRFToken
-          description: CSRF token
-          required: true
-          schema:
-            type: string
-            example: saf141kncaskn214
         - in: path
           name: key
           required: true
           schema:
             type: string
             example: Qmasmfjajfj128141841hjafhh
+        - in: path
+          name: code
+          required: true
+          schema:
+            type: string
+            example: hsk13AFas
       responses:
         200:
           description: Ключ принят
@@ -124,6 +111,9 @@ paths:
                   key:
                     type: string
                     example: Qmasmfjajfj128141841hjafhh
+                  code:
+                    type: string
+                    example: hsk13AFas
         404:
           description: Время действия ключа истекло или он неверен
           content:
@@ -152,14 +142,6 @@ paths:
       tags:
         - Authentication
       operationId: login
-      parameters:
-        - in: header
-          name: X-CSRFToken
-          description: CSRF token
-          required: true
-          schema:
-            type: string
-            example: saf141kncaskn214
       requestBody:
         required: true
         content:
@@ -240,9 +222,24 @@ paths:
       summary: Проверка, авторизован ли юзер
       tags:
         - Authentication
+      parameters:
+        - in: header
+          name: X-CSRFToken
+          description: CSRF token
+          required: true
+          schema:
+            type: string
+            example: saf141kncaskn214
       responses:
         200:
           description: Авторизован
+          content:
+            text/plain:
+              schema:
+                properties:
+                  username:
+                    type: string
+                    example: kirin
         403:
           description: Не авторизован
     
@@ -310,14 +307,6 @@ paths:
       tags:
         - PasswordChange
       operationId: sendCodePassword
-      parameters:
-        - in: header
-          name: X-CSRFToken
-          description: CSRF token
-          required: true
-          schema:
-            type: string
-            example: saf141kncaskn214
       requestBody:
         required: true
         content:
@@ -359,14 +348,6 @@ paths:
       tags:
         - PasswordChange
       operationId: changeForgotPassword
-      parameters:
-        - in: header
-          name: X-CSRFToken
-          description: CSRF token
-          required: true
-          schema:
-            type: string
-            example: saf141kncaskn214
       requestBody:
         required: true
         content:
@@ -523,9 +504,44 @@ paths:
           description: Запрос от неавторизованного пользователя
         default:
           description: Все остальное
-  /users/prefix/{value}/:
+  /user/invite/{typeFlag}:
     get:
-      summary: Получить список пользователей, который начинаются на {value}
+      summary: Получить список заявок текущего пользователя
+      operationId: getInvites
+      tags:
+        - Friends
+      parameters:
+        - in: header
+          name: X-CSRFToken
+          description: CSRF token
+          required: true
+          schema:
+            type: string
+            example: saf141kncaskn214
+        - in: path
+          name: typeFlag
+          description: "Какие заявки получить, входящие или исходящие, используются два варианта значений: in и out соответственно"
+          required: true
+          schema:
+            type: string
+            example: in
+      responses:
+        200:
+          description: Успешное получение заявок
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Friends"
+        400:
+          description: Неправильный параметр {typeFlag}
+        404:
+          description: Не найдено заявок
+        default:
+          description: Все остальное
+      
+  /user/prefix/{value}/page/{page}:
+    get:
+      summary: Получить {page} страницу пользователей(начиная с 1), никнейм которых начинается на {value}
       operationId: findUsers
       tags:
         - Friends
@@ -538,12 +554,19 @@ paths:
             type: string
             example: saf141kncaskn214
         - in: path
-          name: findValue
+          name: value
           description: Значение, по которому искать пользователя
           required: true
           schema:
             type: string
             example: kir
+        - in: path
+          name: page
+          description: Страница
+          required: true
+          schema:
+            type: integer
+            example: 1
       responses:
         200:
           description: Ответ с пользователями
@@ -634,7 +657,7 @@ paths:
                 photo:
                   type: string
                   format: binary
-                  example: КАРТИНКА ТУТ!
+                  example: КАРТИНКА ТУТ! ИМЕННО ФАЙЛ!
       responses:
         200:
           description: Успешная смена аватарки
@@ -755,6 +778,9 @@ components:
         username:
           type: string
           example: kirin
+        photo:
+          type: string
+          example: https://127.0.0.1:8000/image.img
     UserProfile:
       type: object
       properties:

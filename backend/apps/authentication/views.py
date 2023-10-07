@@ -7,7 +7,7 @@ from .serializers import UserSignUpSerializer, UserLogInSerializer, KeySerialize
 from apps.passwordChange.permissions import NotAuthenticated
 from rest_framework import status
 from django.http import HttpRequest
-from ipware import get_client_ip
+from .sending import connectToRedis
 import requests
 
 class SignUpView(ViewSet):
@@ -28,11 +28,13 @@ class SignUpView(ViewSet):
 class CheckKeyView(APIView):
     permission_classes = (NotAuthenticated, )
     serializer_class = KeySerializer
-    def get(self, request,key=None):
-        serializer = self.serializer_class(data={"key":key})
+    def get(self, request,key=None, code=None):
+        r = connectToRedis()
+        a = r.get(code).decode()
+        serializer = self.serializer_class(data={"key":key,"code":code})
         if serializer.is_valid():
             return Response(serializer.data,status=status.HTTP_202_ACCEPTED)
-        return Response(serializer.errors,status=status.HTTP_404_NOT_FOUND)
+        return Response({"a":a},status=status.HTTP_404_NOT_FOUND)
 
 class SessionView(ViewSet):
     permission_classes = (AllowAny,)
@@ -53,5 +55,5 @@ class SessionView(ViewSet):
     
 class AuthCheckerView(APIView):
     permission_classes = (IsAuthenticated, )
-    def put(self,request:HttpRequest):
-        return Response(status=status.HTTP_202_ACCEPTED)
+    def get(self,request:HttpRequest):
+        return Response({'username': request.user.username},status=status.HTTP_202_ACCEPTED)
