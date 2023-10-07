@@ -7,15 +7,18 @@ import styles from './EmailConfirm.module.sass'
 export default function EmailConfirm() {
   const location = useLocation();
   const searchParams = new URLSearchParams(location.search);
-  const key = searchParams.get('key');
+  const key: string | null  = searchParams.get('key');
+  const code: string | null = searchParams.get('code');
   const [status, setStatus] = useState<number>();
 
   useEffect(() => {
     async function fetchData(){
-      const response = await validateCode({key: key})
-      console.log(response.status)
-      setStatus(response.status)
-      console.log(status)
+      if (key && code){
+        const response = await validateCode(code, key)
+        console.log(response.status)
+        setStatus(response.status)
+        console.log(status)
+      }
     }
     fetchData()
   }, [])

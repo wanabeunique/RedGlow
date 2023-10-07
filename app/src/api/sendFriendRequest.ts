@@ -2,7 +2,7 @@ import axios from "axios"
 import Cookies from "js-cookie"
 import { toast } from "react-toastify"
 
-export default async function sendFriendRequest(nickname) {
+export default async function sendFriendRequest(nickname:  string) {
   const data = {"accepter": nickname.trim()}
   axios.defaults.headers.common['csrftoken'] = Cookies.get('csrftoken')
   try {

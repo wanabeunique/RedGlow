@@ -3,7 +3,7 @@ import Cookies from "js-cookie";
 import { toast } from "react-toastify";
 
 
-export default async function recoveryPassword(email){
+export default async function recoveryPassword(email: string){
   console.log(Cookies.get('csrftoken'))
   axios.defaults.headers.common['X-CSRFToken'] = Cookies.get('csrftoken')
   try{

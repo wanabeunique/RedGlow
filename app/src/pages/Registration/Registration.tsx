@@ -1,8 +1,7 @@
-import React from 'react'
 import styles from './Registration.module.sass'
 import { useState } from 'react';
 import ReCAPTCHA from 'react-google-recaptcha';
-import { set, useForm } from "react-hook-form"
+import { useForm } from "react-hook-form"
 import registrationSubmit from "../../api/registration"
 import { ToastContainer} from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -19,7 +18,6 @@ export default function Registration() {
 
   const handleRegistration = async (data: IRegistration) => {
     const response = await registrationSubmit(data)
-    console.log(response)
     setRegistrationStatus(response.status);
   };
 
@@ -59,7 +57,6 @@ export default function Registration() {
           <div className={styles.registration__inputs}>
               <input placeholder='Логин' className={`${styles.registration__input} input`} type="text" {...register("username")}/>
               <input placeholder='Email' className={`${styles.registration__input} input`} type="email" {...register("email")}/>
-              <input placeholder='7 (___) ___ - __ - __' className={`${styles.registration__input} input`} type="text" {...register("phoneNumber")}/>
               <input placeholder='Пароль' className={`${styles.registration__input} input`} type="password" {...register("password")}/>
               <input placeholder='Повторите пароль' className={`${styles.registration__input} input`} type="password" {...register("confirmPassword")}/>
             </div>
