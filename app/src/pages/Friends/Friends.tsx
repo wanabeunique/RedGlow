@@ -8,10 +8,10 @@ import { RootState } from "../../store/store";
 import IUsername from "../../interfaces/IUsername";
 import { useAppSelector, useDebounce } from "../../hooks";
 import getFriendsRequestIn from "../../api/getFriendsRequestIn";
-import { error } from "console";
 import getFriendsRequestOut from "../../api/getFriendsRequestOut";
 import Friend from "../../components/Friends/Friend/Friend";
 import { Navigate } from "react-router-dom";
+import { Tab, Tabs, TabList, TabPanel } from "react-tabs";
 
 export default function Friends() {
   const username: string = useSelector(
@@ -24,6 +24,7 @@ export default function Friends() {
   const [friendsRequest, setFriendsRequest] = useState<any>([]);
 
   const isAuth = useAppSelector((state) => state.authReducer.data);
+  const isMenuActive = useAppSelector((state) => state.friendsMenuReduce.data);
 
   const debouncedSearchUsers = useDebounce(queryNickname);
 
@@ -78,64 +79,85 @@ export default function Friends() {
   }, []);
 
   return isAuth ? (
-    <div className={`container ${styles.friends}`}>
-      <div className={styles.search}>
-        <input
-          onChange={(event) => {
-            setQueryNickname(event.target.value);
-            setSearchedUsers;
-          }}
-          value={queryNickname}
-          className={`${styles.search__input} input`}
-          type="text"
-          placeholder="Введите имя друга..."
-        />
-        <button
-          onClick={() => {
-            sendFriendRequest(queryNickname);
-          }}
-          className={`${styles.search__button} button`}
-        >
-          Отправить заявку
-        </button>
-      </div>
-      <div className={`${styles.list_search}`}>
-        <>
-          {searchedUsers.map((user: any) => (
-            <Friend
-              username={user.nickname}
-              type="search"
-              avatar={user.photo}
+    <div
+      className={`container ${styles.friends} ${
+        isMenuActive ? styles.friends_active : null
+      }`}
+    >
+      <Tabs className={styles.friends__tabs}>
+        <TabList className={styles.friends__top}>
+          <Tab className={styles.friends__tab}>Друзья ( {friendsData.length} )</Tab>
+          <Tab className={styles.friends__tab}>Заявки в дурзья ( 00 )</Tab>
+          <Tab className={styles.friends__tab}>Отправленные заявки ( {friendsRequest.length} )</Tab>
+          <Tab className={styles.friends__tab}>Поиск</Tab>
+        </TabList>
+        <TabPanel className={styles.friends__content}>
+          <p className={styles.friends__title}>Список друзей:</p>
+          {friendsData.lenght > 0 ? (
+            <div className={styles.friends__items}>
+              {friendsData.map((friend: any) => (
+                <Friend
+                  username={friend.username}
+                  type="current"
+                  avatar={friend.photo}
+                />
+              ))}
+            </div>
+          ) : (
+            <p className={styles.friends__text}>{`У вас пока что нет ни одного друга, но не стоит расстраиваться...`}</p>
+          )}
+        </TabPanel>
+        <TabPanel>
+          :(
+        </TabPanel>
+        <TabPanel className={styles.friends__content}>
+          <p className={styles.friends__title}>
+            Отправленные заявки в друзья
+          </p>
+          {friendsRequest
+            ? friendsRequest.map((request: any) => (
+                <Friend
+                  username={request.username}
+                  type="out"
+                  avatar={request.photo}
+                />
+              ))
+            : null}
+        </TabPanel>
+        <TabPanel>
+        <div className={styles.search}>
+            <input
+              onChange={(event) => {
+                setQueryNickname(event.target.value);
+                setSearchedUsers;
+              }}
+              value={queryNickname}
+              className={`${styles.search__input} input`}
+              type="text"
+              placeholder="Введите имя друга..."
             />
-          ))}
-        </>
-      </div>
-      <div className={`${styles.list}`}>
-        <p className="title">Отправленные заявки в друзья</p>
-        {friendsRequest
-          ? friendsRequest.map((request: any) => (
-              <Friend
-                username={request.username}
-                type="out"
-                avatar={request.photo}
-              />
-            ))
-          : null}
-        <p className="title">Список друзей:</p>
-        {friendsData ? (
-          <div className={styles.friends__items}>
-            {friendsData.map((friend: any) => (
-              <Friend
-                username={friend.username}
-                type="current"
-                avatar={friend.photo}
-              />
-            ))}
+            <button
+              onClick={() => {
+                sendFriendRequest(queryNickname);
+              }}
+              className={`${styles.search__button} button`}
+            >
+              Отправить заявку
+            </button>
           </div>
-        ) : (
-          <p className="text">{`У вас нет друзей :(`}</p>
-        )}
-      </div>
+          <div className={`${styles.list_search}`}>
+            <>
+              {searchedUsers.map((user: any) => (
+                <Friend
+                  username={user.nickname}
+                  type="search"
+                  avatar={user.photo}
+                />
+              ))}
+            </>
+          </div>
+        </TabPanel>
+      </Tabs>
     </div>
   ) : (
     <Navigate to="/login" />

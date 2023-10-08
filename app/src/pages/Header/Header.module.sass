@@ -2,6 +2,8 @@
   height: var(--header-height)
   background: var(--main-color)
   width: 100%
+  position: relative
+  z-index: 2
   &__container
     display: flex
     justify-content: space-between
@@ -49,3 +51,8 @@
     display: flex
     align-items: center
     gap: var(--middle-offset)
+  &__friends
+    cursor: pointer
+    &_active
+      path
+        stroke: var(--main-red-color)

@@ -32,7 +32,11 @@ body
   font-family: 'Montserrat'
   background: var(--bg-color)
 
+
+
 #root
+  overflow: hidden
+  max-width: 100vw
   min-height: 100vh
   position: relative
   &::before
@@ -129,3 +133,6 @@ a,button
   align-items: center
   gap: 10px
 
+svg
+  path
+    stroke: var(--secondary-color)
