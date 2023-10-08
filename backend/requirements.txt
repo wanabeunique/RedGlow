@@ -20,3 +20,4 @@ flower==2.0.1
 eventlet==0.33.3
 gunicorn==21.2.0
 uvicorn[standard]==0.23.2
+inotify==0.2.10

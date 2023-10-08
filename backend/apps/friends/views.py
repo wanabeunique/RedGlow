@@ -73,17 +73,28 @@ class InvitesListView(APIView):
             try:
                 friendships = Friendship.objects.filter(
                     Q(accepter=currentUserId) & Q(status=0)
-                )
-                return Response(friendships.values('inviter').values('username','photo'), status=status.HTTP_200_OK)
+                ).values_list('inviter',flat=True)
+                users = [
+                    User.objects.get(id=user_id)
+                    for user_id in friendships
+                ]
+                serializer = self.serializer_class(data=users,many=True)
+                serializer.is_valid()
+                return Response(serializer.data, status=status.HTTP_200_OK)
             except User.DoesNotExist:
                 return Response({'detail':"Not found"},status=status.HTTP_404_NOT_FOUND)
         elif typeFlag == 'out':
             try:
                 friendships = Friendship.objects.filter(
                     Q(inviter=currentUserId) & Q(status=0)
-                )
-
-                return Response(friendships.values('accepter').values('username','photo'), status=status.HTTP_200_OK)
+                ).values_list('accepter',flat=True)
+                users = [
+                    User.objects.get(id=user_id)
+                    for user_id in friendships
+                ]
+                serializer = self.serializer_class(data=users,many=True)
+                serializer.is_valid()
+                return Response(serializer.data, status=status.HTTP_200_OK)
             except User.DoesNotExist:
                 return Response({'detail':"Not found"},status=status.HTTP_404_NOT_FOUND)
         else:

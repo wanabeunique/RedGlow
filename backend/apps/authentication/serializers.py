@@ -96,7 +96,7 @@ class KeySignUpSerializer(serializers.Serializer):
             raise serializers.ValidationError(
                 'Код неверный или срок его действия истек'
             )
-        tmpData = json.loads(r.get(code))
+        data = json.loads(r.get(code))
         
         
         if key is None:
@@ -111,7 +111,7 @@ class KeySignUpSerializer(serializers.Serializer):
                 "Некорректная ссылка"
             )
         
-        if email != tmpData.get('email'):
+        if email != data.get('email'):
             raise serializers.ValidationError(
                 'Ссылка некорректная или срок её действия истек'
             )
