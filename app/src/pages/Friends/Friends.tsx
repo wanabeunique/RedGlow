@@ -78,7 +78,7 @@ export default function Friends() {
     console.log(friendsData);
   }, []);
 
-  return isAuth ? (
+  return (isAuth ? (
     <div
       className={`container ${styles.friends} ${
         isMenuActive ? styles.friends_active : null
@@ -161,5 +161,5 @@ export default function Friends() {
     </div>
   ) : (
     <Navigate to="/login" />
-  );
+  ));
 }
