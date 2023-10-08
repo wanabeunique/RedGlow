@@ -1,6 +1,23 @@
 .login
+  min-height: calc(100vh - 90px )
+  &::before
+    z-index: 1
+    height: 100%
+    width: 100%
+    content: ''
+    display: block
+    position: absolute
+    top: 0
+    left: 0
+    background: radial-gradient(65% 60.16% at 50% 44.19%, rgba(0, 0, 0, 0.00) 0%, rgba(0, 0, 0, 0.62) 0.01%, rgba(0, 0, 0, 0.83) 100%)
+    background-image: url('./../public/bg.png')
+    background-size: cover
+    background-repeat: no-repeat
+    filter: blur(50px)
   &__wrapper
     display: flex
+    position: relative
+    z-index: 2
   &__link
     text-decoration: none
     color: rgba(0, 0, 0, 0.60)

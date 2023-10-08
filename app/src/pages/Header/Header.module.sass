@@ -4,6 +4,25 @@
   width: 100%
   position: relative
   z-index: 2
+  &__burger
+    &_red
+      border-color: var(--main-red-color)
+      .header__burger_line
+        background: var(--main-red-color)
+    cursor: pointer
+    width: 30px
+    height: 30px
+    border: 1px solid var(--secondary-color)
+    border-radius: 5px
+    display: flex
+    flex-direction: column
+    justify-content: space-evenly
+    align-items: center
+    &_line
+      display: block
+      width: 75%
+      height: 2px
+      background: var(--secondary-color)
   &__container
     display: flex
     justify-content: space-between

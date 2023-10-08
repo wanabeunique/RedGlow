@@ -1,0 +1,45 @@
+.menu
+  border-right: 3px solid var(--secondary-color)
+  overflow: hidden
+  position: absolute
+  top: 0vw
+  left: -50vw
+  width: 30vw
+  padding: 90px 10px 10px 10px
+  background: var(--main-color)
+  z-index: 1
+  height: 100vh
+  transition: left .3s ease-out
+  &_active
+    left: 0
+  &__wrapper
+    display: flex
+    flex-direction: column
+    gap: 30px
+  &__group
+    display: flex
+    flex-direction: column
+    gap: 10px
+  &__items
+    display: flex
+    flex-direction: column
+    gap: 10px
+  &__item
+    color: var(--secondary-color)
+    text-decoration: none
+    font-size: 20px
+    margin: 0
+    padding-left: 15px
+  &__title
+    width: max-content
+    text-decoration: none
+    font-size: 25px
+    margin: 0
+    color: var(--main-red-color)
+  &__link
+    &_white
+      &:hover
+        color: var(--secondary-color)
+    &_red
+      &:hover
+        color: var(--main-red-color)

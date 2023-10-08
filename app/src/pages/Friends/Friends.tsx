@@ -14,9 +14,7 @@ import { Navigate } from "react-router-dom";
 import { Tab, Tabs, TabList, TabPanel } from "react-tabs";
 
 export default function Friends() {
-  const username: string = useSelector(
-    (state: RootState) => state.userReducer.username
-  );
+  const username: string = useAppSelector((state) => state.userReducer.username);
   const [searchedUsers, setSearchedUsers] = useState<Array<string>>([]);
   const [friendsData, setFriendsData] = useState<any>([]);
   const [queryNickname, setQueryNickname] = useState("");
@@ -24,7 +22,7 @@ export default function Friends() {
   const [friendsRequest, setFriendsRequest] = useState<any>([]);
 
   const isAuth = useAppSelector((state) => state.authReducer.data);
-  const isMenuActive = useAppSelector((state) => state.friendsMenuReduce.data);
+  const isFriendsActive = useAppSelector((state) => state.menusReduce.friends);
 
   const debouncedSearchUsers = useDebounce(queryNickname);
 
@@ -78,17 +76,21 @@ export default function Friends() {
     console.log(friendsData);
   }, []);
 
-  return (isAuth ? (
+  return isAuth ? (
     <div
       className={`container ${styles.friends} ${
-        isMenuActive ? styles.friends_active : null
+        isFriendsActive ? styles.friends_active : null
       }`}
     >
       <Tabs className={styles.friends__tabs}>
         <TabList className={styles.friends__top}>
-          <Tab className={styles.friends__tab}>Друзья ( {friendsData.length} )</Tab>
-          <Tab className={styles.friends__tab}>Заявки в дурзья ( 00 )</Tab>
-          <Tab className={styles.friends__tab}>Отправленные заявки ( {friendsRequest.length} )</Tab>
+          <Tab className={styles.friends__tab}>
+            Друзья ( {friendsData.length} )
+          </Tab>
+          <Tab className={styles.friends__tab}>Заявки в дурзья ( soon.. )</Tab>
+          <Tab className={styles.friends__tab}>
+            Отправленные заявки ( {friendsRequest.length} )
+          </Tab>
           <Tab className={styles.friends__tab}>Поиск</Tab>
         </TabList>
         <TabPanel className={styles.friends__content}>
@@ -104,16 +106,14 @@ export default function Friends() {
               ))}
             </div>
           ) : (
-            <p className={styles.friends__text}>{`У вас пока что нет ни одного друга, но не стоит расстраиваться...`}</p>
+            <p
+              className={styles.friends__text}
+            >{`У вас пока что нет ни одного друга, но не стоит расстраиваться...`}</p>
           )}
         </TabPanel>
-        <TabPanel>
-          :(
-        </TabPanel>
+        <TabPanel>:(</TabPanel>
         <TabPanel className={styles.friends__content}>
-          <p className={styles.friends__title}>
-            Отправленные заявки в друзья
-          </p>
+          <p className={styles.friends__title}>Отправленные заявки в друзья</p>
           {friendsRequest
             ? friendsRequest.map((request: any) => (
                 <Friend
@@ -125,7 +125,7 @@ export default function Friends() {
             : null}
         </TabPanel>
         <TabPanel>
-        <div className={styles.search}>
+          <div className={styles.search}>
             <input
               onChange={(event) => {
                 setQueryNickname(event.target.value);
@@ -159,7 +159,5 @@ export default function Friends() {
         </TabPanel>
       </Tabs>
     </div>
-  ) : (
-    <Navigate to="/login" />
-  ));
+  ) : null;
 }
