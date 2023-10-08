@@ -12,9 +12,6 @@ export const setLogout = createAsyncThunk<undefined, undefined, {rejectValue: st
       await axios.put(
         `${import.meta.env.VITE_API_SERVER}/user/session/`,
         {},
-        {
-          withCredentials: true,
-        }
       ) 
     }
     catch(error){

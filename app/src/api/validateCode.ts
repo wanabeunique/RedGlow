@@ -11,10 +11,6 @@ export default async function validateCode(code: string, key: string) {
     const response = await axios.put(
       `${import.meta.env.VITE_API_SERVER}/users/`,
       data,
-      {
-        withCredentials: true,
-        headers: { "X-CSRFTOKEN": Cookies.get("csrftoken") },
-      }
     );
     return response;
   } catch (error: any) {

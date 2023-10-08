@@ -7,7 +7,6 @@ export default async function getProfile(): Promise<IProfile> {
   try {
     const response = await axios.get(
       `${import.meta.env.VITE_API_SERVER}/user`,
-      { withCredentials: true, headers: { "X-CSRFTOKEN": Cookies.get('csrftoken') } }
     );
     return response.data;
   } catch (error) {

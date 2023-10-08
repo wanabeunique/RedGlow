@@ -6,7 +6,6 @@ export default async function getFriendsRequestIn(): Promise<Array<any>>{
   try {
     const response = await axios.get(
       `${import.meta.env.VITE_API_SERVER}/user/invite/in`,
-      {withCredentials: true,headers:{"X-CSRFTOKEN":Cookies.get('csrftoken')}}
     )
     console.log(response)
     return response.data;

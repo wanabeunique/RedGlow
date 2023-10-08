@@ -18,8 +18,27 @@ import Recovery from './pages/Recovery/Recovery'
 import getIsAuth from './api/getIsAuth'
 import connectSockets from './socket/connectSockets'
 import { useAppSelector } from './hooks'
+import axios, { AxiosHeaders } from 'axios'
+import Cookies from 'js-cookie'
+
+axios.interceptors.request.use(
+  function(config) {
+    config.withCredentials = true
+    const newConfig = Object.assign({}, config, {
+      headers: {
+        ...(config.headers) as AxiosHeaders,
+        'X-CSRFTOKEN': Cookies.get('csrftoken')
+      },
+  });
+  return newConfig;
+  },
+  function(error) {
+    return Promise.reject(error);
+  }
+);
 
 function App() {
+
   const isAuth = useAppSelector((state) => state.authReducer.data)
   const dispatch = useDispatch()
   useEffect(() => {

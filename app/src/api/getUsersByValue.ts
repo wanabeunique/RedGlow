@@ -6,7 +6,6 @@ export default async function getUsersByValue(value: string): Promise<Array<stri
   try {
     const response = await axios.get(
       `${import.meta.env.VITE_API_SERVER}/user/prefix/${value}/`,
-      {withCredentials: true,headers:{"X-CSRFTOKEN":Cookies.get('csrftoken')}}
     )
     
     return response.data;

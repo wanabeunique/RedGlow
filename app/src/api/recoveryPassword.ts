@@ -12,9 +12,6 @@ export default async function recoveryPassword(email: string){
       {
         "email": email
       },
-      {
-        withCredentials: true,
-      }
     )
     if (response.status == 200){
       toast.success('Письмо успешно отправлено на почту')

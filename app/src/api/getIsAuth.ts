@@ -8,7 +8,6 @@ export default async function getIsAuth(dispatch: any){
   try{
     const response = await axios.get(
       `${import.meta.env.VITE_API_SERVER}/user/checker/`,
-      {withCredentials: true,headers:{"X-CSRFTOKEN":Cookies.get('csrftoken')}}
     )
     if (response.status == 202){
       dispatch(setUsername(response.data.username))

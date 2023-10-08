@@ -9,7 +9,6 @@ export default async function sendFriendRequest(nickname:  string) {
     const response = await axios.post(
       `${import.meta.env.VITE_API_SERVER}/user/friend/`,
       data,
-      {withCredentials: true, headers:{"X-CSRFTOKEN":Cookies.get('csrftoken')}}
     )
     toast.success(`Запрос пользователю ${data.accepter} отправлен`)
   } catch (error) {
