@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 import styles from './Generate.module.sass'
 import { useEffect } from 'react'
 import axios from 'axios'

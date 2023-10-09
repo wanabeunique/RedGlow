@@ -1,20 +1,18 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import styles from "./Friends.module.sass";
-import { useSelector } from "react-redux";
 import getUserFriends from "../../api/getUserFriends";
 import sendFriendRequest from "../../api/sendFriendRequest";
 import getUsersByValue from "../../api/getUsersByValue";
-import { RootState } from "../../store/store";
-import IUsername from "../../interfaces/IUsername";
 import { useAppSelector, useDebounce } from "../../hooks";
 import getFriendsRequestIn from "../../api/getFriendsRequestIn";
 import getFriendsRequestOut from "../../api/getFriendsRequestOut";
 import Friend from "../../components/Friends/Friend/Friend";
-import { Navigate } from "react-router-dom";
 import { Tab, Tabs, TabList, TabPanel } from "react-tabs";
 
 export default function Friends() {
-  const username: string = useAppSelector((state) => state.userReducer.username);
+  const username: string = useAppSelector(
+    (state) => state.userReducer.username
+  );
   const [searchedUsers, setSearchedUsers] = useState<Array<string>>([]);
   const [friendsData, setFriendsData] = useState<any>([]);
   const [queryNickname, setQueryNickname] = useState("");
@@ -51,8 +49,8 @@ export default function Friends() {
 
     const HandleFriendsInviteIn = async () => {
       getFriendsRequestIn()
-        .then((res) => {
-          console.log(res);
+        .then((res: any) => {
+          setFriendsInvite(res);
         })
         .catch((error) => {
           console.log("IN");
@@ -87,7 +85,9 @@ export default function Friends() {
           <Tab className={styles.friends__tab}>
             Друзья ( {friendsData.length} )
           </Tab>
-          <Tab className={styles.friends__tab}>Заявки в дурзья ( soon.. )</Tab>
+          <Tab className={styles.friends__tab}>
+            Заявки в дурзья ( {friendsInvite.length} )
+          </Tab>
           <Tab className={styles.friends__tab}>
             Отправленные заявки ( {friendsRequest.length} )
           </Tab>
@@ -111,7 +111,17 @@ export default function Friends() {
             >{`У вас пока что нет ни одного друга, но не стоит расстраиваться...`}</p>
           )}
         </TabPanel>
-        <TabPanel>:(</TabPanel>
+        <TabPanel>
+          {friendsInvite
+            ? friendsInvite.map((request: any) => (
+                <Friend
+                  username={request.username}
+                  type="in"
+                  avatar={request.photo}
+                />
+              ))
+            : null}
+        </TabPanel>
         <TabPanel className={styles.friends__content}>
           <p className={styles.friends__title}>Отправленные заявки в друзья</p>
           {friendsRequest

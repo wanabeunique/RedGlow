@@ -1,6 +1,6 @@
 import React from "react";
 import { useState } from "react";
-import recoveryPassword from "../../api/recoveryPassword.ts";
+import recoveryPassword from "../../api/recoveryPassword";
 import styles from "./Recovery.module.sass";
 
 export default function Recovery() {

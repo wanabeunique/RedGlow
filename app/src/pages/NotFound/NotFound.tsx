@@ -1,4 +1,3 @@
-import React from 'react'
 import styles from './NotFound.module.sass'
 import {Link} from 'react-router-dom'
 

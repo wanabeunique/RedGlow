@@ -1,4 +1,3 @@
-import React from 'react'
 import styles from './Proflie.module.sass'
 import Avatar from 'antd/es/avatar/avatar'
 import {  Button, Modal  } from 'antd'

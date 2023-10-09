@@ -1,3 +1,5 @@
+import removeFriend from "../../../api/removeFriend";
+import sendFriendRequest from "../../../api/sendFriendRequest";
 import styles from "./Friend.module.sass";
 
 interface IFriendProps {
@@ -6,7 +8,8 @@ interface IFriendProps {
   type: "current" | "in" | "out" | "search";
 }
 
-function renderSwitch({ type }: IFriendProps) {
+
+function renderSwitch({ type, username}: IFriendProps) {
   switch (type) {
     // Текущие друзья
     case "current":
@@ -165,6 +168,7 @@ function renderSwitch({ type }: IFriendProps) {
       return (
         <div className={styles.tools}>
           <svg
+            onClick={() => HandleRemove(username)}
             width="30px"
             height="30px"
             viewBox="0 0 24 24"
@@ -247,6 +251,15 @@ function renderSwitch({ type }: IFriendProps) {
       return null;
   }
 }
+
+async function HandleAccept(nickname: string){
+  const res = await sendFriendRequest(nickname)
+}
+
+async function HandleRemove(nickname: string){
+  const res = await removeFriend(nickname)
+}
+
 
 export default function Friend({ username, type, avatar }: IFriendProps) {
   console.log(username)

@@ -10,7 +10,12 @@ export default async function sendFriendRequest(nickname:  string) {
       `${import.meta.env.VITE_API_SERVER}/user/friend/`,
       data,
     )
-    toast.success(`Запрос пользователю ${data.accepter} отправлен`)
+    if (response.status == 201){
+      toast.success(`Запрос пользователю ${data.accepter} отправлен`)
+    }
+    else if (response.status == 202){
+      toast.success(`Вы успешно добавили ${data.accepter}`)
+    }
   } catch (error) {
     toast.error('Ошибка в запросе')
   }

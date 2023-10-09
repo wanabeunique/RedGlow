@@ -1,4 +1,3 @@
-import React from "react";
 import styles from "./Login.module.sass";
 import { Link } from "react-router-dom";
 import login from "../../api/login";

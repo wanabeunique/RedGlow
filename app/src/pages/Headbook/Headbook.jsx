@@ -1,4 +1,3 @@
-import React from 'react'
 import styles from './Headebook.module.sass'
 import { Link, Routes, Route } from 'react-router-dom'
 import HeadbookCiv5 from './HeadbookСiv5/HeadbookCiv5'  

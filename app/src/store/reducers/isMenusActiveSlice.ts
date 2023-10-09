@@ -16,7 +16,6 @@ export const isfriendsMenuActiveSlice = createSlice({
   reducers: {
     setFriendsMenuActive(state, action: PayloadAction<boolean>) {
       state.friends = action.payload;
-      console.log(state.friends, action.payload)
     },
     setProfileMenuActive(state, action: PayloadAction<boolean>) {
       state.profile = action.payload;
