@@ -32,7 +32,7 @@ export default function Registration() {
         <div className={`${styles.registration__left} ${styles.left}`}>
           <p className={`title ${styles.left__title}`}>Добро пожаловать!</p>
           <p className={`text ${styles.left__subtitle}`}>Чтобы оставаться с нами, пожалуйста войдите в свой аккаунт.</p>
-          <Link to='/login' className={`button ${styles.left__button}`}>Войти</Link>
+          <Link to='/login' className={`auth-button ${styles.left__button}`}>Войти</Link>
         </div>
         <div className={`${styles.registration__right} ${styles.right}`}>
           <p className={`title ${styles.right__title}`}>Создайте Аккаунт</p>
@@ -55,16 +55,16 @@ export default function Registration() {
           </div>
           <p className={`${styles.right__subtitle}`}>или используйте ваш email для регистрации</p>
           <div className={styles.registration__inputs}>
-              <input placeholder='Логин' className={`${styles.registration__input} input`} type="text" {...register("username")}/>
-              <input placeholder='Email' className={`${styles.registration__input} input`} type="email" {...register("email")}/>
-              <input placeholder='Пароль' className={`${styles.registration__input} input`} type="password" {...register("password")}/>
-              <input placeholder='Повторите пароль' className={`${styles.registration__input} input`} type="password" {...register("confirmPassword")}/>
+              <input placeholder='Логин' className={`${styles.registration__input} auth-input`} type="text" {...register("username")}/>
+              <input placeholder='Email' className={`${styles.registration__input} auth-input`} type="email" {...register("email")}/>
+              <input placeholder='Пароль' className={`${styles.registration__input} auth-input`} type="password" {...register("password")}/>
+              <input placeholder='Повторите пароль' className={`${styles.registration__input} auth-input`} type="password" {...register("confirmPassword")}/>
             </div>
             <ReCAPTCHA className={styles.registration__captcha}
               sitekey="6LfUR4EnAAAAALkvTYM1IeiHLxfxIA1h5buGus6b"
               onChange={() => {setIsCaptchaSuccess(true)}}
             /> 
-            <button type='submit' disabled={!isCaptchaSuccessful} className={`${styles.registration__button} button`}>
+            <button type='submit' disabled={!isCaptchaSuccessful} className={`${styles.registration__button} auth-button`}>
               Зарегистрироваться
             </button>
         </div>

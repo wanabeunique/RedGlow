@@ -138,7 +138,7 @@ export default function Profile() {
               </div>
             </div>
         </TabsContent>
-        <TabsContent value="history">История игр</TabsContent>
+        <TabsContent value="history"><p className="mt-10">История игр</p></TabsContent>
         <TabsContent value="friends"> 
           <div>
           {friendsInvite
@@ -169,7 +169,7 @@ export default function Profile() {
           </div>
         </TabsContent>
         <TabsContent value="personalData">
-          <div className={styles.profile__item}>
+          <div className={`mt-10 ${styles.profile__item}`}>
             <p>Ваш пароль: </p>
             <div className={styles.profile__row}>
               <p>******</p>

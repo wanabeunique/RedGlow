@@ -74,13 +74,13 @@ export default function Login() {
             <div className={styles.left__inputs}>
               <input
                 placeholder="Логин"
-                className={`${styles.login__input} input`}
+                className={`${styles.login__input} auth-input`}
                 type="text"
                 {...register("username")}
               />
               <input
                 placeholder="Пароль"
-                className={`${styles.login__input} input`}
+                className={`${styles.login__input} auth-input`}
                 type="text"
                 {...register("password")}
               />
@@ -91,7 +91,7 @@ export default function Login() {
             >
               Забыл Пароль?
             </Link>
-            <button type="submit" className={`${styles.left__button} button`}>
+            <button type="submit" className={`${styles.left__button} auth-button`}>
               Войти
             </button>
           </div>
@@ -102,7 +102,7 @@ export default function Login() {
             </p>
             <Link
               to={"/registration"}
-              className={`button ${styles.right__button}`}
+              className={`auth-button ${styles.right__button}`}
             >
               Зарегистрироваться
             </Link>
