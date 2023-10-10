@@ -7,7 +7,7 @@ import { useAppSelector, useDebounce } from "../../hooks";
 import getFriendsRequestIn from "../../api/getFriendsRequestIn";
 import getFriendsRequestOut from "../../api/getFriendsRequestOut";
 import Friend from "../../components/Friends/Friend/Friend";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 
@@ -30,8 +30,9 @@ export default function Friends() {
     async function getSearchedUsers() {
       if (queryNickname.length > 2) {
         async function getRequest() {
-          await getUsersByValue(debouncedSearchUsers).then((res) => {
+          await getUsersByValue(debouncedSearchUsers, 1).then((res) => {
             setSearchedUsers(res);
+            console.log(res);
           });
         }
         getRequest();
@@ -84,15 +85,20 @@ export default function Friends() {
     >
       <Tabs defaultValue="friends" className="">
         <TabsList>
-          <TabsTrigger value="friends">Друзья ( {friendsData.length} )</TabsTrigger>
-          <TabsTrigger value="friendsIn">Заявки в друзья ( {friendsInvite.length} )</TabsTrigger>
-          <TabsTrigger value="friendsOut">Отправленные заявки ( {friendsRequest.length} )</TabsTrigger>
+          <TabsTrigger value="friends">
+            Друзья ( {friendsData.length} )
+          </TabsTrigger>
+          <TabsTrigger value="friendsIn">
+            Заявки в друзья ( {friendsInvite.length} )
+          </TabsTrigger>
+          <TabsTrigger value="friendsOut">
+            Отправленные заявки ( {friendsRequest.length} )
+          </TabsTrigger>
           <TabsTrigger value="search">Поиск</TabsTrigger>
         </TabsList>
-      <TabsContent value="friends">
-        </TabsContent>
+        <TabsContent value="friends"></TabsContent>
         <TabsContent value="friendsIn">
-        {friendsInvite
+          {friendsInvite
             ? friendsInvite.map((request: any) => (
                 <Friend
                   username={request.username}
@@ -103,7 +109,7 @@ export default function Friends() {
             : null}
         </TabsContent>
         <TabsContent value="friendsOut">
-        {friendsRequest
+          {friendsRequest
             ? friendsRequest.map((request: any) => (
                 <Friend
                   username={request.username}
@@ -114,8 +120,8 @@ export default function Friends() {
             : null}
         </TabsContent>
         <TabsContent value="search">
-        <div className={styles.search}>
-            <Input 
+          <div className={styles.search}>
+            <Input
               onChange={(event) => {
                 setQueryNickname(event.target.value);
                 setSearchedUsers;
@@ -136,7 +142,7 @@ export default function Friends() {
             <>
               {searchedUsers.map((user: any) => (
                 <Friend
-                  username={user.nickname}
+                  username={user.username}
                   type="search"
                   avatar={user.photo}
                 />
@@ -145,33 +151,6 @@ export default function Friends() {
           </div>
         </TabsContent>
       </Tabs>
-      {/* <Tabs className={styles.friends__tabs}>
-        <TabList className={styles.friends__top}>
-          <Tab className={styles.friends__tab}>
-            Друзья ( {friendsData.length} )
-          </Tab>
-          <Tab className={styles.friends__tab}>
-            Заявки в дурзья ( {friendsInvite.length} )
-          </Tab>
-          <Tab className={styles.friends__tab}>
-            Отправленные заявки ( {friendsRequest.length} )
-          </Tab>
-          <Tab className={styles.friends__tab}>Поиск</Tab>
-        </TabList>
-        <TabPanel className={styles.friends__content}>
-          
-        </TabPanel>
-        <TabPanel>
-          
-        </TabPanel>
-        <TabPanel className={styles.friends__content}>
-          <p className={styles.friends__title}>Отправленные заявки в друзья</p>
-          
-        </TabPanel>
-        <TabPanel>
-          
-        </TabPanel>
-      </Tabs> */}
     </div>
   ) : null;
 }

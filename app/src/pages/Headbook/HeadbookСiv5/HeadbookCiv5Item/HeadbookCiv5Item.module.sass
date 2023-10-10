@@ -1,7 +1,8 @@
 .item
   display: flex
   flex-direction: column
-  border: 1px solid var(--main-color)
+  border: 1px solid hsl(var(--border))
+  background: hsl(var(--background))
   padding: var(--tiny-offset)
   height: min-content
   cursor: pointer
@@ -23,6 +24,7 @@
   display: flex
   flex-direction: column
   gap: var(--tiny-offset)
+  background: hsl(var(--background))
   &__item
     display: flex
     gap: var(--tiny-offset)

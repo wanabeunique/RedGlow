@@ -23,10 +23,24 @@ import {
 import { Separator } from "@/components/ui/separator"
 import { Input } from "@/components/ui/input";
 import changePassword from "@/api/changePassword";
+import { Button } from "@/components/ui/button";
 
 
 
 export default function Profile() {
+
+  function removeBodyClasses() {
+    const el = document.querySelector('html')
+    if (el) {
+      console.log(el)
+      for (var i = el.classList.length - 1; i >= 0; i--) {
+        console.log(el.classList[i].startsWith('theme'))
+        if(el.classList[i].startsWith('theme')) {
+            el.classList.remove(el.classList[i]);
+        }
+      } 
+    }
+  }
 
   const [user, setUser] = useState<IUser>();
   const [decency, setDecency] = useState<number>(0);
@@ -114,6 +128,7 @@ export default function Profile() {
           <TabsTrigger value="history">История</TabsTrigger>
           <TabsTrigger value="friends">Друзья</TabsTrigger>
           <TabsTrigger value="personalData">Личные данные</TabsTrigger>
+          <TabsTrigger value="settings">Настройки</TabsTrigger>
         </TabsList>
         <TabsContent value="review">
           <div className={`${styles.profile__decency} mt-10`}>
@@ -246,6 +261,33 @@ export default function Profile() {
                   </AlertDialogFooter>
                 </AlertDialogContent>
               </AlertDialog>
+            </div>
+          </div>
+        </TabsContent>
+        <TabsContent value="settings">
+          <div className="flex flex-col gap-2">
+            Выбор темы:
+            <div className=" grid grid-cols-4 gap-3">
+              <Button onClick={() => {
+                removeBodyClasses()
+                document.querySelector('html')?.classList.add('theme-blue')
+              }}>Синяя тема</Button>
+              <Button onClick={() => {
+                removeBodyClasses()
+                document.querySelector('html')?.classList.add('theme-red')
+              }}>Красная тема</Button>
+              <Button onClick={() => {
+                removeBodyClasses()
+                document.querySelector('html')?.classList.add('theme-orange')
+              }}>Оранжевая тема</Button>
+              <Button onClick={() => {
+                removeBodyClasses()
+                document.querySelector('html')?.classList.add('theme-zink')
+              }}>Серая тема</Button>
+              <Button onClick={() => {
+                removeBodyClasses()
+                document.querySelector('html')?.classList.add('theme-violet')
+              }}>Фиолетовая тема</Button>
             </div>
           </div>
         </TabsContent>

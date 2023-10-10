@@ -8,9 +8,7 @@ import HeadbookCiv5Item from './HeadbookCiv5Item/HeadbookCiv5Item';
 export default function () {
   const [input, setInput] = useState('');
   const [jsonData, setJsonData] = useState(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
 
-  
   useEffect(() => {
     const jsonFilePath = '/headbook/headbook_civilization5/allCivs.json';
     axios.get(jsonFilePath)

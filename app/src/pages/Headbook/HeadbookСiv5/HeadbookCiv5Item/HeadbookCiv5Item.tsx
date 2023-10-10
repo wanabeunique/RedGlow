@@ -1,9 +1,8 @@
 import React, { useState } from 'react';
 import styles from './HeadbookCiv5Item.module.sass';
-import {  Button, Modal  } from 'antd'
+import { Modal  } from 'antd'
 
-
-export default function HeadbookCiv5Item({ nation }) {
+export default function HeadbookCiv5Item({ nation }: any) {
   const nationName = nation[0];
   const nationImgSource = `/headbook/headbook_civilization5/${nation[1].Флаг}`;
   const nationLeaderName = Object.keys(nation[1].Лидер[0])[1];
@@ -25,21 +24,21 @@ export default function HeadbookCiv5Item({ nation }) {
   };
 
   return (
-    <div className={`text ${styles.item}`} onClick={() => { setToggle(!toggle) }}>
+    <div className={`${styles.item}`} onClick={() => { setToggle(!toggle) }}>
       <div className={styles.item__top} onClick={showModal}>
-        <p className='text'>{nationName}</p>
-        <img className={`text ${styles.item__img}`} src={nationImgSource} alt="" />
+        <p>{nationName}</p>
+        <img className={`${styles.item__img}`} src={nationImgSource} alt="" />
       </div>
       {toggle ? (
         <Modal title={nationName} open={isModalOpen} onCancel={handleCancel} className={styles.content} footer={''}>
           <div className={styles.content__item}>
-            <p className='text'>Лидер:</p>
-            <p className='text'>{nationLeaderName}</p>
+            <p >Лидер:</p>
+            <p>{nationLeaderName}</p>
           </div>
           <img className={styles.content__leaderImg} src={nationLeaderImg} alt="" />
           <div className={styles.content__bonus}>
-            <p className='text'>Уникальный бонус:</p>
-            <p className='text'>{nationLeaderBonus}</p>
+            <p>Уникальный бонус:</p>
+            <p>{nationLeaderBonus}</p>
           </div>
           {nationBuilding ? (
             <div className={styles.content__bulding}>
@@ -48,8 +47,8 @@ export default function HeadbookCiv5Item({ nation }) {
                 <p>{Object.keys(nationBuilding[0])[1]}</p>
                 <img className={styles.content__buildingImg} src={`/headbook/headbook_civilization5/${nationBuilding[0].image}`} />
               </div>
-              <p className='text'>Замещает: {Object.values(nationBuilding[0])[1]['Замещает']}</p>
-              <p className='text'>Эффект: {Object.values(nationBuilding[0])[1]['Эффект']}</p>
+              <p>Замещает: {Object.values(nationBuilding[0])[1]['Замещает']}</p>
+              <p>Эффект: {Object.values(nationBuilding[0])[1]['Эффект']}</p>
             </div>
           ) : (
               <p>Уникальное здание отсутствует</p>
@@ -58,12 +57,12 @@ export default function HeadbookCiv5Item({ nation }) {
             nationUnit.map(el => (
               <div key={Object.keys(el)[1]}>
                 <div className={styles.content__unit}>
-                  <p className='text'>{Object.keys(el)[1]}</p>
+                  <p>{Object.keys(el)[1]}</p>
                   <img className={styles.content__unitImg} src={`/headbook/headbook_civilization5/${el.image}`} alt="" />
                 </div>
-                <p className='text'>Замещает: {Object.values(el)[1]['Замещает']}</p>
-                <p className='text'>Эпоха: {Object.values(el)[1]['Эпоха']}</p>
-                <p className='text'>Сила: {Object.values(el)[1]['Сила'] || Object.values(el)[1]['Дальний бой']}</p>
+                <p>Замещает: {Object.values(el)[1]['Замещает']}</p>
+                <p>Эпоха: {Object.values(el)[1]['Эпоха']}</p>
+                <p>Сила: {Object.values(el)[1]['Сила'] || Object.values(el)[1]['Дальний бой']}</p>
               </div>
             ))
           ) : (
