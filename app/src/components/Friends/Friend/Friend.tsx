@@ -16,8 +16,9 @@ function renderSwitch({ type, username}: IFriendProps) {
       return (
         <div className={styles.tools}>
           <svg
-            width="800px"
-            height="800px"
+            className={styles.svg}
+            width="30px"
+            height="30px"
             viewBox="0 0 24 24"
             fill="none"
             xmlns="http://www.w3.org/2000/svg"
@@ -47,6 +48,7 @@ function renderSwitch({ type, username}: IFriendProps) {
             />
           </svg>
           <svg
+            className={styles.svg}
             width="30px"
             height="30px"
             viewBox="0 0 24 24"
@@ -92,6 +94,7 @@ function renderSwitch({ type, username}: IFriendProps) {
       return (
         <div className={styles.tools}>
           <svg
+            className={styles.svg}
             width="30px"
             height="30px"
             viewBox="0 0 24 24"
@@ -123,6 +126,7 @@ function renderSwitch({ type, username}: IFriendProps) {
             />
           </svg>
           <svg
+            className={styles.svg}
             width="30px"
             height="30px"
             viewBox="0 0 24 24"
@@ -168,6 +172,7 @@ function renderSwitch({ type, username}: IFriendProps) {
       return (
         <div className={styles.tools}>
           <svg
+            className={styles.svg}
             onClick={() => HandleRemove(username)}
             width="30px"
             height="30px"
@@ -207,6 +212,7 @@ function renderSwitch({ type, username}: IFriendProps) {
       return (
         <div className={styles.tools}>
           <svg
+            className={styles.svg}
             width="30px"
             height="30px"
             viewBox="0 0 24 24"
@@ -269,6 +275,7 @@ export default function Friend({ username, type, avatar }: IFriendProps) {
         <p>аватар</p>
       ) : (
         <svg
+          className={styles.svg}
           width="25px"
           height="25px"
           viewBox="0 0 24 24"

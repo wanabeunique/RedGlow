@@ -15,14 +15,10 @@ export default function Menu() {
     <div className={`${styles.menu} ${isProfileActive ? styles.menu_active : null}`}>
       <div className={styles.menu__wrapper}>
         <div className={styles.menu__group}>
-          <NavLink onClick={() => {HandleNavigate()}} to="/Generate" className={`${styles.menu__title} ${styles.menu__link_white}`}>
-            Генерация наций
-          </NavLink>
+          
         </div>
         <div className={styles.menu__group} >
-          <NavLink to="/headbook" className={`${styles.menu__title} ${styles.menu__link_white}`}>
-            Справочник
-          </NavLink>
+          
         </div>
 
         

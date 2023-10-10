@@ -2,7 +2,22 @@ import styles from "./Header.module.sass";
 import { Link, NavLink } from "react-router-dom";
 import { setLogout } from "../../api/setLogout";
 import { useAppDispatch, useAppSelector } from "../../hooks";
-import { setFriendsMenuActive, setProfileMenuActive } from "../../store/reducers/isMenusActiveSlice";
+import {
+  setFriendsMenuActive,
+  setProfileMenuActive,
+} from "../../store/reducers/isMenusActiveSlice";
+import { ModeToggle } from "@/components/mode-toggle";
+import {
+  NavigationMenu,
+  NavigationMenuContent,
+  NavigationMenuIndicator,
+  NavigationMenuItem,
+  NavigationMenuLink,
+  NavigationMenuList,
+  NavigationMenuTrigger,
+  NavigationMenuViewport,
+} from "@/components/ui/navigation-menu"
+
 
 export default function Header() {
   const dispatch = useAppDispatch();
@@ -17,22 +32,15 @@ export default function Header() {
     dispatch(setProfileMenuActive(false));
   }
 
-  function HandleProfile(){
+  function HandleProfile() {
     dispatch(setFriendsMenuActive(false));
     dispatch(setProfileMenuActive(!isProfileActive));
   }
 
   return (
-    <header className={styles.header}>
+    <header className={` ${styles.header} `}>
       <div className={`container ${styles.header__container}`}>
         <div className={`${styles.header__left}`}>
-          {isAuth ? (
-            <li className={`${styles.header__burger} ${isProfileActive ? styles.header__burger_red : null} `} onClick={() => {HandleProfile()}}>
-                <div className={styles.header__burger_line}></div>
-                <div className={styles.header__burger_line}></div>
-                <div className={styles.header__burger_line}></div>
-            </li>
-          ) : null }
           <Link to={"/"} className={styles.header__logo}>
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -47,10 +55,16 @@ export default function Header() {
               />
             </svg>
           </Link>
+          <NavLink to="/Generate" className={`${styles.menu__title} ${styles.menu__link_white}`}>
+            Генерация наций
+          </NavLink>
+          <NavLink to="/headbook" className={`${styles.menu__title} ${styles.menu__link_white}`}>
+            Справочник
+          </NavLink>
           {isAuth ? (
             <>
               <li className={styles.header__item}>
-                <NavLink to="/Play" className={`text ${styles.header__link}`}>
+                <NavLink to="/Play">
                   Играть
                 </NavLink>
               </li>
@@ -62,7 +76,7 @@ export default function Header() {
               >
                 <NavLink
                   to="/headbook"
-                  className={`text ${styles.header__link}`}
+                  className={`${styles.header__link}`}
                 >
                   Выйти
                 </NavLink>
@@ -72,14 +86,17 @@ export default function Header() {
             <></>
           )}
         </div>
-        <div className="header__right">
+        <div className={styles.header__right}>
+          <ModeToggle />
           <ul className={styles.header__items}>
             {isAuth ? (
               <>
                 <li className={styles.header__item}>
                   <svg
                     className={`${styles.header__friends} ${
-                      isFriendsActive ? `${styles.header__friends_active}` : null
+                      isFriendsActive
+                        ? `${styles.header__friends_active}`
+                        : null
                     }`}
                     onClick={() => {
                       HandleFriends();
@@ -127,6 +144,7 @@ export default function Header() {
                   >
                     {/* <Avatar /> */}
                     <svg
+                      className={styles.header__avatar_default}
                       xmlns="http://www.w3.org/2000/svg"
                       width="43"
                       height="43"

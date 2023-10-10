@@ -4,15 +4,16 @@
   gap: 10px
 
 .friends
-  border-left: 3px solid var(--secondary-color)
+  padding: 10px
+  border-left: 3px solid hsl(var(--border))
   overflow: hidden
   position: absolute
   top: 0vw
   right: -50vw
-  width: 30vw
-  padding-top: 90px
-  background: var(--main-color)
-  z-index: 1
+  min-width: 30vw
+  padding-top: 100px
+  background: hsl(var(--background))
+  z-index: 2
   height: 100vh
   transition: right .3s ease-out
   &_active

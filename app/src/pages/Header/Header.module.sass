@@ -1,18 +1,19 @@
 .header
   height: var(--header-height)
-  background: var(--main-color)
+  background: hsl(var(--background))
+  border-bottom: 1px solid hsl(var(--border))
   width: 100%
   position: relative
-  z-index: 2
+  z-index: 3
   &__burger
     &_red
-      border-color: var(--main-red-color)
+      border-color: hsl(var(--primary))
       .header__burger_line
-        background: var(--main-red-color)
+        background: hsl(var(--primary))
     cursor: pointer
     width: 30px
     height: 30px
-    border: 1px solid var(--secondary-color)
+    border: 1px solid hsl(var(--foreground))
     border-radius: 5px
     display: flex
     flex-direction: column
@@ -22,7 +23,7 @@
       display: block
       width: 75%
       height: 2px
-      background: var(--secondary-color)
+      background: hsl(var(--foreground))
   &__container
     display: flex
     justify-content: space-between
@@ -36,12 +37,15 @@
     padding: 0
     gap: var(--small-offset)
   &__link
-    color: var(--secondary-color)
+    color: hsl(var(--foreign))
     text-decoration: none
   &__logo
     color: var(--secondary-color)
     font-size: 30px
     text-decoration: none
+    svg
+      path
+        color: hsl(var(--primary))
   &__item
     display: flex
     align-items: center
@@ -57,21 +61,41 @@
       justify-content: space-between
       height: 43px
     &_nick
+      color: hsl(var(--foreground))
       font-weight: 500
       font-size: 14px
       letter-spacing: .3px
     &_points
       font-size: 15px
-      color: var(--main-red-color)
+      color: hsl(var(--primary))
       font-weight: 500
       letter-spacing: .3px
       margin: 0
   &__left
     display: flex
     align-items: center
-    gap: var(--middle-offset)
+    gap: 15px
   &__friends
     cursor: pointer
+    path
+      stroke: hsl(var(--foreground))
     &_active
       path
-        stroke: var(--main-red-color)
+        stroke: hsl(var(--primary))
+  &__right
+    display: flex
+    gap: 10px
+  &__avatar
+    &_default
+      stroke: hsl(var(--foreground))
+      path, circle
+        stroke: hsl(var(--foreground))
+
+.nav
+  &__content
+    display: flex
+    flex-direction: column
+    width: 100%
+  &__item
+    display: flex
+    width: 100%
