@@ -96,7 +96,21 @@ export default function Friends() {
           </TabsTrigger>
           <TabsTrigger value="search">Поиск</TabsTrigger>
         </TabsList>
-        <TabsContent value="friends"></TabsContent>
+        <TabsContent value="friends">
+          {friendsData.length == 0 ? (
+            <p>У вас пока что нет ни одного друга, но не стоит расстраиваться...</p>
+          )
+          : friendsData.map(
+            ((friend: any) => {
+              <Friend
+                username={friend.username}
+                type="current"
+                avatar={friend.photo}
+              /> 
+            })
+          )
+          }
+        </TabsContent>
         <TabsContent value="friendsIn">
           {friendsInvite
             ? friendsInvite.map((request: any) => (
@@ -140,6 +154,9 @@ export default function Friends() {
           </div>
           <div className={`${styles.list_search}`}>
             <>
+              {queryNickname.length > 2 && searchedUsers.length == 0 && (
+                <p className='text-center'>Пользователей с таким именем не найдено</p>
+              )}
               {searchedUsers.map((user: any) => (
                 <Friend
                   username={user.username}

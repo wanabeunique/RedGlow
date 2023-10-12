@@ -12,7 +12,7 @@ export default async function changePassword(currentPassword: string,newPassword
       data
     )
     console.log(response)
-    toast.success('Вы успешно поменяли пароль');
+    toast.success('Вы успешно сменили  пароль');
     return response.data;
   } catch (error) {
       toast.error('Ошибка при смене пароля');

@@ -184,6 +184,13 @@ export default function Profile() {
           </div>
         </TabsContent>
         <TabsContent value="personalData">
+          <div>
+          </div>
+          <div className={`mt-10 ${styles.profile__item}`}>
+            <a href="https://steamcommunity.com/openid/login?openid.ns=http://specs.openid.net/auth/2.0&openid.mode=checkid_setup&openid.claimed_id=http://specs.openid.net/auth/2.0/identifier_select&openid.identity=http://specs.openid.net/auth/2.0/identifier_select&openid.return_to=https://localhost/steam&openid.realm=https://localhost">
+              Привяжите ваш стим
+            </a>
+          </div>
           <div className={`mt-10 ${styles.profile__item}`}>
             <p>Ваш пароль: </p>
             <div className={styles.profile__row}>

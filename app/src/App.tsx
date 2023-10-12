@@ -20,6 +20,7 @@ import connectSockets from './socket/connectSockets'
 import { useAppSelector } from './hooks'
 import axios, { AxiosHeaders } from 'axios'
 import Cookies from 'js-cookie'
+import Steam from './pages/Steam/Steam'
 
 axios.interceptors.request.use(
   function(config) {
@@ -38,6 +39,8 @@ axios.interceptors.request.use(
 );
 
 function App() {
+  const isDarktheme = document.querySelector('html')?.classList.contains('dark')
+  console.log(isDarktheme)
 
   const isAuth = useAppSelector((state) => state.authReducer.data)
   const dispatch = useDispatch()
@@ -63,9 +66,12 @@ function App() {
             {/* <Route path='/Friends' element={<Friends />}></Route> */}
             <Route path='/Generate' element={<Generate />}></Route>   
             <Route path='/Recovery'element={<Recovery />}/>   
+            <Route path='/Steam' element={<Steam />}/>
           </Route>
         </Routes>
-      <ToastContainer />
+      <ToastContainer 
+        theme={isDarktheme ? 'dark' : 'light'}
+      />
       <Footer />
     </>
   )
