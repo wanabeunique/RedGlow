@@ -9,6 +9,7 @@ class User(AbstractUser):
     phoneNumber = models.CharField(max_length=25,unique=True,error_messages={"unique":"Данный номер телефона уже используется"},null=True)
     steamId = models.CharField(max_length=255,null=True)
     photo = models.ImageField(default="", upload_to='images/userPhoto/',null=True)
+    background = models.ImageField(default='',upload_to='images/userBackground/',null=True)
     decency = models.IntegerField(default=10000)
     reports = models.IntegerField(default=8)
     isAdmin = models.BooleanField(default=False)

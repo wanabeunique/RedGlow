@@ -6,6 +6,8 @@
     <title>Chat Room</title>
 </head>
 <body>
+    <button type="button" onclick="myFunction()">Invite kirinzxc3243</button>
+    <button type="button" onclick="myFunction1()">Accept kirinzx3243</button>
     <script>
         const chatSocket = new WebSocket(
             'wss://localhost:8000/ws/friend'
@@ -22,6 +24,18 @@
         chatSocket.onclose = function(e) {
             console.error('Chat socket closed unexpectedly');
         };
+        function myFunction() {
+            chatSocket.send(JSON.stringify({
+                type: 'invite',
+                target: 'kirinzxc3243'
+            }))
+        }
+        function myFunction1() {
+            chatSocket.send(JSON.stringify({
+                type: 'accept',
+                target: 'kirinzx3243'
+            }))
+        }
     </script>
 </body>
 </html>

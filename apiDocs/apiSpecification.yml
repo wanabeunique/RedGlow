@@ -22,7 +22,7 @@ paths:
         202:
           description: Ссылка была выслан на почту
           content:
-            text/plain:
+            application/json:
               schema:
                 properties:
                   detail:
@@ -31,7 +31,7 @@ paths:
         403:
           description: Запрос был послан от авторизованного пользователя
           content:
-            text/plain:
+            application/json:
               schema:
                 properties:
                   detail:
@@ -53,7 +53,7 @@ paths:
       requestBody:
         required: true
         content:
-          text/plain:
+          application/json:
             schema:
               type: object
               required:
@@ -104,7 +104,7 @@ paths:
         200:
           description: Ключ принят
           content:
-            text/plain:
+            application/json:
               schema:
                 type: object
                 properties:
@@ -117,7 +117,7 @@ paths:
         404:
           description: Время действия ключа истекло или он неверен
           content:
-            text/plain:
+            application/json:
               schema:
                 type: object
                 properties:
@@ -128,7 +128,7 @@ paths:
         403:
           description: Запрос был послан от авторизованного пользователя
           content:
-            text/plain:
+            application/json:
               schema:
                 properties:
                   detail:
@@ -145,7 +145,7 @@ paths:
       requestBody:
         required: true
         content:
-          text/plain:
+          application/json:
             schema:
               type: object
               required:
@@ -162,7 +162,7 @@ paths:
         200:
           description: Успешная авторизация
           content:
-            text/plain:
+            application/json:
               schema:
                 properties:
                   username:
@@ -171,7 +171,7 @@ paths:
         400:
           description: Поля не прошли валидацию
           content:
-            text/plain:
+            application/json:
               schema:
                 type: object
                 properties:
@@ -182,7 +182,7 @@ paths:
         403:
           description: Запрос был послан от авторизованного пользователя
           content:
-            text/plain:
+            application/json:
               schema:
                 properties:
                   detail:
@@ -209,7 +209,7 @@ paths:
         403:
           description: Запрос был послан от неавторизованного пользователя
           content:
-            text/plain:
+            application/json:
               schema:
                 properties:
                   detail:
@@ -234,12 +234,15 @@ paths:
         200:
           description: Авторизован
           content:
-            text/plain:
+            application/json:
               schema:
                 properties:
                   username:
                     type: string
                     example: kirin
+                  photo:
+                    type: string
+                    example: localhost:8000/asf.img
         403:
           description: Не авторизован
     
@@ -260,7 +263,7 @@ paths:
       requestBody:
         required: true
         content:
-          text/plain:
+          application/json:
             schema:
               type: object
               required:
@@ -277,7 +280,7 @@ paths:
         200:
           description: Успешная смена пароля
           content:
-            text/plain:
+            application/json:
               schema:
                 properties:
                   detail:
@@ -292,7 +295,7 @@ paths:
         403:
           description: Запрос был послан от неавторизованного пользователя
           content:
-            text/plain:
+            application/json:
               schema:
                 properties:
                   detail:
@@ -310,7 +313,7 @@ paths:
       requestBody:
         required: true
         content:
-          text/plain:
+          application/json:
             schema:
               type: object
               required:
@@ -323,7 +326,7 @@ paths:
         202:
           description: Ссылка отправлена
           content:
-            text/plain:
+            application/json:
               schema:
                 properties:
                   detail:
@@ -332,7 +335,7 @@ paths:
         400:
           description: Почта не зарегистрирована
           content:
-            text/plain:
+            application/json:
               schema:
                 properties:
                   email:
@@ -351,7 +354,7 @@ paths:
       requestBody:
         required: true
         content:
-          text/plain:
+          application/json:
             schema:
               type: object
               required:
@@ -370,7 +373,7 @@ paths:
         400:
           description: Пароли не прошли валидацию или срок действия ссылки истек
           content:
-            text/plain:
+            application/json:
               schema:
                 type: object
                 properties:
@@ -397,7 +400,7 @@ paths:
       requestBody:
         required: true
         content:
-          text/plain:
+          application/json:
             schema:
               type: object
               required:
@@ -441,7 +444,7 @@ paths:
       requestBody:
         required: true
         content:
-          text/plain:
+          application/json:
             schema:
               type: object
               required:
@@ -463,6 +466,32 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/FriendshipStatus"
+        400:
+          description: Поля не прошли валидацию
+        403:
+          description: Запрос от неавторизованного пользователя
+        default:
+          description: Все остальное
+    get:
+      summary: получить список друзей текущего пользователя
+      operationId: getCurrentuserFriendList
+      tags:
+        - Friends
+      parameters:
+        - in: header
+          name: X-CSRFToken
+          description: CSRF token
+          required: true
+          schema:
+            type: string
+            example: saf141kncaskn214
+      responses:
+        200:
+          description: Успешно получен список друзей
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Friends"
         400:
           description: Поля не прошли валидацию
         403:
@@ -633,6 +662,38 @@ paths:
           description: Запрос от неавторизованного пользователя
         default:
           description: Все остальное
+  /user/{username}:
+    get:
+      summary: Получение данных пользователя
+      operationId: getUser
+      tags:
+        - UserProfile
+      parameters:
+        - in: header
+          name: X-CSRFToken
+          description: CSRF token
+          required: true
+          schema:
+            type: string
+            example: saf141kncaskn214
+        - in: path
+          name: username
+          description: username пользователя
+          required: true
+          schema:
+            type: string
+            example: kirin
+      responses:
+        200:
+          description: Данные пользователя
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserForeignProfile"
+        403:
+          description: Запрос от неавторизованного пользователя
+        default:
+          description: Все остальное
   /user/photo/:
     put:
       summary: Сменить аватарку пользователя
@@ -650,7 +711,7 @@ paths:
       requestBody:
         required: true
         content:
-          text/plain:
+          application/json:
             schema:
               type: object
               properties:
@@ -662,7 +723,7 @@ paths:
         200:
           description: Успешная смена аватарки
           content:
-            text/plain:
+            application/json:
               schema:
                 type: object
                 properties:
@@ -698,7 +759,7 @@ paths:
         200:
           description: Успешно полученная аватарка
           content:
-            text/plain:
+            application/json:
               schema:
                 type: object
                 properties:
@@ -709,6 +770,196 @@ paths:
           description: Запрос от неавторизованного пользователя
         404:
           description: Юзер не найден
+        default:
+          description: Все остальное
+  /user/background/:
+    put:
+      summary: Сменить задний фон профиля
+      operationId: changeUserBackground
+      tags:
+        - UserProfile
+      parameters:
+        - in: header
+          name: X-CSRFToken
+          description: CSRF token
+          required: true
+          schema:
+            type: string
+            example: saf141kncaskn214
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                background:
+                  type: string
+                  format: binary
+                  example: КАРТИНКА ТУТ! ИМЕННО ФАЙЛ!
+      responses:
+        200:
+          description: Успешная смена заднего фона
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  backgorund:
+                    type: string
+                    example: https://127.0.0.1:8000/image.img
+        403:
+          description: Запрос от неавторизованного пользователя
+        default:
+          description: Все остальное
+  /user/{username}/background:
+    get:
+      summary: Получение заднего фона профиля пользователя
+      tags:
+        - UserProfile
+      operationId: getUserBackground
+      parameters:
+        - in: header
+          name: X-CSRFToken
+          description: CSRF token
+          required: true
+          schema:
+            type: string
+            example: saf141kncaskn214
+        - in: path
+          name: username
+          description: Имя пользователя
+          required: true
+          schema:
+            type: string
+            example: kirin
+      responses:
+        200:
+          description: Успешно полученная заднего фона
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  backgorund:
+                    type: string
+                    example: https://127.0.0.1:8000/image.img
+        403:
+          description: Запрос от неавторизованного пользователя
+        404:
+          description: Юзер не найден
+        default:
+          description: Все остальное
+  /user/steamId/:
+    put:
+      summary: Привязка стима
+      operationId: linkSteam
+      tags:
+        - UserProfile
+      parameters:
+        - in: header
+          name: X-CSRFToken
+          description: CSRF token
+          required: true
+          schema:
+            type: string
+            example: saf141kncaskn214
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                steamId:
+                  type: string
+                  example: asfAFNA353
+      responses:
+        200:
+          description: Успешная привязка стима
+        403:
+          description: Запрос от неавторизованного пользователя
+        default:
+          description: Все остальное
+  /user/<str:username>/steamName/:
+    get:
+      summary: Получения ника в стим
+      tags:
+        - UserProfile
+        - Matchmaking
+      operationId: getSteamName
+      parameters:
+        - in: header
+          name: X-CSRFToken
+          description: CSRF token
+          required: true
+          schema:
+            type: string
+            example: saf141kncaskn214
+        - in: path
+          name: username
+          required: true
+          description: username пользователя
+          schema:
+            type: string
+            example: kirin
+      responses:
+        200:
+          description: Успешное получения никнейма в стиме
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  steamName:
+                    type: string
+                    example: kirinw8
+        404:
+          description: Пользователь не найден
+        default:
+          description: Все остальное
+  /user/<str:username>/steamGame/<str:game>:
+    get:
+      summary: Узнать, владеет ли пользователь игрой
+      operationId: doesUserOwnsAGame
+      tags:
+        - UserProfile
+        - Matchmaking
+      parameters:
+        - in: header
+          name: X-CSRFToken
+          description: CSRF token
+          required: true
+          schema:
+            type: string
+            example: saf141kncaskn214
+        - in: path
+          name: username
+          description: username пользователя
+          required: true
+          schema:
+            type: string
+            example: kirin
+        - in: path
+          name: game
+          description: Название игры
+          required: true
+          schema:
+            type: string
+            example: Sid Meir's Civilization V
+      responses:
+        200:
+          description: Успешное получение владения игрой
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  doesOwn:
+                    type: boolean
+                    example: True
+        404:
+          description: Пользователь не найден
         default:
           description: Все остальное
 
@@ -728,9 +979,6 @@ components:
         email:
           type: string
           example: q@gmail.com
-        phoneNumber:
-          type: string
-          example: "+74447779911"
         
     User:
       type: object
@@ -799,9 +1047,39 @@ components:
         reports:
           type: integer
           example: 8
+        photo:
+          type: string
+          example: localhost:8000/asf.img
+        backgorund:
+          type: string
+          example: localhost:8000/asf.img
         subExpiresIn:
           type: string
           example: 00:00:00
+        date_joined:
+          type: string
+          example: 13.08.2023 00:00:00
+        steamIdExists:
+          type: boolean
+          example: True
+    UserForeignProfile:
+      type: object
+      properties:
+        username:
+          type: string
+          example: kirin
+        photo:
+          type: string
+          example: localhost:8000/asf.img
+        backgorund:
+          type: string
+          example: localhost:8000/asf.img
+        subExpiresIn:
+          type: string
+          example: 00:00:00
+        date_joined:
+          type: string
+          example: 13.08.2023 00:00:00
 
         
 

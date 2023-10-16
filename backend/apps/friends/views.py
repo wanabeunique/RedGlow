@@ -15,17 +15,36 @@ class InviteFriendView(ViewSet):
     serializer_class = FriendshipSerializer
     permission_classes = (IsAuthenticated,)
     def create(self,request):
-        inviter = request.user.username
+        inviter = request.user
         accepter = request.data['accepter']
-        serializer = self.serializer_class(data={'inviter': inviter,'accepter': accepter})
+        accepterId = User.objects.get(username=accepter).id
+        if Friendship.objects.filter(inviter=inviter.id,accepter=accepterId).exists():
+            return Response(data={'non_field_errors':['Заявка уже отправлена']},status=status.HTTP_400_BAD_REQUEST)
+        serializer = self.serializer_class(data={'inviter': inviter.username,'accepter': accepter})
         serializer.is_valid(raise_exception=True)
-        channel_layer = get_channel_layer()
-        async_to_sync(channel_layer.group_send)(f"friends_{accepter}",{'type':'friend.invite','invite':{'username':inviter}})
         return serializer.create(serializer.validated_data)
     def update(self,request):
         serializer = self.serializer_class(data={'inviter':request.user.username,'accepter':request.data['accepter']})
         serializer.is_valid(raise_exception=True)
         return serializer.update(serializer.validated_data)
+    def retrieve(self,request):
+        try:
+            targetId = request.user.id
+            friendships = Friendship.objects.filter(
+                (Q(inviter=targetId) | Q(accepter=targetId)) & Q(status=1)
+            )
+
+            friends = [
+                {
+                    'username': friendship.inviter.username if friendship.inviter.id != targetId else friendship.accepter.username,
+                    'photo': friendship.inviter.photo if friendship.inviter.id != targetId else friendship.accepter.photo,
+                }
+                for friendship in friendships
+            ]
+
+            return Response(friends, status=status.HTTP_200_OK)
+        except User.DoesNotExist:
+            return Response({'detail':"Not found"},status=status.HTTP_404_NOT_FOUND)
 
 
 class GetFriendshipStatusView(APIView):

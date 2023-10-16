@@ -13,27 +13,18 @@ https://docs.djangoproject.com/en/4.1/ref/settings/
 from pathlib import Path
 import os
 from cryptography.fernet import Fernet
+from decouple import config
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-CELERY_BROKER_URL = os.environ.get("CELERY_BROKER_URL", "redis://redis:6379/2")
-CELERY_RESULT_BACKEND = os.environ.get("CELERY_RESULT_BACKEND", "redis://redis:6379/2")
-CELERY_TASK_ALWAYS_EAGER = False
-CELERY_TASK_EAGER_PROPAGATES = False
-CELERY_BROKER_CONNECTION_RETRY_ON_STARTUP = True
-CELERY_CACHE_BACKEND = 'django-cache'
-CELERY_TASK_TRACK_STARTED = True
-CELERY_RESULT_BACKEND_ALWAYS_RETRY = True
-CELERY_RESULT_BACKEND_MAX_RETRIES = 10
-CELERY_WORKER_SEND_TASK_EVENTS = True
-CELERY_TASK_SEND_SENT_EVENT = True
+
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-z!zf5ee!nt$n-16et((nsixit%)73i^f2(3kngmfyv4i3#v9f+'
+SECRET_KEY = config('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -53,6 +44,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django.contrib.gis.geoip2',
+    'decouple',
     'sslserver',
     'rest_framework',
     'django.contrib.postgres',
@@ -111,11 +103,11 @@ ASGI_APPLICATION = "gamingPlatform.asgi.application"
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'gamingplatform',
-        'USER': 'postgres',
-        'PASSWORD': 'SeMeN4565',
-        'HOST': 'db',
-        'PORT': '5432',
+        'NAME': config('DB_NAME'),
+        'USER': config('DB_USER'),
+        'PASSWORD': config('DB_PASSWORD'),
+        'HOST': config('DB_HOST'),
+        'PORT': config('DB_PORT'),
     }
 }
 
@@ -170,7 +162,7 @@ AUTH_USER_MODEL = "authentication.User"
 CACHES = {
     'default': {
         'BACKEND': 'django.core.cache.backends.redis.RedisCache',
-        'LOCATION': 'redis://redis:6379',
+        'LOCATION': f'redis://{config("REDIS_HOST")}:{config("REDIS_PORT")}',
     }
 }
 
@@ -178,7 +170,7 @@ CHANNEL_LAYERS = {
     "default": {
         "BACKEND": "channels_redis.core.RedisChannelLayer",
         "CONFIG": {
-            "hosts": [("redis", 6379)],
+            "hosts": [(config("REDIS_HOST"), config("REDIS_PORT"))],
         },
     },
 }
@@ -187,12 +179,12 @@ SESSION_ENGINE = 'django.contrib.sessions.backends.cache'
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 
-EMAIL_HOST = 'smtp.yandex.ru'
+EMAIL_HOST = config('EMAIL_HOST')
 EMAIL_USE_TLS = False
 EMAIL_USE_SSL = True
-EMAIL_HOST_USER = 'semen.vrazhkin@yandex.ru'
-EMAIL_HOST_PASSWORD = 'ffuzdheorahypgdn'
-EMAIL_PORT = 465
+EMAIL_HOST_USER = config("EMAIL_HOST_USER")
+EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD')
+EMAIL_PORT = config('EMAIL_PORT')
 
 
 REST_FRAMEWORK = {
@@ -239,3 +231,15 @@ SECURE_BROWSER_XSS_FILTER = True
 
 SSL_CERTIFICATE = 'server.crt'
 SSL_KEY = 'server.key'
+
+CELERY_BROKER_URL = f"redis://{config('REDIS_HOST')}:{config('REDIS_PORT')}/2"
+CELERY_RESULT_BACKEND = f"redis://{config('REDIS_HOST')}:{config('REDIS_PORT')}/2"
+CELERY_TASK_ALWAYS_EAGER = False
+CELERY_TASK_EAGER_PROPAGATES = False
+CELERY_BROKER_CONNECTION_RETRY_ON_STARTUP = True
+CELERY_CACHE_BACKEND = 'django-cache'
+CELERY_TASK_TRACK_STARTED = True
+CELERY_RESULT_BACKEND_ALWAYS_RETRY = True
+CELERY_RESULT_BACKEND_MAX_RETRIES = 10
+CELERY_WORKER_SEND_TASK_EVENTS = True
+CELERY_TASK_SEND_SENT_EVENT = True

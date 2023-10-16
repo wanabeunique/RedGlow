@@ -17,11 +17,7 @@ class FriendshipSerializer(serializers.ModelSerializer):
         
         if user_1 == user_2:
             raise serializers.ValidationError(
-                'Нельзя быть своим другом'
-            )
-        if Friendship.objects.filter(inviter=user_1,accepter=user_2).exists():
-            raise serializers.ValidationError(
-                'Заявка уже отправлена!'
+                'Отправитель и получатель должны быть разные'
             )
         return data
 

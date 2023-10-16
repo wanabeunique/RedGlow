@@ -38,7 +38,7 @@ services:
         /usr/local/bin/wait-for-it.sh redis:6379 -t 5 --
         python manage.py makemigrations --noinput
         python manage.py migrate --noinput
-        gunicorn gamingPlatform.asgi -k uvicorn.workers.UvicornWorker -c gunicorn_config.py --reload
+        gunicorn gamingPlatform.asgi -k uvicorn.workers.UvicornWorker -c gunicorn_config.py --reload --access-logfile -
     ports:
       - "8000:8000"
     depends_on:
