@@ -7,7 +7,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
         model = User
         fields = ('username','phoneNumber','email','decency','reports','photo','background','subExpiresIn','date_joined','steamIdExists')
     
-    def get_stemIdExists(self, obj):
+    def get_steamIdExists(self, obj):
         return obj.steamId is not None
     
 class UserForeignSerializer(serializers.ModelSerializer):

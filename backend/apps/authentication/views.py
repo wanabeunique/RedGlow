@@ -3,11 +3,12 @@ from rest_framework.views import APIView
 from rest_framework.viewsets import ViewSet
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny, IsAuthenticated
-from .serializers import UserSignUpSerializer, UserLogInSerializer, KeySerializer, KeySignUpSerializer
+from rest_framework.generics import RetrieveAPIView
+from .serializers import UserSignUpSerializer, UserLogInSerializer, KeySerializer, KeySignUpSerializer, UserCheckerSerializer
 from rest_framework import status
 from django.http import HttpRequest
 from .sending import connectToRedis
-import requests
+from .models import User
 
 class SignUpView(ViewSet):
     permission_classes = (AllowAny,)
@@ -52,9 +53,8 @@ class SessionView(ViewSet):
             return Response(status=status.HTTP_200_OK)
         return Response(status=status.HTTP_403_FORBIDDEN)
     
-class AuthCheckerView(APIView):
+class AuthCheckerView(RetrieveAPIView):
     permission_classes = (IsAuthenticated, )
-    def get(self,request:HttpRequest):
-        return Response(
-            {'username': request.user.username,'photo': request.user.photo}
-            ,status=status.HTTP_202_ACCEPTED)
+    serializer_class = UserCheckerSerializer
+    def get_object(self, queryset=None):  
+        return self.request.user

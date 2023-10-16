@@ -7,6 +7,7 @@ from rest_framework import status
 from apps.authentication.models import User
 from steam.webapi import WebAPI
 from decouple import config
+from apps.authentication.permissions import HasSteam
 
 class RetrieveUserProfileView(RetrieveAPIView):
     serializer_class = UserProfileSerializer
@@ -19,6 +20,7 @@ class RetirieveForeignUserProfileView(RetrieveAPIView):
     serializer_class = UserForeignSerializer
     permission_classes = (IsAuthenticated,)
     lookup_field = 'username'
+    queryset = User.objects.all()
 class RetrieveUserPhotoView(RetrieveAPIView):
     serializer_class = UserPhotoSerializer
     permission_classes = (IsAuthenticated,)
@@ -50,7 +52,7 @@ class UpdateSteamIdView(UpdateAPIView):
         return self.request.user
 
 class RetrieveUserOwnsGameView(APIView):
-    permission_classes = (IsAuthenticated, )
+    permission_classes = (IsAuthenticated, HasSteam)
     def get(self,request,username=None,game=None):
         try:
             steamId = User.objects.get(username=username).steamId
@@ -64,7 +66,7 @@ class RetrieveUserOwnsGameView(APIView):
             return Response(data={'detail':'Not found'},status=status.HTTP_404_NOT_FOUND)
         
 class RetrieveUserSteamNameView(APIView):
-    permission_classes = (IsAuthenticated, )
+    permission_classes = (IsAuthenticated, HasSteam)
     def get(self,request,username=None):
         try:
             steamId = User.objects.get(username=username).steamId

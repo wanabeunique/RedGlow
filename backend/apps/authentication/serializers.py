@@ -161,3 +161,8 @@ class UserLogInSerializer(serializers.Serializer):
             )
         
         return user
+    
+class UserCheckerSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ('username','photo')
