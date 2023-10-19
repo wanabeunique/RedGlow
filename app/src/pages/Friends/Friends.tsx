@@ -45,9 +45,8 @@ export default function Friends() {
 
   useEffect(() => {
     const HandleFriends = async () => {
-      const friendsDataValue: Array<string> = await getUserFriends(username);
-      console.log(friendsDataValue)
-      setFriendsData(friendsDataValue);
+      await getUserFriends(username)
+        .then((res) => setFriendsData(res));
     };
     HandleFriends();
 
@@ -102,13 +101,13 @@ export default function Friends() {
             <p>У вас пока что нет ни одного друга, но не стоит расстраиваться...</p>
           )
           : friendsData.map(
-            ((friend: any) => {
+            ((friend: any) => (
               <Friend
                 username={friend.username}
                 type="current"
                 avatar={friend.photo}
               /> 
-            })
+            ))
           )
           }
         </TabsContent>
