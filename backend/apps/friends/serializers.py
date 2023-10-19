@@ -35,6 +35,8 @@ class FriendshipSerializer(serializers.ModelSerializer):
     def update(self, validated_data):
         user_1 = validated_data['inviter']
         user_2 = validated_data['accepter']
+        if not Friendship.objects.filter(inviter=user_1,accepter=user_2).exists():
+            return Response({'detail':'Нечего удалять'},status=status.HTTP_404_NOT_FOUND)
         friendship = Friendship.objects.get(inviter=user_1,accepter=user_2)
         if friendship.status == Friendship.Status.INVITED:
             friendship.delete()
