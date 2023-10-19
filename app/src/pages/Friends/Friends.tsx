@@ -46,6 +46,7 @@ export default function Friends() {
   useEffect(() => {
     const HandleFriends = async () => {
       const friendsDataValue: Array<string> = await getUserFriends(username);
+      console.log(friendsDataValue)
       setFriendsData(friendsDataValue);
     };
     HandleFriends();
@@ -74,7 +75,7 @@ export default function Friends() {
     };
     HandleFriendsInviteOut();
 
-    console.log(friendsData);
+    console.log(friendsData, typeof(friendsData));
   }, []);
 
   return isAuth ? (

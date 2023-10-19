@@ -25,16 +25,10 @@ export default function Header() {
   const nickname = useAppSelector((state) => state.userReducer.username);
 
   const isFriendsActive = useAppSelector((state) => state.menusReduce.friends);
-  const isProfileActive = useAppSelector((state) => state.menusReduce.profile);
 
   function HandleFriends() {
     dispatch(setFriendsMenuActive(!isFriendsActive));
     dispatch(setProfileMenuActive(false));
-  }
-
-  function HandleProfile() {
-    dispatch(setFriendsMenuActive(false));
-    dispatch(setProfileMenuActive(!isProfileActive));
   }
 
   return (
@@ -139,7 +133,7 @@ export default function Header() {
                 </li>
                 <li className={`${styles.header__item}`}>
                   <NavLink
-                    to="/Profile"
+                    to={`/profile/${nickname}`}
                     className={`text ${styles.header__link} ${styles.header__profile}`}
                   >
                     {/* <Avatar /> */}

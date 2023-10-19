@@ -11,7 +11,6 @@ import Login from './pages/Login/Login'
 import Registration from './pages/Registration/Registration'
 import NotFound from './pages/NotFound/NotFound'
 import Profile from './pages/Profile/Profile'
-import Friends from './pages/Friends/Friends'
 import EmailConfirm from './pages/EmailConfirm/EmailConfirm'
 import Generate from './pages/Genarate/Generate'
 import Recovery from './pages/Recovery/Recovery'
@@ -40,10 +39,10 @@ axios.interceptors.request.use(
 
 function App() {
   const isDarktheme = document.querySelector('html')?.classList.contains('dark')
-  console.log(isDarktheme)
-
+  
   const isAuth = useAppSelector((state) => state.authReducer.data)
   const dispatch = useDispatch()
+
   useEffect(() => {
     getIsAuth(dispatch)
   }, [])
@@ -62,8 +61,7 @@ function App() {
             <Route path='/Headbook/*' element={<Headbook/>} />
             <Route path='/Login' element={<Login />}></Route>
             <Route path='/Registration' element={<Registration />}></Route>
-            <Route path='/Profile' element={<Profile />}></Route>
-            {/* <Route path='/Friends' element={<Friends />}></Route> */}
+            <Route path='/Profile/:searchName' element={<Profile />}></Route>
             <Route path='/Generate' element={<Generate />}></Route>   
             <Route path='/Recovery'element={<Recovery />}/>   
             <Route path='/Steam' element={<Steam />}/>

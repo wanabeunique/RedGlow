@@ -9,7 +9,7 @@ export default async function getIsAuth(dispatch: any){
     const response = await axios.get(
       `${import.meta.env.VITE_API_SERVER}/user/checker/`,
     )
-    if (response.status == 202){
+    if (response.status == 200){
       dispatch(setUsername(response.data.username))
       dispatch(setIsAuth(true))
     }
