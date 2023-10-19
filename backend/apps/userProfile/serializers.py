@@ -13,7 +13,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
 class UserForeignSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ('username','photo','background','subExpiredIn','date_joined')
+        fields = ('username','photo','background','subExpiresIn','date_joined')
 
 class UserPhotoSerializer(serializers.ModelSerializer):
     class Meta:

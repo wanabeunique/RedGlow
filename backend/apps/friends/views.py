@@ -1,4 +1,4 @@
-from .serializers import FriendshipSerializer, UserSerializer
+from .serializers import FriendshipSerializer, FriendSerializer
 from rest_framework.views import APIView
 from rest_framework.viewsets import ViewSet
 from rest_framework.permissions import IsAuthenticated
@@ -7,8 +7,6 @@ from rest_framework.response import Response
 from rest_framework import status
 from .models import Friendship
 from django.db.models import Q
-from channels.layers import get_channel_layer
-from asgiref.sync import async_to_sync
 from django.shortcuts import render
 
 class InviteFriendView(ViewSet):
@@ -35,14 +33,14 @@ class InviteFriendView(ViewSet):
             )
 
             friends = [
-                {
-                    'username': friendship.inviter.username if friendship.inviter.id != targetId else friendship.accepter.username,
-                    'photo': friendship.inviter.photo if friendship.inviter.id != targetId else friendship.accepter.photo,
-                }
+                friendship.inviter if friendship.inviter.id != targetId else friendship.accepter
+                
                 for friendship in friendships
             ]
+            serializer = FriendSerializer(data=friends,many=True)
+            serializer.is_valid()
 
-            return Response(friends, status=status.HTTP_200_OK)
+            return Response(serializer.data, status=status.HTTP_200_OK)
         except User.DoesNotExist:
             return Response({'detail':"Not found"},status=status.HTTP_404_NOT_FOUND)
 
@@ -63,7 +61,7 @@ class GetFriendshipStatusView(APIView):
         
 class FriendListView(APIView):
     permission_classes = (IsAuthenticated, )
-    serializer_class = UserSerializer
+    serializer_class = FriendSerializer
     def get(self, request, username=None):
         try:
             targetId = User.objects.get(username=username).id
@@ -72,20 +70,20 @@ class FriendListView(APIView):
             )
 
             friends = [
-                {
-                    'username': friendship.inviter.username if friendship.inviter.id != targetId else friendship.accepter.username,
-                    'photo': friendship.inviter.photo if friendship.inviter.id != targetId else friendship.accepter.photo,
-                }
+                friendship.inviter if friendship.inviter.id != targetId else friendship.accepter
+                
                 for friendship in friendships
             ]
+            serializer = self.serializer_class(data=friends,many=True)
+            serializer.is_valid()
 
-            return Response(friends, status=status.HTTP_200_OK)
+            return Response(serializer.data, status=status.HTTP_200_OK)
         except User.DoesNotExist:
             return Response({'detail':"Not found"},status=status.HTTP_404_NOT_FOUND)
 
 class InvitesListView(APIView):
     permission_classes = (IsAuthenticated, )
-    serializer_class = UserSerializer
+    serializer_class = FriendSerializer
     def get(self,request,typeFlag=None):
         currentUserId = request.user.id
         if typeFlag == 'in':
@@ -121,7 +119,7 @@ class InvitesListView(APIView):
 
 class FindUserView(APIView):
     permission_classes = (IsAuthenticated, )
-    serializer_class = UserSerializer
+    serializer_class = FriendSerializer
     def get(self, request,value=None,page=None):
         users = User.objects.filter(username__startswith=value).exclude(id=request.user.id)[page*10 - 10: page*10]
         if not users.exists():

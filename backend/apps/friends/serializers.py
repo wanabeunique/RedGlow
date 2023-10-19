@@ -4,6 +4,7 @@ from rest_framework import serializers
 from rest_framework.response import Response
 from rest_framework import status
 
+
 class FriendshipSerializer(serializers.ModelSerializer):
     inviter = serializers.SlugRelatedField(queryset=User.objects.all(),slug_field='username')
     accepter = serializers.SlugRelatedField(queryset=User.objects.all(),slug_field='username')
@@ -46,7 +47,7 @@ class FriendshipSerializer(serializers.ModelSerializer):
             return Response({"detail":"Пользователь успешно удален из друзей"}, status=status.HTTP_202_ACCEPTED)
 
 
-class UserSerializer(serializers.ModelSerializer):
+class FriendSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ('username','photo')
