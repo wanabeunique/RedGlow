@@ -13,7 +13,6 @@ export default async function getIsAuth(dispatch: any){
       dispatch(setUsername(response.data.username))
       dispatch(setIsAuth(true))
     }
-    console.log(response)
   }
   catch(error){
     console.log(Cookies.get('csrftoken'))

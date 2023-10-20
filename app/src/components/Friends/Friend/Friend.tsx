@@ -5,6 +5,7 @@ import styles from "./Friend.module.sass";
 import AddFriend from "@/components/SVG/AddFriend";
 import RemoveFriend from "@/components/SVG/RemoveFriend";
 import Chat from "@/components/SVG/Chat";
+import { Link } from "react-router-dom";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -164,7 +165,7 @@ export default function Friend({ username, type, avatar }: IFriendProps) {
           />
         </svg>
       )}
-      <p className={styles.nickname}>{username}</p>
+      <Link to={`/profile/${username}`} className={styles.nickname}>{username}</Link>
       {renderSwitch({ type, username, avatar })}
     </div>
   );

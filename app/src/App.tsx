@@ -58,13 +58,13 @@ function App() {
             <Route path='/signUp/confirm' element={<EmailConfirm />}/>
             <Route path='*' element={<NotFound />}></Route>
             <Route index element={<Homepage />} />
-            <Route path='/Headbook/*' element={<Headbook/>} />
-            <Route path='/Login' element={<Login />}></Route>
-            <Route path='/Registration' element={<Registration />}></Route>
-            <Route path='/Profile/:searchName' element={<Profile />}></Route>
-            <Route path='/Generate' element={<Generate />}></Route>   
-            <Route path='/Recovery'element={<Recovery />}/>   
-            <Route path='/Steam' element={<Steam />}/>
+            <Route path='/headbook/*' element={<Headbook/>} />
+            <Route path='/login' element={<Login />}></Route>
+            <Route path='/registration' element={<Registration />}></Route>
+            <Route path='/profile/:searchName' element={<Profile />}></Route>
+            <Route path='/generate' element={<Generate />}></Route>   
+            <Route path='/recovery'element={<Recovery />}/>   
+            <Route path='/steam' element={<Steam />}/>
           </Route>
         </Routes>
       <ToastContainer 

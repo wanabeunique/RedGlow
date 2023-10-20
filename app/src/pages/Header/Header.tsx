@@ -7,17 +7,6 @@ import {
   setProfileMenuActive,
 } from "../../store/reducers/isMenusActiveSlice";
 import { ModeToggle } from "@/components/mode-toggle";
-import {
-  NavigationMenu,
-  NavigationMenuContent,
-  NavigationMenuIndicator,
-  NavigationMenuItem,
-  NavigationMenuLink,
-  NavigationMenuList,
-  NavigationMenuTrigger,
-  NavigationMenuViewport,
-} from "@/components/ui/navigation-menu"
-
 
 export default function Header() {
   const dispatch = useAppDispatch();

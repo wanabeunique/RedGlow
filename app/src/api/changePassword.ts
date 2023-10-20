@@ -11,7 +11,6 @@ export default async function changePassword(currentPassword: string,newPassword
       `${import.meta.env.VITE_API_SERVER}/user/password/`,
       data
     )
-    console.log(response)
     toast.success('Вы успешно сменили  пароль');
     return response.data;
   } catch (error) {

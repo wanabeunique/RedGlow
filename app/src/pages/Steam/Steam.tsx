@@ -1,4 +1,4 @@
-import axios from "axios";
+import setSteam from "@/api/setSteam";
 import { Navigate } from "react-router-dom";
 
 export default function Steam() {
@@ -11,12 +11,12 @@ export default function Steam() {
   if (key){
     id = key.match(pattern);
   }
-  
+
   if (id && id.length > 1){
-    console.log(id[1])
+    setSteam(id[1])
   }
 
   return (
-    <Navigate to="/profile" />
+    <Navigate to="/" />
   )
 }

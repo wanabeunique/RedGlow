@@ -6,7 +6,6 @@ export default async function getFriendsRequestIn(): Promise<Array<any>>{
     const response = await axios.get(
       `${import.meta.env.VITE_API_SERVER}/user/invite/in`,
     )
-    console.log(response)
     return response.data;
   } catch (error) {
       toast.error('Ошибка получения входящих запросов в друзья');
