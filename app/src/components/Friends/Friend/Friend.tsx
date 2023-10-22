@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { useAppDispatch } from "@/hooks";
 import { addFriendCurrent, addFriendOut, removeFriendCurrent, removeFriendIn, removeFriendOut } from "@/store/reducers/friendsSlice";
+import { sendNotificationFriend } from "@/socket/friendsSocket";
 
 interface IFriendProps {
   username: string;
@@ -35,10 +36,12 @@ export default function Friend({ username, type, avatar }: IFriendProps) {
     const res = await sendFriendRequest(nickname);
     if (res?.status == 201){
       dispatch(addFriendOut(nickname))
+      sendNotificationFriend('invite', nickname)
     }
     if (res?.status == 202){
         dispatch(removeFriendIn(nickname))
         dispatch(addFriendCurrent(nickname))
+        sendNotificationFriend('accept', nickname)
       }
     }
 

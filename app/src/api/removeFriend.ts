@@ -9,7 +9,7 @@ export default async function removeFriend(nickname:  string) {
       `${import.meta.env.VITE_API_SERVER}/user/friend/`,
       data,
     )
-    if (response.status == 201){
+    if (response.status == 200){
       toast.success(`Вы отметили заявку ${data.accepter}`)
     }
     else if (response.status == 202){
