@@ -16,6 +16,7 @@ export default async function sendFriendRequest(nickname:  string) {
     else if (response.status == 202){
       toast.success(`Вы успешно добавили ${data.accepter}`)
     }
+    return {status: response.status, nickname: data.accepter}
   } catch (error) {
     toast.error('Ошибка в запросе')
   }

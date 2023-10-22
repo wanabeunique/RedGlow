@@ -3,26 +3,28 @@ import styles from "./Friends.module.sass";
 import getUserFriends from "../../api/getUserFriends";
 import sendFriendRequest from "../../api/sendFriendRequest";
 import getUsersByValue from "../../api/getUsersByValue";
-import { useAppSelector, useDebounce } from "../../hooks";
+import { useAppDispatch, useAppSelector, useDebounce } from "../../hooks";
 import getFriendsRequestIn from "../../api/getFriendsRequestIn";
 import getFriendsRequestOut from "../../api/getFriendsRequestOut";
 import Friend from "../../components/Friends/Friend/Friend";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { setFriendsCurrent, setFriendsIn, setFriendsOut } from "@/store/reducers/friendsSlice";
 
 export default function Friends() {
   const username: string = useAppSelector(
     (state) => state.userReducer.username
   );
   const [searchedUsers, setSearchedUsers] = useState<Array<string>>([]);
-  const [friendsData, setFriendsData] = useState<any>([]);
   const [queryNickname, setQueryNickname] = useState("");
-  const [friendsInvite, setFriendsInvite] = useState([]);
-  const [friendsRequest, setFriendsRequest] = useState<any>([]);
 
   const isAuth = useAppSelector((state) => state.authReducer.data);
   const isFriendsActive = useAppSelector((state) => state.menusReduce.friends);
+  const friendsIn = useAppSelector((state) => state.friendsSlice.in)
+  const friendsOut = useAppSelector((state) => state.friendsSlice.out)
+  const friendsCurrent = useAppSelector((state) => state.friendsSlice.current)
+  const dispath = useAppDispatch()
 
   const debouncedSearchUsers = useDebounce(queryNickname);
 
@@ -46,17 +48,16 @@ export default function Friends() {
   useEffect(() => {
     const HandleFriends = async () => {
       await getUserFriends(username)
-        .then((res) => setFriendsData(res));
+        .then((res) => dispath(setFriendsCurrent(res)));
     };
     HandleFriends();
 
     const HandleFriendsInviteIn = async () => {
       getFriendsRequestIn()
         .then((res: any) => {
-          setFriendsInvite(res);
+          dispath(setFriendsIn(res))
         })
         .catch((error) => {
-          console.log("IN");
           console.log(error);
         });
     };
@@ -65,16 +66,13 @@ export default function Friends() {
     const HandleFriendsInviteOut = async () => {
       getFriendsRequestOut()
         .then((res: any) => {
-          setFriendsRequest(res);
+          dispath(setFriendsOut(res))
         })
         .catch((error) => {
-          console.log("OUT");
           console.log(error);
         });
     };
     HandleFriendsInviteOut();
-
-    console.log(friendsData, typeof(friendsData));
   }, []);
 
   return isAuth ? (
@@ -86,21 +84,21 @@ export default function Friends() {
       <Tabs defaultValue="friends" className="">
         <TabsList>
           <TabsTrigger value="friends">
-            Друзья ( {friendsData.length} )
+            Друзья ( {friendsCurrent.length} )
           </TabsTrigger>
           <TabsTrigger value="friendsIn">
-            Заявки в друзья ( {friendsInvite.length} )
+            Заявки в друзья ( {friendsIn.length} )
           </TabsTrigger>
           <TabsTrigger value="friendsOut">
-            Отправленные заявки ( {friendsRequest.length} )
+            Отправленные заявки ( {friendsOut.length} )
           </TabsTrigger>
           <TabsTrigger value="search">Поиск</TabsTrigger>
         </TabsList>
         <TabsContent value="friends">
-          {friendsData.length == 0 ? (
+          {friendsCurrent.length == 0 ? (
             <p>У вас пока что нет ни одного друга, но не стоит расстраиваться...</p>
           )
-          : friendsData.map(
+          : friendsCurrent.map(
             ((friend: any) => (
               <Friend
                 username={friend.username}
@@ -112,8 +110,8 @@ export default function Friends() {
           }
         </TabsContent>
         <TabsContent value="friendsIn">
-          {friendsInvite
-            ? friendsInvite.map((request: any) => (
+          {friendsIn
+            ? friendsIn.map((request: any) => (
                 <Friend
                   username={request.username}
                   type="in"
@@ -123,8 +121,8 @@ export default function Friends() {
             : null}
         </TabsContent>
         <TabsContent value="friendsOut">
-          {friendsRequest
-            ? friendsRequest.map((request: any) => (
+          {friendsOut
+            ? friendsOut.map((request: any) => (
                 <Friend
                   username={request.username}
                   type="out"

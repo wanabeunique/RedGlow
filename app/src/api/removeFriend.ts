@@ -15,6 +15,7 @@ export default async function removeFriend(nickname:  string) {
     else if (response.status == 202){
       toast.success(`Вы удалили из друзей ${data.accepter}`)
     }
+    return {status: response.status, nickname: data.accepter} 
   } catch (error) {
     console.log(error)
     toast.error('Ошибка в запросе')

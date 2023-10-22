@@ -8,6 +8,7 @@ export default async function getUserFriends(targetName: string): Promise<any> {
     const res = await axios.get(
       `${import.meta.env.VITE_API_SERVER}/user/${targetName}/friend`
     );
+    console.log(res)
     return res.data;
   } catch (error) {
     console.log(error);

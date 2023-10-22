@@ -16,6 +16,8 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { useAppDispatch } from "@/hooks";
+import { addFriendCurrent, addFriendOut, removeFriendCurrent, removeFriendIn, removeFriendOut } from "@/store/reducers/friendsSlice";
 
 interface IFriendProps {
   username: string;
@@ -23,110 +25,127 @@ interface IFriendProps {
   type: "current" | "in" | "out" | "search";
 }
 
-function renderSwitch({ type, username }: IFriendProps) {
-  switch (type) {
-    // Текущие друзья
-    case "current":
-      return (
-        <div className={styles.tools}>
-          <div className={styles.item}>
-            <Chat />
-          </div>
-          <div className={styles.item}>
-            <AlertDialog>
-              <AlertDialogTrigger>
-                <RemoveFriend />
-              </AlertDialogTrigger>
-              <AlertDialogContent>
-                <AlertDialogHeader>
-                  <AlertDialogTitle>
-                    Вы точно хотите удалить {username} из списка друзей?
-                  </AlertDialogTitle>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel>Отмена</AlertDialogCancel>
-                  <AlertDialogAction
-                    onClick={() => {
-                      HandleRemove(username);
-                    }}
-                  >
-                    Удалить
-                  </AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
-          </div>
-        </div>
-      );
 
-    case "in":
-      // Входяшие
-      return (
-        <div className={styles.tools}>
-          <div
-            className={styles.item}
-            onClick={() => {
-              HandleAccept(username);
-            }}
-          >
-            <AddFriend />
-          </div>
-          <div
-            className={styles.item}
-            onClick={() => {
-              HandleRemove(username);
-            }}
-          >
-            <RemoveFriend />
-          </div>
-        </div>
-      );
 
-    case "out":
-      // Исходящие
-      return (
-        <div className={styles.tools}>
-          <div
-            className={styles.item}
-            onClick={() => {
-              HandleRemove(username);
-            }}
-          >
-            <Xmark />
-          </div>
-        </div>
-      );
-
-    case "search":
-      // Друзья в поиске
-      return (
-        <div className={styles.tools}>
-          <div
-            className={styles.item}
-            onClick={() => {
-              HandleAccept(username);
-            }}
-          >
-            <AddFriend />
-          </div>
-        </div>
-      );
-
-    default:
-      return null;
-  }
-}
-
-async function HandleAccept(nickname: string) {
-  const res = await sendFriendRequest(nickname);
-}
-
-async function HandleRemove(nickname: string) {
-  const res = await removeFriend(nickname);
-}
 
 export default function Friend({ username, type, avatar }: IFriendProps) {
-  console.log(username);
+  const dispatch = useAppDispatch() 
+     
+  async function HandleAccept(nickname: string) {
+    const res = await sendFriendRequest(nickname);
+    if (res?.status == 201){
+      dispatch(addFriendOut(nickname))
+    }
+    if (res?.status == 202){
+        dispatch(removeFriendIn(nickname))
+        dispatch(addFriendCurrent(nickname))
+      }
+    }
+
+  async function HandleRemove(nickname: string) {
+    const res = await removeFriend(nickname);
+    if (res?.status == 200){
+      dispatch(removeFriendOut(nickname))
+    } 
+    if (res?.status == 202){
+      dispatch(removeFriendCurrent(nickname))
+    } 
+  } 
+  
+  function renderSwitch({ type, username }: IFriendProps) {
+    switch (type) {
+      // Текущие друзья
+      case "current":
+        return (
+          <div className={styles.tools}>
+            <div className={styles.item}>
+              <Chat />
+            </div>
+            <div className={styles.item}>
+              <AlertDialog>
+                <AlertDialogTrigger>
+                  <RemoveFriend />
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>
+                      Вы точно хотите удалить {username} из списка друзей?
+                    </AlertDialogTitle>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Отмена</AlertDialogCancel>
+                    <AlertDialogAction
+                      onClick={() => {
+                        HandleRemove(username);
+                      }}
+                    >
+                      Удалить
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            </div>
+          </div>
+        );
+
+      case "in":
+        // Входяшие
+        return (
+          <div className={styles.tools}>
+            <div
+              className={styles.item}
+              onClick={() => {
+                HandleAccept(username);
+              }}
+            >
+              <AddFriend />
+            </div>
+            <div
+              className={styles.item}
+              onClick={() => {
+                HandleRemove(username);
+              }}
+            >
+              <RemoveFriend />
+            </div>
+          </div>
+        );
+
+      case "out":
+        // Исходящие
+        return (
+          <div className={styles.tools}>
+            <div
+              className={styles.item}
+              onClick={() => {
+                const res = HandleRemove(username);
+              }}
+            >
+              <Xmark />
+            </div>
+          </div>
+        );
+
+      case "search":
+        // Друзья в поиске
+        return (
+          <div className={styles.tools}>
+            <div
+              className={styles.item}
+              onClick={() => {
+                HandleAccept(username);
+              }}
+            >
+              <AddFriend />
+            </div>
+          </div>
+        );
+
+      default:
+        return null;
+    }
+}
+
   return (
     <div className={styles.wrapper}>
       {avatar ? (
@@ -152,8 +171,7 @@ export default function Friend({ username, type, avatar }: IFriendProps) {
             stroke="white"
             stroke-width="2"
           />
-          <path
-            d="M15 10C15 11.6569 13.6569 13 12 13C10.3431 13 9 11.6569 9 10C9 8.34315 10.3431 7 12 7C13.6569 7 15 8.34315 15 10Z"
+          <path d="M15 10C15 11.6569 13.6569 13 12 13C10.3431 13 9 11.6569 9 10C9 8.34315 10.3431 7 12 7C13.6569 7 15 8.34315 15 10Z"
             stroke="white"
             stroke-width="2"
           />
