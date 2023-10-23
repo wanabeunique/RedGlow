@@ -41,10 +41,10 @@ function App() {
   const isDarktheme = document.querySelector('html')?.classList.contains('dark')
   
   const isAuth = useAppSelector((state) => state.authReducer.data)
-  const dispatch = useDispatch()
+  const dispatch = useAppSelector
 
   useEffect(() => {
-    getIsAuth(dispatch)
+    getIsAuth()
   }, [])
   useEffect(() => {
     if (isAuth){

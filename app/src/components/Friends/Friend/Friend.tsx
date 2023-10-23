@@ -48,7 +48,7 @@ export default function Friend({ username, type, avatar }: IFriendProps) {
   async function HandleRemove(nickname: string) {
     const res = await removeFriend(nickname);
     if (res?.status == 200){
-      dispatch(removeFriendOut(nickname))
+      dispatch(removeFriendIn(nickname))
     } 
     if (res?.status == 202){
       dispatch(removeFriendCurrent(nickname))

@@ -38,6 +38,9 @@ export const friendsSlice = createSlice({
       const itemToRemove = action.payload;
       state.current = state.in.filter(item => item.username !== itemToRemove )
     },
+    addFriendIn(state, action: PayloadAction<string>) {
+     state.in.push({username: action.payload})
+    },
     addFriendOut(state, action: PayloadAction<string>) {
      state.out.push({username: action.payload})
     },
@@ -47,5 +50,5 @@ export const friendsSlice = createSlice({
   },
 });
 
-export const { setFriendsIn, setFriendsCurrent, setFriendsOut, removeFriendIn, removeFriendOut, removeFriendCurrent, addFriendOut, addFriendCurrent } = friendsSlice.actions
+export const { setFriendsIn, setFriendsCurrent, setFriendsOut, removeFriendIn, removeFriendOut, removeFriendCurrent, addFriendOut, addFriendCurrent, addFriendIn } = friendsSlice.actions
 export default friendsSlice.reducer;
