@@ -1,5 +1,7 @@
 import styles from "./Proflie.module.sass";
-import Avatar from "antd/es/avatar/avatar";
+import Avatar from "react-avatar-edit";
+import {default as AvatarImg} from "antd/es/avatar/avatar";
+import ChangePhoto from "@/components/SVG/ChangePhoto";
 import { useState } from "react";
 import getProfile from "../../api/getProfile";
 import { useEffect } from "react";
@@ -24,6 +26,17 @@ import { Input } from "@/components/ui/input";
 import changePassword from "@/api/changePassword";
 import { Button } from "@/components/ui/button";
 import { IOwnProfile } from "@/interfaces/IOwnProfile";
+import changePhoto from "@/api/changePhoto";
+import base64toFile from "@/functions/base64toFile";
+
+const lableStyle = {
+  color: "hsl(var(--foreground))",
+  width: "100%",
+  display: "flex",
+  alignItems: 'center',
+  justifyContent: "center",
+  cursor: "pointer"
+}  
 
 export default function OwnProfile() {
   function removeBodyClasses() {
@@ -42,20 +55,20 @@ export default function OwnProfile() {
   const [user, setUser] = useState<IOwnProfile>();
   const [decency, setDecency] = useState<number>(0);
   const [reports, setReports] = useState<number>(0);
-
   const [friendsData, setFriendsData] = useState<any>([]);
   const [friendsInvite, setFriendsInvite] = useState([]);
 
   const [currentPassword, setCurrentPassword] = useState<any>("");
   const [newPassword, setNewPassword] = useState<any>("");
-
-  useEffect(() => {
+  const [selectedPhoto,setSelectedPhoto] = useState<any>("");
+  
+useEffect(() => {
     const getUser = async () => {
       const userData = await getProfile();
-      console.log(userData)
       setUser(userData);
+      console.log(userData)
     };
-    getUser();
+    getUser(); 
   }, []);
 
   useEffect(() => {
@@ -66,10 +79,9 @@ export default function OwnProfile() {
   }, [user]);
 
   async function HandeChangePassword() {
-    const response = await changePassword(currentPassword, newPassword);
+    await changePassword(currentPassword, newPassword);
     setCurrentPassword("");
     setNewPassword("");
-    console.log(response);
   }
 
   useEffect(() => {
@@ -86,15 +98,28 @@ export default function OwnProfile() {
         getFriendsRequestIn()
           .then((res: any) => {
             setFriendsInvite(res);
-          })
-          .catch((error) => {
-            console.log("IN");
+          }) .catch((error) => {
             console.log(error);
           });
       };
       HandleFriendsInviteIn();
     }
   }, [user]);
+
+  function onCrop(avatar){
+    setSelectedPhoto(avatar)
+  }
+
+  function onClose(){
+    setSelectedPhoto(null)
+  }
+
+  async function changeAvatar(){
+    if (!selectedPhoto) return
+    const fileAvatar = base64toFile(selectedPhoto, 'avatar.png') 
+    console.log(fileAvatar)
+    await changePhoto(fileAvatar)
+  }
 
   return user ? (
     <div className={`${styles.profile}`}>
@@ -106,7 +131,35 @@ export default function OwnProfile() {
         />
         <div className={`container ${styles.profile__top_wrapper}`}>
           <div className={styles.profile__top_avatar}>
-            <Avatar size={160} />
+            <label className={styles.profile__top_change}>
+              <AlertDialog>
+                <AlertDialogTrigger className={styles.profile__top_trigger}>
+                  <ChangePhoto/>        
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>
+                    </AlertDialogTitle>
+                    <AlertDialogDescription>
+                      <Avatar
+                        width={462}
+                        height={400}
+                        labelStyle = {lableStyle}
+                        onCrop={onCrop}
+                        onClose={onClose}
+                      /> 
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Отмена</AlertDialogCancel>
+                    <AlertDialogAction onClick={() => changeAvatar()}>
+                      Выберите изображение
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            </label>
+            <AvatarImg src={user.photo} size={160} />
           </div>
           <div className={styles.profile__top_text}>
             <p className={`${styles.profile__top_nickname} title`}>
@@ -115,6 +168,7 @@ export default function OwnProfile() {
             <p className={`${styles.profile__top_registratedTime} text`}>
               На сайте с 03.01.2005
             </p>
+            <img src={user.photo} alt="" />
           </div>
         </div>
       </div>
