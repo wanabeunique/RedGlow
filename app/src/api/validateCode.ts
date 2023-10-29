@@ -1,5 +1,4 @@
 import axios from "axios";
-import Cookies from "js-cookie";
 
 export default async function validateCode(code: string, key: string) {
   const data = {

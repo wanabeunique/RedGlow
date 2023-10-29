@@ -1,6 +1,7 @@
 import styles from "./Header.module.sass";
+import Avatar from "@/components/SVG/Avatar";
 import { Link, NavLink } from "react-router-dom";
-import { setLogout } from "../../api/setLogout";
+import setLogout from "../../api/setLogout";
 import { useAppDispatch, useAppSelector } from "../../hooks";
 import {
   setFriendsMenuActive,
@@ -12,6 +13,7 @@ export default function Header() {
   const dispatch = useAppDispatch();
   const isAuth = useAppSelector((state) => state.authReducer.data);
   const nickname = useAppSelector((state) => state.userReducer.username);
+  const photo = useAppSelector((state) => state.userReducer.photo)
 
   const isFriendsActive = useAppSelector((state) => state.menusReduce.friends);
 
@@ -125,39 +127,8 @@ export default function Header() {
                     to={`/profile/${nickname}`}
                     className={`text ${styles.header__link} ${styles.header__profile}`}
                   >
-                    {/* <Avatar /> */}
-                    <svg
-                      className={styles.header__avatar_default}
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="43"
-                      height="43"
-                      viewBox="0 0 43 43"
-                      fill="none"
-                    >
-                      <circle
-                        cx="21.5"
-                        cy="21.5"
-                        r="20.5"
-                        stroke="white"
-                        stroke-width="2"
-                      />
-                      <path
-                        opacity="0.16"
-                        d="M11.4667 28.4235C11.4667 27.0714 12.0038 25.7746 12.9599 24.8186C13.916 23.8625 15.2127 23.3254 16.5648 23.3254H26.761C28.1131 23.3254 29.4098 23.8625 30.3659 24.8186C31.322 25.7746 31.8591 27.0714 31.8591 28.4235C31.8591 29.0995 31.5906 29.7479 31.1125 30.2259C30.6345 30.704 29.9861 30.9725 29.3101 30.9725H14.0157C13.3397 30.9725 12.6913 30.704 12.2133 30.2259C11.7352 29.7479 11.4667 29.0995 11.4667 28.4235Z"
-                        fill="white"
-                      />
-                      <path
-                        d="M11.4667 28.4235C11.4667 27.0714 12.0038 25.7746 12.9599 24.8186C13.916 23.8625 15.2127 23.3254 16.5648 23.3254H26.761C28.1131 23.3254 29.4098 23.8625 30.3659 24.8186C31.322 25.7746 31.8591 27.0714 31.8591 28.4235C31.8591 29.0995 31.5906 29.7479 31.1125 30.2259C30.6345 30.704 29.9861 30.9725 29.3101 30.9725H14.0157C13.3397 30.9725 12.6913 30.704 12.2133 30.2259C11.7352 29.7479 11.4667 29.0995 11.4667 28.4235Z"
-                        stroke="white"
-                        stroke-width="2"
-                        stroke-linejoin="round"
-                      />
-                      <path
-                        d="M21.2196 20.333C23.668 20.333 25.6528 18.3482 25.6528 15.8998C25.6528 13.4515 23.668 11.4667 21.2196 11.4667C18.7713 11.4667 16.7865 13.4515 16.7865 15.8998C16.7865 18.3482 18.7713 20.333 21.2196 20.333Z"
-                        stroke="white"
-                        stroke-width="2"
-                      />
-                    </svg>
+                    {photo ? (<img className={styles.header__avatar} src={photo} />) : <Avatar /> }
+                    
                     <div className={styles.header__profile_fields}>
                       <p className={`text ${styles.header__profile_nick}`}>
                         {nickname}

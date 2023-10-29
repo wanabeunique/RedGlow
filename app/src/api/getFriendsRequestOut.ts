@@ -1,6 +1,5 @@
 import axios from "axios";
 import { toast } from "react-toastify";
-import Cookies from "js-cookie";
 
 export default async function getFriendsRequestOut(): Promise<Array<any>> {
   try {

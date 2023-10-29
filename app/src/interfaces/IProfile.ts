@@ -5,4 +5,6 @@ export default interface IProfile{
   decency: number, 
   reports: number,
   subExpiresIn: string
+  photo: string
+  date_joined: string
 }

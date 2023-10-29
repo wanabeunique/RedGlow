@@ -1,6 +1,5 @@
-import axios from "axios";
-import { setIsAuth } from "../store/reducers/isAuthSlice";
-import { setUsername } from "../store/reducers/userSlice";
+import axios from "axios"; import { setIsAuth } from "../store/reducers/isAuthSlice";
+import { setPhoto, setUsername } from "../store/reducers/userSlice";
 import Cookies from "js-cookie";
 import store from "@/store/store";
 
@@ -13,6 +12,7 @@ export default async function getIsAuth(){
     if (response.status == 200){
       store.dispatch(setUsername(response.data.username))
       store.dispatch(setIsAuth(true))
+      store.dispatch(setPhoto(response.data.photo))
     }
   }
   catch(error){

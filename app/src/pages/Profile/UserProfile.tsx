@@ -14,23 +14,22 @@ interface IUserProfile{
 }
 
 export default function UserProfile({username}: IUserProfile) {
-  console.log(username)
   const navigate = useNavigate();
   const [friendsData, setFriendsData] = useState<any>([]);
   const [user, setUser] = useState<IProfile>();
+  console.log(user)
   useEffect(() => {
     async function fetchUser() {
       const user = await getUserProfile(username);
       if (!user) {
         return navigate("/");
       }
-      console.log(user, 'user')
       const friends = await getUserFriends(user?.username);
       setFriendsData(friends);
       setUser(user);
     }
     fetchUser();
-  }, []);
+  }, [navigate]);
   return (
     <div className={`${styles.profile}`}>
       <div className={styles.profile__top}>
@@ -41,7 +40,7 @@ export default function UserProfile({username}: IUserProfile) {
         />
         <div className={`container ${styles.profile__top_wrapper}`}>
           <div className={styles.profile__top_avatar}>
-            <Avatar size={160} />
+            <Avatar src={user?.photo} size={160} />
           </div>
           <div className={styles.profile__top_text}>
             <p className={`${styles.profile__top_nickname} title`}>

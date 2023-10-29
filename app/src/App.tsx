@@ -1,8 +1,6 @@
 import { useEffect } from 'react'
 import { Routes, Route} from 'react-router-dom'
-import { useDispatch } from 'react-redux'
 import { ToastContainer } from 'react-toastify'
-
 import Footer from './pages/Footer/Footer'
 import Headbook from './pages/Headbook/Headbook'
 import Layout from './pages/Layout/Layout'

@@ -17,11 +17,6 @@ export const isAuthSlice = createSlice({
       state.data = action.payload;
     },
   },
-  extraReducers: (builder) => {
-    builder.addCase(setLogout.fulfilled, (state, action) => {
-      state.data = false
-    })
-  },
 });
 
 

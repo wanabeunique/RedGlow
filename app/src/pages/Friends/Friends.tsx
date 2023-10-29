@@ -34,7 +34,6 @@ export default function Friends() {
         async function getRequest() {
           await getUsersByValue(debouncedSearchUsers, 1).then((res) => {
             setSearchedUsers(res);
-            console.log(res);
           });
         }
         getRequest();

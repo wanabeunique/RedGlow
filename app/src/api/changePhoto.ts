@@ -11,7 +11,6 @@ export default async function changePhoto(file: any): Promise<Array<any>>{
       formData
     )
     toast.success('Вы успешно сменили фото');
-    console.log(response)
     return response.data;
   } catch (error) {
       toast.error('Ошибка при смене фото');

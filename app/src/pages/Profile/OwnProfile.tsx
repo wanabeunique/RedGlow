@@ -147,6 +147,7 @@ useEffect(() => {
                         labelStyle = {lableStyle}
                         onCrop={onCrop}
                         onClose={onClose}
+                        
                       /> 
                     </AlertDialogDescription>
                   </AlertDialogHeader>
@@ -168,7 +169,6 @@ useEffect(() => {
             <p className={`${styles.profile__top_registratedTime} text`}>
               На сайте с 03.01.2005
             </p>
-            <img src={user.photo} alt="" />
           </div>
         </div>
       </div>

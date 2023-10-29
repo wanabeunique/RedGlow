@@ -11,12 +11,11 @@ export default async function setSteam(steamId: any): Promise<IOwnProfile> {
       `${import.meta.env.VITE_API_SERVER}/user/steamId/`,
       data
     );
-    console.log(response)
     toast.success('Стим успешно привязан')
     return response.data;
   } catch (error) {
-    console.log(error)
-    toast.error('Ошибка привязки Steam');
-    return Promise.reject(error);
+      console.log(error)
+      toast.error('Ошибка привязки Steam');
+      return Promise.reject(error);
   }
 }
