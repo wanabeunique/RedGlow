@@ -9,11 +9,15 @@ class NotAuthenticated(BasePermission):
     
 class HasSteam(BasePermission):
     def has_permission(self, request, view):
-        return bool(User.objects.get(username=request.user.username).steamId)
+        return bool(request.user.steamId)
+    
+class DoesntHaveSteam(BasePermission):
+    def has_object_permission(self, request, view):
+        return not bool(request.user.steamId)
     
 class HasCivilizationV(BasePermission):
     def has_permission(self, request, view):
-        steamId = User.objects.get(username=request.user.username).steamId
+        steamId = request.user.steamId
         steamApi = WebAPI(key=config('STEAM_KEY'),https=True)
         for game in steamApi.IPlayerService.GetOwnedGames(steamid=steamId,include_appinfo=False,include_played_free_games=False,
             include_free_sub=True,include_extended_appinfo=True,appids_filter=0,language='ru',skip_unvetted_apps=True).get('response').get('games'):

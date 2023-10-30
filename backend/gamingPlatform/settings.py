@@ -52,21 +52,19 @@ INSTALLED_APPS = [
     'apps.authentication',
     'apps.passwordChange',
     'apps.friends',
-    'apps.userProfile'
+    'apps.userProfile',
+    'apps.caching',
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     "whitenoise.middleware.WhiteNoiseMiddleware",
-    'django.middleware.cache.UpdateCacheMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     "corsheaders.middleware.CorsMiddleware",
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
-    'django.middleware.cache.FetchFromCacheMiddleware',
-    
 ]
 
 AUTHENTICATION_BACKENDS = [
@@ -190,7 +188,8 @@ EMAIL_PORT = config('EMAIL_PORT')
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework.authentication.SessionAuthentication',
-    ]
+    ],
+    'NON_FIELD_ERRORS_KEY': 'errors',
 }
 
 CSRF_TRUSTED_ORIGINS = [

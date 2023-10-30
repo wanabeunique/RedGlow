@@ -17,7 +17,7 @@ paths:
           application/json:
             schema:
               $ref: "#components/schemas/UserForSignUp"
-            
+
       responses:
         202:
           description: Ссылка была выслан на почту
@@ -57,10 +57,10 @@ paths:
             schema:
               type: object
               required:
-                - key
+                - email
                 - code
               properties:
-                key:
+                email:
                   type: string
                   example: Qmasmfjajfj128141841hjafhh
                 code:
@@ -78,64 +78,13 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/NonFieldError"
-        403:
-          description: Запрос был послан от авторизованного пользователя
-  /key/{key}/code/{code}:
-    get:
-      summary: Проверка ключа.
-      tags:
-        - PasswordChange
-      operationId: checkKey
-      parameters:
-        - in: path
-          name: key
-          required: true
-          schema:
-            type: string
-            example: Qmasmfjajfj128141841hjafhh
-        - in: path
-          name: code
-          required: true
-          schema:
-            type: string
-            example: hsk13AFas
-      responses:
-        200:
-          description: Ключ принят
-          content:
-            application/json:
-              schema:
-                type: object
                 properties:
-                  key:
-                    type: string
-                    example: Qmasmfjajfj128141841hjafhh
-                  code:
-                    type: string
-                    example: hsk13AFas
-        404:
-          description: Время действия ключа истекло или он неверен
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  code:
+                  errors:
                     type: array
                     items:
-                      $ref: "#/components/schemas/FieldError"
+                      $ref: "#/components/schemas/NonFieldError"
         403:
           description: Запрос был послан от авторизованного пользователя
-          content:
-            application/json:
-              schema:
-                properties:
-                  detail:
-                    type: string
-                    example: You do not have permission to perform this action
-        default:
-          description: Все остальное
   /user/session/:
     post:
       summary: Авторизация пользователя
@@ -164,10 +113,7 @@ paths:
           content:
             application/json:
               schema:
-                properties:
-                  username:
-                    type: string
-                    example: kirin
+                $ref: "#/components/schemas/User"
         400:
           description: Поля не прошли валидацию
           content:
@@ -175,7 +121,7 @@ paths:
               schema:
                 type: object
                 properties:
-                  non_field_errors:
+                  errors:
                     type: array
                     items:
                       $ref: "#/components/schemas/NonFieldError"
@@ -232,20 +178,14 @@ paths:
             example: saf141kncaskn214
       responses:
         200:
-          description: Авторизован
+          description: Успешный выход
           content:
             application/json:
               schema:
-                properties:
-                  username:
-                    type: string
-                    example: kirin
-                  photo:
-                    type: string
-                    example: localhost:8000/asf.img
+                $ref: "#/components/schemas/User"
         403:
-          description: Не авторизован
-    
+          description: Юзер не авторизован
+
   /user/password/:
     put:
       summary: Смена пароля
@@ -303,7 +243,7 @@ paths:
                     example: You do not have permission to perform this action
         default:
           description: Все остальное
-  
+
   /user/help/link/:
     post:
       summary: Забыли пароль. Отправить ссылку на почту
@@ -339,12 +279,64 @@ paths:
               schema:
                 properties:
                   email:
+                    $ref: "#/components/schemas/FieldError"
+        default:
+          description: Все остальное
+  /email/{email}/code/{code}:
+    get:
+      summary: Проверка почты и кода.
+      tags:
+        - PasswordChange
+      operationId: checkKey
+      parameters:
+        - in: path
+          name: email
+          required: true
+          schema:
+            type: string
+            example: k@mail.com
+        - in: path
+          name: code
+          required: true
+          schema:
+            type: string
+            example: hsk13AFas
+      responses:
+        200:
+          description: Данные актуальны и верны
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  email:
+                    type: string
+                    example: k@mail.com
+                  code:
+                    type: string
+                    example: hsk13AFas
+        404:
+          description: Время действия ключа истекло или он неверен
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  field_name:
                     type: array
                     items:
                       $ref: "#/components/schemas/FieldError"
+        403:
+          description: Запрос был послан от авторизованного пользователя
+          content:
+            application/json:
+              schema:
+                properties:
+                  detail:
+                    type: string
+                    example: You do not have permission to perform this action
         default:
           description: Все остальное
-  
   /user/help/password/:
     put:
       summary: Смена забытого пароля
@@ -359,14 +351,18 @@ paths:
               type: object
               required:
                 - password
-                - key
+                - email
+                - code
               properties:
                 password:
                   type: string
                   example: qwert1234
-                key:
+                email:
                   type: string
-                  example: Qmasmfjajfj128141841hjafhh
+                  example: k@mail.com
+                code:
+                  type: string
+                  example: AFJN#5rar
       responses:
         200:
           description: Успешная смена пароля
@@ -375,12 +371,37 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  non_field_errors:
-                    type: array
-                    items:
-                      $ref: "#/components/schemas/FieldsValidation"
+                $ref: "#/components/schemas/FieldsValidation"
+        default:
+          description: Все остальное
+  /user/friendship/{username}/:
+    get:
+      summary: Получить статус дружбы с пользователем
+      operationId: getFriendship
+      tags:
+        - Friends
+      parameters:
+        - in: header
+          name: X-CSRFToken
+          description: CSRF token
+          required: true
+          schema:
+            type: string
+            example: saf141kncaskn214
+        - in: path
+          name: username
+          description: Имя пользователя
+          required: true
+          schema:
+            type: string
+            example: kirin
+      responses:
+        200:
+          description: Ответ со статусом дружбы
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FriendshipStatus"
         default:
           description: Все остальное
   /user/friend/:
@@ -424,6 +445,13 @@ paths:
                 $ref: "#/components/schemas/FriendshipStatus"
         400:
           description: Поля не прошли валидацию
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  errors:
+                    $ref: "#/components/schemas/NonFieldError"
         403:
           description: Запрос от неавторизованного пользователя
         default:
@@ -432,7 +460,7 @@ paths:
       summary: Отменить заявку или удалить друга
       tags:
         - Friends
-      operationId: inviteFriend
+      operationId: changeFriend
       parameters:
         - in: header
           name: X-CSRFToken
@@ -468,38 +496,19 @@ paths:
                 $ref: "#/components/schemas/FriendshipStatus"
         400:
           description: Поля не прошли валидацию
-        403:
-          description: Запрос от неавторизованного пользователя
-        default:
-          description: Все остальное
-    get:
-      summary: получить список друзей текущего пользователя
-      operationId: getCurrentuserFriendList
-      tags:
-        - Friends
-      parameters:
-        - in: header
-          name: X-CSRFToken
-          description: CSRF token
-          required: true
-          schema:
-            type: string
-            example: saf141kncaskn214
-      responses:
-        200:
-          description: Успешно получен список друзей
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Friends"
-        400:
-          description: Поля не прошли валидацию
+                type: object
+                properties:
+                  errors:
+                    $ref: "#/components/schemas/NonFieldError"
         403:
           description: Запрос от неавторизованного пользователя
         default:
           description: Все остальное
 
-  /user/{username}/friend:  
+  /user/{username}/friend/page/{page}:
     get:
       summary: Получить список друзей пользователя
       operationId: getFriendList
@@ -520,23 +529,30 @@ paths:
           schema:
             type: string
             example: kirin
+        - in: path
+          required: true
+          name: page
+          description: Страница, начиная с 1
+          schema:
+            type: integer
+            example: 1
       responses:
         200:
-          description: Успешно получен список друзей
+          description: Успешно получен0 20 друзей
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/Friends"
-        400:
-          description: Поля не прошли валидацию
+        404:
+          description: Пользователь не найден
         403:
           description: Запрос от неавторизованного пользователя
         default:
           description: Все остальное
-  /user/invite/{typeFlag}:
+  /user/invite/in/page/{page}:
     get:
-      summary: Получить список заявок текущего пользователя
-      operationId: getInvites
+      summary: Получить список входящих заявок текущего пользователя
+      operationId: getInvitesIn
       tags:
         - Friends
       parameters:
@@ -548,12 +564,44 @@ paths:
             type: string
             example: saf141kncaskn214
         - in: path
-          name: typeFlag
-          description: "Какие заявки получить, входящие или исходящие, используются два варианта значений: in и out соответственно"
+          required: true
+          name: page
+          description: Страница, начиная с 1
+          schema:
+            type: integer
+            example: 1
+      responses:
+        200:
+          description: Успешное получение 20 заявок
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Friends"
+        403:
+          description: Запрос от неавторизованного пользователя
+        default:
+          description: Все остальное
+  /user/invite/out/page/{page}:
+    get:
+      summary: Получить список исходящих заявок текущего пользователя
+      operationId: getInvitesOut
+      tags:
+        - Friends
+      parameters:
+        - in: header
+          name: X-CSRFToken
+          description: CSRF token
           required: true
           schema:
             type: string
-            example: in
+            example: saf141kncaskn214
+        - in: path
+          required: true
+          name: page
+          description: Страница, начиная с 1
+          schema:
+            type: integer
+            example: 1
       responses:
         200:
           description: Успешное получение заявок
@@ -561,13 +609,11 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Friends"
-        400:
-          description: Неправильный параметр {typeFlag}
-        404:
-          description: Не найдено заявок
+        403:
+          description: Запрос от неавторизованного пользователя
         default:
           description: Все остальное
-      
+
   /user/prefix/{value}/page/{page}:
     get:
       summary: Получить {page} страницу пользователей(начиная с 1), никнейм которых начинается на {value}
@@ -590,9 +636,9 @@ paths:
             type: string
             example: kir
         - in: path
-          name: page
-          description: Страница
           required: true
+          name: page
+          description: Страница, начиная с 1
           schema:
             type: integer
             example: 1
@@ -603,14 +649,15 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Friends"
-        404:
-          description: Не нашлось пользователей
         403:
           description: Запрос от неавторизованного пользователя
-  /user/friendship/{username}/:
+        default:
+          description: Все остальное
+
+  /user/{username}/friend/prefix/{value}/page/{page}:
     get:
-      summary: Получить статус дружбы с пользователем
-      operationId: getFriendship
+      summary: Поиск по друзьям
+      operationId: findFriends
       tags:
         - Friends
       parameters:
@@ -623,21 +670,186 @@ paths:
             example: saf141kncaskn214
         - in: path
           name: username
-          description: Имя пользователя
+          description: Никнейм пользователя, по чьему списку друзей ведется поиск
           required: true
           schema:
             type: string
-            example: kirin
+            example: kirin3243
+        - in: path
+          name: value
+          description: Значение, по которому искать пользователя
+          required: true
+          schema:
+            type: string
+            example: kir
+        - in: path
+          required: true
+          name: page
+          description: Страница, начиная с 1
+          schema:
+            type: integer
+            example: 1
       responses:
         200:
-          description: Ответ со статусом дружбы
+          description: Ответ с пользователями
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/FriendshipStatus"
+                $ref: "#/components/schemas/Friends"
+        403:
+          description: Запрос от неавторизованного пользователя
         default:
           description: Все остальное
-  /user:
+  /user/invite/in/prefix/{value}/page/{page}:
+    get:
+      summary: Поиск по входящим заявка
+      operationId: findInvitesIn
+      tags:
+        - Friends
+      parameters:
+        - in: header
+          name: X-CSRFToken
+          description: CSRF token
+          required: true
+          schema:
+            type: string
+            example: saf141kncaskn214
+        - in: path
+          name: value
+          description: Значение, по которому искать пользователя
+          required: true
+          schema:
+            type: string
+            example: kir
+        - in: path
+          required: true
+          name: page
+          description: Страница, начиная с 1
+          schema:
+            type: integer
+            example: 1
+      responses:
+        200:
+          description: Ответ с пользователями
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Friends"
+        403:
+          description: Запрос от неавторизованного пользователя
+        default:
+          description: Все остальное
+  /user/invite/out/prefix/{value}/page/{page}:
+    get:
+      summary: Поиск по исходящим заявка
+      operationId: findInvitesOut
+      tags:
+        - Friends
+      parameters:
+        - in: header
+          name: X-CSRFToken
+          description: CSRF token
+          required: true
+          schema:
+            type: string
+            example: saf141kncaskn214
+        - in: path
+          name: value
+          description: Значение, по которому искать пользователя
+          required: true
+          schema:
+            type: string
+            example: kir
+        - in: path
+          required: true
+          name: page
+          description: Страница, начиная с 1
+          schema:
+            type: integer
+            example: 1
+      responses:
+        200:
+          description: Ответ с пользователями
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Friends"
+        403:
+          description: Запрос от неавторизованного пользователя
+        default:
+          description: Все остальное
+  /user/{username}/friend/common:
+    get:
+      summary: Получение общих друзей
+      operationId: getCommonFriends
+      tags:
+        - Friends
+      parameters:
+        - in: header
+          name: X-CSRFToken
+          description: CSRF token
+          required: true
+          schema:
+            type: string
+            example: saf141kncaskn214
+        - in: path
+          name: username
+          description: Никнейм пользователя, с которым нужно получить общих друзей
+          required: true
+          schema:
+            type: string
+            example: kirin3243
+      responses:
+        200:
+          description: Ответ с пользователями
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Friends"
+        403:
+          description: Запрос от неавторизованного пользователя
+        default:
+          description: Все остальное
+  /user/{username}/friend/common/prefix/{value}:
+    get:
+      summary: Поиск по общим друзьям
+      operationId: findCommonFriends
+      tags:
+        - Friends
+      parameters:
+        - in: header
+          name: X-CSRFToken
+          description: CSRF token
+          required: true
+          schema:
+            type: string
+            example: saf141kncaskn214
+        - in: path
+          name: username
+          description: Никнейм пользователя, в чьих общих друзьях нужно искать
+          required: true
+          schema:
+            type: string
+            example: kirin3243
+        - in: path
+          name: value
+          description: Префикс никнейма
+          required: true
+          schema:
+            type: string
+            example: kir
+      responses:
+        200:
+          description: Ответ с пользователями
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Friends"
+        403:
+          description: Запрос от неавторизованного пользователя
+        default:
+          description: Все остальное
+  /user/info:
     get:
       summary: Получение данных пользователя
       operationId: getUser
@@ -662,10 +874,10 @@ paths:
           description: Запрос от неавторизованного пользователя
         default:
           description: Все остальное
-  /user/{username}:
+  /user/{username}/info:
     get:
-      summary: Получение данных пользователя
-      operationId: getUser
+      summary: Получение данных другого пользователя
+      operationId: getForeignUser
       tags:
         - UserProfile
       parameters:
@@ -878,7 +1090,7 @@ paths:
         200:
           description: Успешная привязка стима
         403:
-          description: Запрос от неавторизованного пользователя
+          description: Запрос от неавторизованного пользователя или у пользователя уже привязан стим
         default:
           description: Все остальное
   /user/<str:username>/steamName/:
@@ -918,13 +1130,12 @@ paths:
           description: Пользователь не найден
         default:
           description: Все остальное
-  /user/<str:username>/steamGame/<str:game>:
+  /user/behavior:
     get:
-      summary: Узнать, владеет ли пользователь игрой
-      operationId: doesUserOwnsAGame
+      summary: Получение репортов, порядочности юзера
       tags:
         - UserProfile
-        - Matchmaking
+      operationId: getBehavior
       parameters:
         - in: header
           name: X-CSRFToken
@@ -933,37 +1144,17 @@ paths:
           schema:
             type: string
             example: saf141kncaskn214
-        - in: path
-          name: username
-          description: username пользователя
-          required: true
-          schema:
-            type: string
-            example: kirin
-        - in: path
-          name: game
-          description: Название игры
-          required: true
-          schema:
-            type: string
-            example: Sid Meir's Civilization V
       responses:
         200:
-          description: Успешное получение владения игрой
+          description: Успешное получение всего
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  doesOwn:
-                    type: boolean
-                    example: True
-        404:
-          description: Пользователь не найден
+                $ref: "#/components/schemas/UserBehavior"
+        403:
+          description: Запрос от неавторизованного пользователя
         default:
           description: Все остальное
-
-      
 
 components:
   schemas:
@@ -979,19 +1170,16 @@ components:
         email:
           type: string
           example: q@gmail.com
-        
+
     User:
       type: object
       properties:
         username:
           type: string
           example: kirin
-        email:
+        photo:
           type: string
-          example: q@gmail.com
-        phoneNumber:
-          type: string
-          example: "+74447779911"
+          example: localhost:8000/asf.img
     FieldsValidation:
       type: object
       properties:
@@ -999,14 +1187,14 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/FieldError"
-        non_field_errors:
+        errors:
           type: array
           items:
             $ref: "#/components/schemas/NonFieldError"
     FieldError:
       type: string
       example: Данное имя пользователя уже используется
-          
+
     NonFieldError:
       type: string
       example: Пароли должны совпадать!
@@ -1015,7 +1203,7 @@ components:
       properties:
         detail:
           type: string
-          example: Заявка успешно отправлена
+          example: Заявка отправлена
     Friends:
       type: array
       items:
@@ -1041,18 +1229,6 @@ components:
         email:
           type: string
           example: 123@gmail.com
-        decency:
-          type: integer
-          example: 10000
-        reports:
-          type: integer
-          example: 8
-        photo:
-          type: string
-          example: localhost:8000/asf.img
-        backgorund:
-          type: string
-          example: localhost:8000/asf.img
         subExpiresIn:
           type: string
           example: 00:00:00
@@ -1068,19 +1244,23 @@ components:
         username:
           type: string
           example: kirin
-        photo:
-          type: string
-          example: localhost:8000/asf.img
-        backgorund:
-          type: string
-          example: localhost:8000/asf.img
         subExpiresIn:
           type: string
           example: 00:00:00
         date_joined:
           type: string
           example: 13.08.2023 00:00:00
-
-        
-
-
+    UserBehavior:
+      type: object
+      properties:
+        decency:
+          type: integer
+          example: 10000
+        reportsOwned:
+          type: integer
+          example: 8
+          description: Сколько пользователь может отправить репортов
+        reportsGot:
+          type: integer
+          example: 0
+          description: Сколько пользователь получил репортов

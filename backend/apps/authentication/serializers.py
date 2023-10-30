@@ -1,13 +1,9 @@
 from rest_framework import serializers
 from django.contrib.auth import authenticate
 from .models import User
-from .sending import connectToRedis
 from .tasks import sendLink, sendInfo
-from cryptography.fernet import Fernet, InvalidToken
-from django.conf import settings
-import json
-import requests
-from celery import current_app
+from django.core.cache import cache
+import hashlib
 
 class UserSignUpSerializer(serializers.ModelSerializer):
     username = serializers.CharField(max_length=255)
@@ -18,10 +14,22 @@ class UserSignUpSerializer(serializers.ModelSerializer):
         fields = ('username','password','email')
 
     def validate(self,data):
-        r = connectToRedis()
-        if r.exists(data["email"]):
+        email = data.get('email')
+        if email is None:
             raise serializers.ValidationError(
-                {"detail":"Повторите ещё раз, когда срок действия предыдущей ссылки истечёт"}
+                "Некорректные данные"
+            )
+        if User.objects.filter(username=data.get('username')).exists():
+            raise serializers.ValidationError(
+                "Данное имя пользователя занято"
+            )
+        if User.objects.filter(email=email).exists():
+            raise serializers.ValidationError(
+                "Данный адрес электронной почты уже зарегистрирован"
+            )
+        if cache.get(hashlib.sha256(email.encode('utf-8')).hexdigest()):
+            raise serializers.ValidationError(
+                "Повторите ещё раз, когда срок действия предыдущей ссылки истечёт"
             )
         return data
     def save(self):
@@ -30,48 +38,10 @@ class UserSignUpSerializer(serializers.ModelSerializer):
             "Ссылка для завершения регистрации на нашей платформе","Завершение регистрации на нашей платформе",
             self.validated_data, '/signUp/confirm'
         )
-
-class KeySerializer(serializers.Serializer):
-    key = serializers.CharField()
-    code = serializers.CharField()
-
-    def validate(self, data):
-        code = data.get('code')
-        key = data.get('key')
-        if code is None:
-            raise serializers.ValidationError(
-                {"detail":"Некорректная ссылка"}
-            )
-        if key is None:
-            raise serializers.ValidationError(
-                {"detail":"Некорректная ссылка"}
-            )
-        r = connectToRedis()
-        if not r.exists(code):
-            raise serializers.ValidationError(
-                {"detail":"Срок действия ссылки истёк"}
-            )
-        
-        f = Fernet(settings.CR_KEY)
-        try:
-            emailTmp = f.decrypt(bytes(key,encoding='utf-8')).decode()
-        except InvalidToken as error:
-            raise serializers.ValidationError(
-                {"detail":"Некорректная ссылка"}
-            )
-        
-        email = json.loads(r.get(code)).get('email')
-        if emailTmp != email:
-            raise serializers.ValidationError(
-                {"detail":"Срок действия ссылки истёк"}
-            )
-        
-        r.close()
-        return data
     
 
 class KeySignUpSerializer(serializers.Serializer):
-    key = serializers.CharField(required=False)
+    email = serializers.CharField(required=False)
     code = serializers.CharField(required=False)
     username = serializers.CharField(required=False)
     password = serializers.CharField(write_only=True,required=False)
@@ -80,52 +50,32 @@ class KeySignUpSerializer(serializers.Serializer):
 
     def validate(self, data):
         code = data.get('code')
-        key = data.get('key')
+        email = data.get('email')
 
         if code is None:
             raise serializers.ValidationError(
                 "Некорректная ссылка"
             )
-        if key is None:
+        if email is None:
             raise serializers.ValidationError(
                 "Некорректная ссылка"
             )
-
-        r = connectToRedis()
-        if not r.exists(code):
+        email = hashlib.sha256(email.encode('utf-8')).hexdigest()
+        key = code+email
+        data = cache.get(key)
+        if not data:
             raise serializers.ValidationError(
                 'Код неверный или срок его действия истек'
             )
-        data = json.loads(r.get(code))
-        
-        
-        if key is None:
-            raise serializers.ValidationError(
-                "Некорректная ссылка"
-            )
-        f = Fernet(settings.CR_KEY)
-        try:
-            email = f.decrypt(bytes(key,encoding='utf-8')).decode()
-        except InvalidToken as error:
-            raise serializers.ValidationError(
-                "Некорректная ссылка"
-            )
-        
-        if email != data.get('email'):
-            raise serializers.ValidationError(
-                'Ссылка некорректная или срок её действия истек'
-            )
+        cache.delete(email)
+        cache.delete(key)
 
         data |= {"country":None}
 
-        r.delete(code)
-        r.close()
         return data
     
     def create(self, validated_data):
         user = User.objects.create(**validated_data)
-        user.set_password(validated_data['password'])
-        user.save()
         sendInfo.delay(user.email, user.username,
                 info="Вы успешно зарегистрировались на нашей платформе!",
                 subject='Успешная регистрция на нашей платформе'

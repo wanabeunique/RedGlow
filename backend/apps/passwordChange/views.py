@@ -1,5 +1,5 @@
 from rest_framework import generics
-from .serializers import ChangePasswordSerializer, ForgotPasswordEmailSerializer, ForgotPasswordChangeSerializer
+from .serializers import ChangePasswordSerializer, ForgotPasswordEmailSerializer, ForgotPasswordChangeSerializer, EmailCodeSerializer
 from apps.authentication.models import User
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
@@ -52,6 +52,15 @@ class ForgotPasswordAPI(APIView):
         return Response(
             {"detail":"Ссылка для восстановления пароля была выслана на почту"},status=status.HTTP_202_ACCEPTED
         )
+
+class CheckKeyView(APIView):
+    permission_classes = (AllowAny, )
+    serializer_class = EmailCodeSerializer
+    def get(self, request,email=None, code=None):
+        serializer = self.serializer_class(data={"email":email,"code":code})
+        if serializer.is_valid():
+            return Response(serializer.data,status=status.HTTP_202_ACCEPTED)
+        return Response({"detail":'Not found'},status=status.HTTP_404_NOT_FOUND)
 
 class ChangeForgotPasswordAPI(APIView):
     serializer_class = ForgotPasswordChangeSerializer

@@ -5,15 +5,20 @@ class UserProfileSerializer(serializers.ModelSerializer):
     steamIdExists = serializers.SerializerMethodField()
     class Meta:
         model = User
-        fields = ('username','phoneNumber','email','decency','reports','photo','background','subExpiresIn','date_joined','steamIdExists')
+        fields = ('username','phoneNumber','email','subExpiresIn','date_joined','steamIdExists')
     
     def get_steamIdExists(self, obj):
         return obj.steamId is not None
-    
+
+class UserBehaviorSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ('decency','reportsOwned','reportsGot')
+
 class UserForeignSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ('username','photo','background','subExpiresIn','date_joined')
+        fields = ('username','subExpiresIn','date_joined')
 
 class UserPhotoSerializer(serializers.ModelSerializer):
     class Meta:

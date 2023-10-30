@@ -1,10 +1,11 @@
 import json
 from rest_framework import serializers
 from apps.authentication.models import User
-from apps.authentication.sending import connectToRedis
+from django.core.cache import cache
+from django.contrib.auth.hashers import make_password
 from apps.authentication.tasks import sendInfo, sendLink
-from cryptography.fernet import Fernet, InvalidToken
-from django.conf import settings
+import hashlib
+
 
 class ChangePasswordSerializer(serializers.Serializer):
     currentPassword = serializers.CharField(max_length=255, min_length=8)
@@ -12,11 +13,11 @@ class ChangePasswordSerializer(serializers.Serializer):
     def validate(self, data):
         if data.get('currentPassword') is None:
             raise serializers.ValidationError(
-                'Поле "Текущий пароль" не может быть пустым'
+                {'currentPassword':'Поле не может быть пустым'}
             )
         if data.get('newPassword') is None:
             raise serializers.ValidationError(
-                'Поле "Новый пароль" не может быть пустым'
+                {"newPassword":'Поле не может быть пустым'}
             )
         return data
 
@@ -29,16 +30,17 @@ class ForgotPasswordEmailSerializer(serializers.Serializer):
             raise serializers.ValidationError(
                 "Почта обязательна"
             )
-        r = connectToRedis()
-        if r.exists(email):
-            raise serializers.ValidationError(
-                'Повторите попытку снова, когда срок предыдущей ссылки закончится'
-            )
-        r.close()
         if not User.objects.filter(email=email).exists():
             raise serializers.ValidationError(
                 "Неправильный адрес электронной почты"
             )
+        
+        key = hashlib.sha256(email.encode('utf-8')).hexdigest()
+        if cache.get(key):
+            raise serializers.ValidationError(
+                'Повторите попытку снова, когда срок предыдущей ссылки закончится'
+            )
+
         return data
     def save(self):
         email = self.validated_data.get('email')
@@ -48,14 +50,47 @@ class ForgotPasswordEmailSerializer(serializers.Serializer):
             "Восстановление пароля",{"email":email},"/forgot/password/"
         )
 
-class ForgotPasswordChangeSerializer(serializers.Serializer):
-    password = serializers.CharField(max_length=255, min_length=8,write_only=True)
-    code = serializers.CharField()
 
+class EmailCodeSerializer(serializers.Serializer):
+    email = serializers.CharField()
+    code = serializers.CharField()
 
     def validate(self, data):
         code = data.get('code')
+        email = data.get('email')
+        if code is None:
+            raise serializers.ValidationError(
+                "Некорректная ссылка"
+            )
+        if email is None:
+            raise serializers.ValidationError(
+                "Некорректная ссылка"
+            )
+        key = hashlib.sha256(email.encode('utf-8')).hexdigest()
+        if not cache.get(key):
+            raise serializers.ValidationError(
+                "Срок действия ссылки истёк"
+            )
+        if not cache.get(code + key):
+            raise serializers.ValidationError(
+                "Срок действия ссылки истёк"
+            )
+        
+        return data
+
+class ForgotPasswordChangeSerializer(serializers.Serializer):
+    password = serializers.CharField(max_length=255, min_length=8,write_only=True)
+    code = serializers.CharField(max_length=255)
+    email = serializers.CharField(max_length=255)
+
+    def validate(self, data):
+        code = data.get('code')
+        email = data.get('email')
         password = data.get('password')
+        if email is None:
+            raise serializers.ValidationError(
+                'Некорректная ссылка'
+            )
         if code is None:
             raise serializers.ValidationError(
                 'Некорректная ссылка'
@@ -64,23 +99,23 @@ class ForgotPasswordChangeSerializer(serializers.Serializer):
             raise serializers.ValidationError(
                 'Пароль обязателен'
             )
-
-        r = connectToRedis()
-        if not r.exists(code):
+        
+        email = hashlib.sha256(email.encode('utf-8')).hexdigest()
+        if not cache.get(email):
             raise serializers.ValidationError(
                 'Срок действия ссылки истек'
             )
-        data['email'] = json.loads(r.get(code)).get('email')
-        r.delete(code)
-
-        r.close()
+        if not cache.get(code+email):
+            raise serializers.ValidationError(
+                'Срок действия ссылки истек'
+            )
+        cache.delete(email)
+        cache.delete(code+email)
 
         return data
     
     def save(self):
-        user = User.objects.get(email=self.validated_data['email'])
-        user.set_password(self.validated_data['password'])
-        user.save()
+        user = User.objects.filter(email=self.validated_data['email']).update(password=make_password(self.validated_data['password']))
         sendInfo.delay(user.email,user.username,
                 info="Пароль от вашего аккаунта был изменён",
                 subject='Смена пароля'

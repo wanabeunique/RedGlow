@@ -1,70 +1,110 @@
 from rest_framework.generics import RetrieveAPIView, UpdateAPIView
 from rest_framework.views import APIView
-from .serializers import UserProfileSerializer, UserPhotoSerializer, UserSteamSerializer, UserBackgroundSerializer, UserForeignSerializer
+from .serializers import UserProfileSerializer, UserPhotoSerializer, UserSteamSerializer, UserBackgroundSerializer, UserForeignSerializer, UserBehaviorSerializer
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status
 from apps.authentication.models import User
 from steam.webapi import WebAPI
 from decouple import config
-from apps.authentication.permissions import HasSteam
+from apps.authentication.permissions import HasSteam, DoesntHaveSteam
+from apps.caching.decorator import cache_response
+from apps.caching.tools import delete_cache, CachedResponse
+from django.utils.decorators import method_decorator
 
+
+#@method_decorator(cache_response(start_name='currentUserProfile'), name='get')
 class RetrieveUserProfileView(RetrieveAPIView):
     serializer_class = UserProfileSerializer
     permission_classes = (IsAuthenticated,)
     def get_object(self, queryset=None):
         return self.request.user
+    def get(self,request,*args,**kwargs):
+        instance = self.get_object()
+        serializer = self.get_serializer(instance)
+        return CachedResponse(serializer.data)
 
-
+#@method_decorator(cache_response(start_name='foreignUserProfile',for_all=True), name='get')
 class RetirieveForeignUserProfileView(RetrieveAPIView):
     serializer_class = UserForeignSerializer
     permission_classes = (IsAuthenticated,)
     lookup_field = 'username'
     queryset = User.objects.all()
+    def get(self,request,*args,**kwargs):
+        instance = self.get_object()
+        serializer = self.get_serializer(instance)
+        return CachedResponse(serializer.data)
+
+class RetrieveUserBehaviorView(RetrieveAPIView):
+    serializer_class = UserBehaviorSerializer
+    permission_classes = (IsAuthenticated, )
+    def get_object(self, queryset=None):
+        return self.request.user
+
+
+#@method_decorator(cache_response(start_name='userPhoto',for_all=True), name='get')
 class RetrieveUserPhotoView(RetrieveAPIView):
     serializer_class = UserPhotoSerializer
     permission_classes = (IsAuthenticated,)
     lookup_field = 'username'
     queryset = User.objects.all()
+    def get(self,request,*args,**kwargs):
+        instance = self.get_object()
+        serializer = self.get_serializer(instance)
+        return CachedResponse(serializer.data)
 
 class UpdateUserPhotoView(UpdateAPIView):
     serializer_class = UserPhotoSerializer
     permission_classes = (IsAuthenticated,)
     def get_object(self,queryset=None):
         return self.request.user
-
+    def put(self, request, *args, **kwargs):
+        # delete_cache(
+        #     'userPhoto',
+        #     f'user/{request.user.username}/photo',
+        #     request.user.username,
+        #     for_all=True
+        # )
+        return self.update(request, *args, **kwargs)
+    
 class UpdateUserBackgroundView(UpdateAPIView):
     serializer_class = UserBackgroundSerializer
     permission_classes = (IsAuthenticated,)
     def get_object(self,queryset=None):
         return self.request.user
+    def put(self, request, *args, **kwargs):
+        # delete_cache(
+        #     'userBackground',
+        #     f'user/{request.user.username}/background',
+        #     request.user.username,
+        #     for_all=True
+        # )
+        return self.update(request, *args, **kwargs)
 
+#@method_decorator(cache_response(start_name='userBackground',for_all=True), name='get')
 class RetrieveUserBackgroundView(RetrieveAPIView):
     serializer_class = UserBackgroundSerializer
     permission_classes = (IsAuthenticated,)
     lookup_field = 'username'
     queryset = User.objects.all()
+    def get(self,request,*args,**kwargs):
+        instance = self.get_object()
+        serializer = self.get_serializer(instance)
+        return CachedResponse(serializer.data)
 
 class UpdateSteamIdView(UpdateAPIView):
     serializer_class = UserSteamSerializer
-    permission_classes = (IsAuthenticated, )
+    permission_classes = (IsAuthenticated, DoesntHaveSteam)
     def get_object(self, queryset=None):  
         return self.request.user
+    def put(self, request, *args, **kwargs):
+        # delete_cache(
+        #     'currentUserProfile',
+        #     'user/info',
+        #     request.user.username
+        # )
+        return self.update(request, *args, **kwargs)
 
-class RetrieveUserOwnsGameView(APIView):
-    permission_classes = (IsAuthenticated, HasSteam)
-    def get(self,request,username=None,game=None):
-        try:
-            steamId = User.objects.get(username=username).steamId
-            steamApi = WebAPI(key=config('STEAM_KEY'),https=True)
-            for game in steamApi.IPlayerService.GetOwnedGames(steamid=steamId,include_appinfo=False,include_played_free_games=False,
-                include_free_sub=True,include_extended_appinfo=True,appids_filter=0,language='ru',skip_unvetted_apps=True).get('response').get('games'):
-                if game.get('name') == game:
-                    return Response(data={'doesOwn':True},status=status.HTTP_200_OK)
-            return Response(data={'doesOwn':False},status=status.HTTP_200_OK)
-        except User.DoesNotExist:
-            return Response(data={'detail':'Not found'},status=status.HTTP_404_NOT_FOUND)
-        
 class RetrieveUserSteamNameView(APIView):
     permission_classes = (IsAuthenticated, HasSteam)
     def get(self,request,username=None):

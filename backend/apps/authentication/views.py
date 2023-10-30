@@ -4,11 +4,9 @@ from rest_framework.viewsets import ViewSet
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.generics import RetrieveAPIView
-from .serializers import UserSignUpSerializer, UserLogInSerializer, KeySerializer, KeySignUpSerializer, UserCheckerSerializer
+from .serializers import UserSignUpSerializer, UserLogInSerializer, KeySignUpSerializer, UserCheckerSerializer
 from rest_framework import status
 from django.http import HttpRequest
-from .sending import connectToRedis
-from .models import User
 
 class SignUpView(ViewSet):
     permission_classes = (AllowAny,)
@@ -22,30 +20,20 @@ class SignUpView(ViewSet):
         serializer = KeySignUpSerializer(data=request.data,context={'request':request})
         serializer.is_valid(raise_exception=True)
         user = serializer.save()
-        login(request,user)
-        return Response(serializer.data,status=status.HTTP_200_OK)
-
-class CheckKeyView(APIView):
-    permission_classes = (AllowAny, )
-    serializer_class = KeySerializer
-    def get(self, request,key=None, code=None):
-        r = connectToRedis()
-        a = r.get(code).decode()
-        serializer = self.serializer_class(data={"key":key,"code":code})
-        if serializer.is_valid():
-            return Response(serializer.data,status=status.HTTP_202_ACCEPTED)
-        return Response({"a":a},status=status.HTTP_404_NOT_FOUND)
+        login(request, user)
+        return Response({'username':user.username,'photo':user.photo_url},status=status.HTTP_200_OK)
 
 class SessionView(ViewSet):
     permission_classes = (AllowAny,)
     serializer_class = UserLogInSerializer
     def create(self,request):
         if not bool(request.user.is_authenticated):
-            user = request.data
-            serializer = self.serializer_class(data=user,context={"request":request})
+            data = request.data
+            serializer = self.serializer_class(data=data,context={"request":request})
             serializer.is_valid(raise_exception=True)
-            login(request,serializer.validated_data)
-            return Response(serializer.data, status=status.HTTP_200_OK)
+            user = serializer.validated_data
+            login(request,user)
+            return Response({'username':user.username,'photo':user.photo_url}, status=status.HTTP_200_OK)
         return Response(status=status.HTTP_403_FORBIDDEN)
     def update(self, request):
         if bool(request.user and request.user.is_authenticated):

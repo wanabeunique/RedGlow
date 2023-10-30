@@ -11,16 +11,27 @@ class User(AbstractUser):
     photo = models.ImageField(upload_to='images/userPhoto/',null=True)
     background = models.ImageField(upload_to='images/userBackground/',null=True)
     decency = models.IntegerField(default=10000)
-    reports = models.IntegerField(default=8)
+    reportsOwned = models.IntegerField(default=8)
+    reportsGot = models.IntegerField(default=0)
     isAdmin = models.BooleanField(default=False)
     subExpiresIn = models.TimeField(default='00:00:00')
     inGame = models.BooleanField(default=False)
     country = models.CharField(null=True)
     banExpiresIn = models.TimeField(default='00:00:00')
+    muteExpiresIn = models.TimeField(default='00:00:00')
     voteExpiresIn = models.TimeField(default='00:00:00')
-    is_staff = None
     first_name = None
     last_name = None
 
     def __str__(self):
         return self.username
+    @property
+    def photo_url(self):
+        if self.photo: 
+            return self.photo.storage.url(self.photo.name)
+        return None
+    @property
+    def background_url(self):
+        if self.background: 
+            return self.background.storage.url(self.background.name)
+        return None
