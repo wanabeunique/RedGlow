@@ -179,7 +179,7 @@ return (
           className={styles.wrapper}
         >
           {avatar ? (
-            <img src={`https://localhost:8000${avatar}`} className={styles.avatar} /> 
+            <img src={`${import.meta.env.VITE_API_SERVER}/media/${avatar}`} className={styles.avatar} /> 
           ) : (
             <Avatar /> 
           )}
@@ -189,7 +189,7 @@ return (
       <HoverCardContent>
         <div className={styles.modal}>
           {avatar ? (
-            <img src={`https://localhost:8000${avatar}`} className={styles.avatar} /> 
+            <img src={`${import.meta.env.VITE_API_SERVER}/media/${avatar}`} className={styles.avatar} /> 
           ) : (
             <Avatar /> 
           )}

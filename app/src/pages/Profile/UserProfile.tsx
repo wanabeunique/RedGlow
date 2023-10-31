@@ -17,6 +17,7 @@ export default function UserProfile({username}: IUserProfile) {
   const navigate = useNavigate();
   const [friendsData, setFriendsData] = useState<any>([]);
   const [user, setUser] = useState<IProfile>();
+  const [photo, setPhoto] = useState<string>()
   console.log(user)
   useEffect(() => {
     async function fetchUser() {
@@ -24,12 +25,13 @@ export default function UserProfile({username}: IUserProfile) {
       if (!user) {
         return navigate("/");
       }
-      const friends = await getUserFriends(user?.username);
+      const friends = await getUserFriends(user?.username, 1);
       setFriendsData(friends);
       setUser(user);
     }
     fetchUser();
   }, [navigate]);
+  console.log(user)
   return (
     <div className={`${styles.profile}`}>
       <div className={styles.profile__top}>
@@ -38,7 +40,7 @@ export default function UserProfile({username}: IUserProfile) {
           src="./../../src/assets/profile-bg.jpg"
           alt=""
         />
-        <div className={`container ${styles.profile__top_wrapper}`}>
+        <div className={`container ${styles.profile__top_wrapper} `}>
           <div className={styles.profile__top_avatar}>
             <Avatar src={user?.photo} size={160} />
           </div>
@@ -52,49 +54,40 @@ export default function UserProfile({username}: IUserProfile) {
           </div>
         </div>
       </div>
-      <div className={`container ${styles.profile__content}`}>
-        <Tabs defaultValue="review" className="">
-          <TabsList>
-            <TabsTrigger value="review">Обзор</TabsTrigger>
-            <TabsTrigger value="history">История</TabsTrigger>
-            <TabsTrigger value="friends">Друзья</TabsTrigger>
-          </TabsList>
-          <TabsContent value="review">
-            <div className={`${styles.profile__decency} mt-10`}>
+      <div className={`container ${styles.profile__content} grid grid-cols-6 gap-10`}>
+        <div className={`${styles.profile__left} col-span-4 `}>
+          <p>История игр</p>
+          <div className="flex w-full gap-10">
+            <div className={`${styles.profile__decency} mt-10 w-1/2`}>
               <p>Порядочность: {user?.decency} из 1000 </p>
               <Progress value={user?.decency} />
             </div>
-            <div className={`${styles.profile__decency} mt-10`}>
+            <div className={`${styles.profile__decency} mt-10 w-1/2`}>
               <p>
                 На {user?.username} было оставлено {user?.reports} жалоб
               </p>
               <Progress value={user?.reports} />
             </div>
-          </TabsContent>
-          <TabsContent value="history">
-            <p className="mt-10">История игр</p>
-          </TabsContent>
-          <TabsContent value="friends">
-            <div>
-              <p className={`mt-10 ${styles.friends__title}`}>Список друзей:</p>
-              {friendsData.length > 0 ? (
-                <div className={styles.friends__items}>
-                  {friendsData.map((friend: any) => (
-                    <Friend
-                      username={friend.username}
-                      type="current"
-                      avatar={friend.photo}
-                    />
-                  ))}
-                </div>
-              ) : (
-                <p
-                  className={styles.friends__text}
-                >{`У ${user?.username} пока что нет ни одного друга`}</p>
-              )}
+          </div> 
+       </div>
+       <div className={styles.profile__right}>
+          <p className={`mt-10 ${styles.friends__title}`}>Друзья:</p>
+          {friendsData.length > 0 ? (
+            <div className={`${styles.friends__items} mt-5`}>
+              {friendsData.map((friend: any) => (
+                <Friend
+                  username={friend.username}
+                  type="current"
+                  avatar={friend.photo}
+                />
+              ))}
             </div>
-          </TabsContent>
-        </Tabs>
+          ) : (
+            <p className={styles.friends__text}> 
+             `У ${user?.username} пока что нет ни одного друга
+            </p>
+          )}
+        </div> 
       </div>
     </div>
   );

@@ -16,6 +16,11 @@ export default function Friends() {
   const username: string = useAppSelector(
     (state) => state.userReducer.username
   );
+  
+  const [friendsInPage, setFriendsInPage] = useState<number>(1)
+  const [friendsOutPage, setFriendsOutPage] = useState<number>(1)
+  const [friendsCurrentPage, setFriendsCurrentPage] = useState<number>(1)
+
   const [searchedUsers, setSearchedUsers] = useState<Array<string>>([]);
   const [queryNickname, setQueryNickname] = useState("");
 
@@ -46,13 +51,13 @@ export default function Friends() {
 
   useEffect(() => {
     const HandleFriends = async () => {
-      await getUserFriends(username)
+      await getUserFriends(username, friendsCurrentPage)
         .then((res) => dispath(setFriendsCurrent(res)));
     };
     HandleFriends();
 
     const HandleFriendsInviteIn = async () => {
-      getFriendsRequestIn()
+      getFriendsRequestIn(friendsInPage)
         .then((res: any) => {
           dispath(setFriendsIn(res))
         })
@@ -63,7 +68,7 @@ export default function Friends() {
     HandleFriendsInviteIn();
 
     const HandleFriendsInviteOut = async () => {
-      getFriendsRequestOut()
+      getFriendsRequestOut(friendsOutPage)
         .then((res: any) => {
           dispath(setFriendsOut(res))
         })

@@ -127,7 +127,7 @@ export default function Header() {
                     to={`/profile/${nickname}`}
                     className={`text ${styles.header__link} ${styles.header__profile}`}
                   >
-                    {photo ? (<img className={styles.header__avatar} src={photo} />) : <Avatar /> }
+                    {photo ? (<img className={styles.header__avatar} src={`${photo}`} />) : <Avatar /> }
                     
                     <div className={styles.header__profile_fields}>
                       <p className={`text ${styles.header__profile_nick}`}>

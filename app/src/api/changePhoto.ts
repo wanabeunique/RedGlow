@@ -1,3 +1,5 @@
+import { setPhoto } from "@/store/reducers/userSlice";
+import store from "@/store/store";
 import axios from "axios";
 import { toast } from "react-toastify";
 
@@ -11,6 +13,7 @@ export default async function changePhoto(file: any): Promise<Array<any>>{
       formData
     )
     toast.success('Вы успешно сменили фото');
+    store.dispatch(setPhoto(response.data.photo))
     return response.data;
   } catch (error) {
       toast.error('Ошибка при смене фото');

@@ -12,8 +12,9 @@ export default async function login(data: ILogin, dispatch: any) {
     .then((response) => {
       dispatch(setIsAuth(true));
       dispatch(setUsername(response.data.username));
-      dispatch(setPhoto(response.data.photo))
+      dispatch(setPhoto(`${import.meta.env.VITE_API_SERVER}${response.data.photo}`))
       toast.success("Вы успешно авторизировались");
+      console.log(response)
       connectSockets();
       return response.status;
     })

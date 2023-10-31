@@ -5,7 +5,7 @@ import IProfile from "../interfaces/IProfile";
 export default async function getUserProfile(username: string): Promise<IProfile> {
   try {
     const response = await axios.get(
-      `${import.meta.env.VITE_API_SERVER}/user/${username}`,
+      `${import.meta.env.VITE_API_SERVER}/user/${username}/info`,
     );
     return response.data;
   } catch (error) {

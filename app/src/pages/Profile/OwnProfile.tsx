@@ -28,6 +28,8 @@ import { Button } from "@/components/ui/button";
 import { IOwnProfile } from "@/interfaces/IOwnProfile";
 import changePhoto from "@/api/changePhoto";
 import base64toFile from "@/functions/base64toFile";
+import removeBodyClasses from "@/functions/civilization5/removeBodyClasses";
+import { useAppSelector } from "@/hooks";
 
 const lableStyle = {
   color: "hsl(var(--foreground))",
@@ -39,19 +41,13 @@ const lableStyle = {
 }  
 
 export default function OwnProfile() {
-  function removeBodyClasses() {
-    const el = document.querySelector("html");
-    if (el) {
-      console.log(el);
-      for (var i = el.classList.length - 1; i >= 0; i--) {
-        console.log(el.classList[i].startsWith("theme"));
-        if (el.classList[i].startsWith("theme")) {
-          el.classList.remove(el.classList[i]);
-        }
-      }
-    }
-  }
+  const userPhoto = useAppSelector(store => store.userReducer.photo)
 
+  const [friendsInPage, setFriendsInPage] = useState<number>(1)
+  const [friendsOutPage, setFriendsOutPage] = useState<number>(1)
+  const [friendsCurrentPage, setFriendsCurrentPage] = useState<number>(1)
+
+  
   const [user, setUser] = useState<IOwnProfile>();
   const [decency, setDecency] = useState<number>(0);
   const [reports, setReports] = useState<number>(0);
@@ -88,14 +84,15 @@ useEffect(() => {
     if (user) {
       const HandleFriends = async () => {
         const friendsDataValue: Array<string> = await getUserFriends(
-          user.username
+          user.username,
+          friendsCurrentPage
         );
         setFriendsData(friendsDataValue);
       };
       HandleFriends();
 
       const HandleFriendsInviteIn = async () => {
-        getFriendsRequestIn()
+        getFriendsRequestIn(friendsInPage)
           .then((res: any) => {
             setFriendsInvite(res);
           }) .catch((error) => {
@@ -160,7 +157,7 @@ useEffect(() => {
                 </AlertDialogContent>
               </AlertDialog>
             </label>
-            <AvatarImg src={user.photo} size={160} />
+            <AvatarImg src={userPhoto} size={160} />
           </div>
           <div className={styles.profile__top_text}>
             <p className={`${styles.profile__top_nickname} title`}>
@@ -172,76 +169,23 @@ useEffect(() => {
           </div>
         </div>
       </div>
-      <div className={`container ${styles.profile__content}`}>
-        <Tabs defaultValue="review" className="">
-          <TabsList>
-            <TabsTrigger value="review">Обзор</TabsTrigger>
-            <TabsTrigger value="history">История</TabsTrigger>
-            <TabsTrigger value="friends">Друзья</TabsTrigger>
-            <TabsTrigger value="personalData">Личные данные</TabsTrigger>
-            <TabsTrigger value="settings">Настройки</TabsTrigger>
-          </TabsList>
-          <TabsContent value="review">
-            <div className={`${styles.profile__decency} mt-10`}>
+      <div className={`container ${styles.profile__content} grid grid-cols-6 gap-10`}>
+        <div className={`${styles.profile__left} col-span-4 `}>
+          <p className="mt-10">История игр</p>
+          <div className="flex w-full gap-10">
+            <div className={`${styles.profile__decency} mt-10 w-1/2`}>
               <p>Порядочность: {user?.decency} из 1000 </p>
               <Progress value={decency} />
             </div>
-            <div className={`${styles.profile__decency} mt-10`}>
+            <div className={`${styles.profile__decency} mt-10 w-1/2`}>
               <p>
                 На вас было оставлено {reports} жалоб, осталось еще{" "}
                 {100 - reports} до временной блокировки{" "}
               </p>
               <Progress value={reports} />
             </div>
-            <div className={`${styles.profile__settings} ${styles.settings}`}>
-              <div className={styles.settings__change_password}>
-                {/* {user ? (
-                    <div>
-                      <p className="text">{user.phoneNumber}</p>
-                      <p className="text">{user.email}</p>
-                      <p className="text">{user.decency}</p>
-                      <p className="text">{user.reports}</p>
-                      <p className="text">{user.subExpiresIn}</p>
-                    </div>
-                  ) : null} */}
-              </div>
-            </div>
-          </TabsContent>
-          <TabsContent value="history">
-            <p className="mt-10">История игр</p>
-          </TabsContent>
-          <TabsContent value="friends">
-            <div>
-              {friendsInvite
-                ? friendsInvite.map((request: any) => (
-                    <Friend
-                      username={request.username}
-                      type="in"
-                      avatar={request.photo}
-                    />
-                  ))
-                : null}
-              <p className={`mt-10 ${styles.friends__title}`}>Список друзей:</p>
-              {friendsData.length > 0 ? (
-                <div className={styles.friends__items}>
-                  {friendsData.map((friend: any) => (
-                    <Friend
-                      username={friend.username}
-                      type="current"
-                      avatar={friend.photo}
-                    />
-                  ))}
-                </div>
-              ) : (
-                <p
-                  className={styles.friends__text}
-                >{`У вас пока что нет ни одного друга, но не стоит расстраиваться...`}</p>
-              )}
-            </div>
-          </TabsContent>
-          <TabsContent value="personalData">
-            <div></div>
-            <div className={`mt-10 ${styles.profile__item}`}>
+          </div>
+<div className={`mt-10 ${styles.profile__item}`}>
               <div className={`${styles.profile__row}`}>
                 <p>Steam аккаунт</p>
                 {user.steamIdExists === true ? (
@@ -350,8 +294,6 @@ useEffect(() => {
                 </AlertDialog>
               </div>
             </div>
-          </TabsContent>
-          <TabsContent value="settings">
             <div className="flex flex-col gap-2">
               Выбор темы:
               <div className=" grid grid-cols-4 gap-3">
@@ -401,8 +343,36 @@ useEffect(() => {
                 </Button>
               </div>
             </div>
-          </TabsContent>
-        </Tabs>
+        </div>
+        <div className={styles.profile__right}>
+                         <div className="">
+              {friendsInvite
+                ? friendsInvite.map((request: any) => (
+                    <Friend
+                      username={request.username}
+                      type="in"
+                      avatar={request.photo}
+                    />
+                  ))
+                : null}
+              <p className={`mt-10 ${styles.friends__title}`}>Список друзей:</p>
+              {friendsData.length > 0 ? (
+                <div className={`${styles.friends__items} mt-5`}>
+                  {friendsData.map((friend: any) => (
+                    <Friend
+                      username={friend.username}
+                      type="current"
+                      avatar={friend.photo}
+                    />
+                  ))}
+                </div>
+              ) : (
+                <p
+                  className={styles.friends__text}
+                >{`У вас пока что нет ни одного друга, но не стоит расстраиваться...`}</p>
+              )}
+            </div>
+        </div>
       </div>
     </div>
   ) : null;

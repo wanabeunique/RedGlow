@@ -1,10 +1,10 @@
 import axios from "axios";
 import { toast } from "react-toastify";
 
-export default async function getFriendsRequestOut(): Promise<Array<any>> {
+export default async function getFriendsRequestOut(page: number): Promise<Array<any>> {
   try {
     const response = await axios.get(
-      `${import.meta.env.VITE_API_SERVER}/user/invite/out`,
+      `${import.meta.env.VITE_API_SERVER}/user/invite/out/page/${page}`,
     );
     return response.data;
   } catch (error) {
