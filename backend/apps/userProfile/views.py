@@ -22,7 +22,7 @@ class RetrieveUserProfileView(RetrieveAPIView):
     def get(self,request,*args,**kwargs):
         instance = self.get_object()
         serializer = self.get_serializer(instance)
-        return CachedResponse(serializer.data)
+        return Response(serializer.data)
 
 #@method_decorator(cache_response(start_name='foreignUserProfile',for_all=True), name='get')
 class RetirieveForeignUserProfileView(RetrieveAPIView):
@@ -33,7 +33,7 @@ class RetirieveForeignUserProfileView(RetrieveAPIView):
     def get(self,request,*args,**kwargs):
         instance = self.get_object()
         serializer = self.get_serializer(instance)
-        return CachedResponse(serializer.data)
+        return Response(serializer.data)
 
 class RetrieveUserBehaviorView(RetrieveAPIView):
     serializer_class = UserBehaviorSerializer
@@ -51,7 +51,7 @@ class RetrieveUserPhotoView(RetrieveAPIView):
     def get(self,request,*args,**kwargs):
         instance = self.get_object()
         serializer = self.get_serializer(instance)
-        return CachedResponse(serializer.data)
+        return Response(serializer.data)
 
 class UpdateUserPhotoView(UpdateAPIView):
     serializer_class = UserPhotoSerializer
@@ -90,7 +90,7 @@ class RetrieveUserBackgroundView(RetrieveAPIView):
     def get(self,request,*args,**kwargs):
         instance = self.get_object()
         serializer = self.get_serializer(instance)
-        return CachedResponse(serializer.data)
+        return Response(serializer.data)
 
 class UpdateSteamIdView(UpdateAPIView):
     serializer_class = UserSteamSerializer
