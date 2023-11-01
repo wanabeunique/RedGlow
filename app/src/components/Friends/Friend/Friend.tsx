@@ -43,13 +43,16 @@ interface IFriendProps {
 export default function Friend({ username, type, avatar }: IFriendProps) {
   const [userData, setUserData] = useState<IProfile>()
   const [parsedDate, setParsedDate] = useState<IDate>()
+  const [flagUserProfile, setFlagUserProfile] = useState<boolean>(true)
   const dispatch = useAppDispatch() 
 
   async function getModal(nickname: string){
+    if (!flagUserProfile) return
     const response = await getUserProfile(nickname)
     setUserData(response)
     const parsedDate = parseDate(response.date_joined)
     setParsedDate(parsedDate)
+    setFlagUserProfile(false)
   }
      
   async function HandleAccept(nickname: string) {
@@ -169,12 +172,12 @@ export default function Friend({ username, type, avatar }: IFriendProps) {
         return null;
     }
 }
+  console.log(avatar)
 return (
-    
-
     <HoverCard>
       <HoverCardTrigger>
-        <div 
+        <Link 
+          to={`/profile/${username}`} 
           onMouseEnter={() => {getModal(username)}}
           className={styles.wrapper}
         >
@@ -183,8 +186,8 @@ return (
           ) : (
             <Avatar /> 
           )}
-          <Link to={`/profile/${username}`} className={styles.nickname}>{username}</Link>
-        </div>
+          <p className={styles.nickname}>{username}</p>
+        </Link>
       </HoverCardTrigger>
       <HoverCardContent>
         <div className={styles.modal}>

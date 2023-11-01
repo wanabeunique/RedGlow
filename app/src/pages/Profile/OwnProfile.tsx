@@ -1,15 +1,16 @@
 import styles from "./Proflie.module.sass";
-import Avatar from "react-avatar-edit";
+import { Link } from "react-router-dom";
 import {default as AvatarImg} from "antd/es/avatar/avatar";
 import ChangePhoto from "@/components/SVG/ChangePhoto";
 import { useState } from "react";
+import AvatarEditor from 'react-avatar-editor'
 import getProfile from "../../api/getProfile";
+import { useRef } from "react";
 import { useEffect } from "react";
 import { Progress } from "@/components/ui/progress";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import getUserFriends from "@/api/getUserFriends";
-import getFriendsRequestIn from "@/api/getFriendsRequestIn";
 import Friend from "@/components/Friends/Friend/Friend";
+import {useDropzone} from 'react-dropzone';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -21,16 +22,15 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { Separator } from "@/components/ui/separator";
-import { Input } from "@/components/ui/input";
-import changePassword from "@/api/changePassword";
-import { Button } from "@/components/ui/button";
+
 import { IOwnProfile } from "@/interfaces/IOwnProfile";
 import changePhoto from "@/api/changePhoto";
 import base64toFile from "@/functions/base64toFile";
-import removeBodyClasses from "@/functions/civilization5/removeBodyClasses";
 import { useAppSelector } from "@/hooks";
-
+import { IDate } from "@/functions/parseDate";
+import parseDate from "@/functions/parseDate";
+import changeBgPhoto from "@/api/changeBgPhoto";
+import getUserBackground from "@/api/getUserBackground";
 const lableStyle = {
   color: "hsl(var(--foreground))",
   width: "100%",
@@ -42,27 +42,44 @@ const lableStyle = {
 
 export default function OwnProfile() {
   const userPhoto = useAppSelector(store => store.userReducer.photo)
+  const [userBackground, setUserBackground] = useState<string>()
 
-  const [friendsInPage, setFriendsInPage] = useState<number>(1)
-  const [friendsOutPage, setFriendsOutPage] = useState<number>(1)
   const [friendsCurrentPage, setFriendsCurrentPage] = useState<number>(1)
-
-  
+  const [selectedPhoto,setSelectedPhoto] = useState<any>("");
+  const [selectedBgPhoto,setSelectedBgPhoto] = useState<any>("");
+  const [parsedDate, setParsedDate] = useState<IDate>()
   const [user, setUser] = useState<IOwnProfile>();
   const [decency, setDecency] = useState<number>(0);
   const [reports, setReports] = useState<number>(0);
   const [friendsData, setFriendsData] = useState<any>([]);
-  const [friendsInvite, setFriendsInvite] = useState([]);
+  
+  const {acceptedFiles: acceptedBgFiles, getRootProps: getRootBgProps, getInputProps: getInputBgProps} = useDropzone({
+      accept: 'image/*',
+      onDrop: acceptedFiles => {
+        setSelectedBgPhoto(acceptedFiles[0])
+      } 
+    });
 
-  const [currentPassword, setCurrentPassword] = useState<any>("");
-  const [newPassword, setNewPassword] = useState<any>("");
-  const [selectedPhoto,setSelectedPhoto] = useState<any>("");
+  const {acceptedFiles, getRootProps, getInputProps} = useDropzone({
+    accept: 'image/*',
+    onDrop: acceptedFiles => {
+      setSelectedPhoto(acceptedFiles[0])
+    } 
+  });
+
+  const EditorRef = useRef(null)
+  const EditorBgRef = useRef(null)
   
 useEffect(() => {
     const getUser = async () => {
       const userData = await getProfile();
       setUser(userData);
+      const parsedDate = parseDate(userData.date_joined)
+      setParsedDate(parsedDate)
       console.log(userData)
+      const userBackground = await getUserBackground(userData.username)
+      console.log(userBackground)
+      setUserBackground(userBackground)
     };
     getUser(); 
   }, []);
@@ -74,11 +91,7 @@ useEffect(() => {
     }
   }, [user]);
 
-  async function HandeChangePassword() {
-    await changePassword(currentPassword, newPassword);
-    setCurrentPassword("");
-    setNewPassword("");
-  }
+ 
 
   useEffect(() => {
     if (user) {
@@ -90,42 +103,71 @@ useEffect(() => {
         setFriendsData(friendsDataValue);
       };
       HandleFriends();
-
-      const HandleFriendsInviteIn = async () => {
-        getFriendsRequestIn(friendsInPage)
-          .then((res: any) => {
-            setFriendsInvite(res);
-          }) .catch((error) => {
-            console.log(error);
-          });
-      };
-      HandleFriendsInviteIn();
     }
   }, [user]);
-
-  function onCrop(avatar){
-    setSelectedPhoto(avatar)
-  }
-
-  function onClose(){
-    setSelectedPhoto(null)
-  }
+  
 
   async function changeAvatar(){
-    if (!selectedPhoto) return
-    const fileAvatar = base64toFile(selectedPhoto, 'avatar.png') 
-    console.log(fileAvatar)
-    await changePhoto(fileAvatar)
+    setSelectedPhoto(null)
+    const canvas = EditorRef.current.getImageScaledToCanvas();
+    const image = canvas.toDataURL();
+    changePhoto(base64toFile(image, 'avatar.png'))
   }
+  
+   async function changeBg(){
+      setSelectedBgPhoto(null)
+      const canvas = EditorBgRef.current.getImageScaledToCanvas();
+      const image = canvas.toDataURL();
+      console.log(image)
+      changeBgPhoto(base64toFile(image, 'bg.png'))
+    }
 
   return user ? (
     <div className={`${styles.profile}`}>
       <div className={styles.profile__top}>
         <img
+          src={userBackground}
           className={styles.profile__top_bg}
-          src="./../../src/assets/profile-bg.jpg"
-          alt=""
         />
+        <AlertDialog>
+          <AlertDialogTrigger className={`${styles.bg_trigger} container`}>
+            <ChangePhoto/>        
+          </AlertDialogTrigger>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>
+              </AlertDialogTitle>
+              <AlertDialogDescription>
+                {
+                  !selectedBgPhoto && (
+                  <div {...getRootBgProps({className: 'dropzone'})} className={styles.dropzone}>
+                    <input {...getInputBgProps()} />
+                    <p className={styles.dropzone__text}>Перетащите cюда сюда или нажмите, чтобы выбрать файлы</p>
+                  </div>
+                  )
+                }
+                {
+                  selectedBgPhoto && (
+                    <AvatarEditor 
+                    ref={EditorBgRef}
+                    width={250}
+                    height={250}
+                    border={50}
+                    scale={1.2} 
+                    className={styles.edit}
+                    image={selectedBgPhoto} />
+                  )
+                }
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel onClick={() => {setSelectedBgPhoto(null)}}>Отмена</AlertDialogCancel>
+              <AlertDialogAction onClick={() => changeBg()}>
+                Выберите изображение
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
         <div className={`container ${styles.profile__top_wrapper}`}>
           <div className={styles.profile__top_avatar}>
             <label className={styles.profile__top_change}>
@@ -138,18 +180,30 @@ useEffect(() => {
                     <AlertDialogTitle>
                     </AlertDialogTitle>
                     <AlertDialogDescription>
-                      <Avatar
-                        width={462}
-                        height={400}
-                        labelStyle = {lableStyle}
-                        onCrop={onCrop}
-                        onClose={onClose}
-                        
-                      /> 
+                      {
+                        !selectedPhoto && (
+                        <div {...getRootProps({className: 'dropzone'})} className={styles.dropzone}>
+                          <input {...getInputProps()} />
+                          <p className={styles.dropzone__text}>Перетащите cюда сюда или нажмите, чтобы выбрать файлы</p>
+                        </div>
+                        )
+                      }
+                      {
+                        selectedPhoto && (
+                          <AvatarEditor 
+                          ref={EditorRef}
+                          width={250}
+                          height={250}
+                          border={50}
+                          scale={1.2} 
+                          className={styles.edit}
+                          image={selectedPhoto} />
+                        )
+                      }
                     </AlertDialogDescription>
                   </AlertDialogHeader>
                   <AlertDialogFooter>
-                    <AlertDialogCancel>Отмена</AlertDialogCancel>
+                    <AlertDialogCancel onClick={() => {setSelectedPhoto(null)}}>Отмена</AlertDialogCancel>
                     <AlertDialogAction onClick={() => changeAvatar()}>
                       Выберите изображение
                     </AlertDialogAction>
@@ -164,7 +218,7 @@ useEffect(() => {
               {user ? <span>{user.username}</span> : null}
             </p>
             <p className={`${styles.profile__top_registratedTime} text`}>
-              На сайте с 03.01.2005
+              На сайте с {parsedDate?.day} {parsedDate?.month} {parsedDate?.year}
             </p>
           </div>
         </div>
@@ -185,193 +239,26 @@ useEffect(() => {
               <Progress value={reports} />
             </div>
           </div>
-<div className={`mt-10 ${styles.profile__item}`}>
-              <div className={`${styles.profile__row}`}>
-                <p>Steam аккаунт</p>
-                {user.steamIdExists === true ? (
-                  <p>Привязан</p>
-                ) : (
-                  <a href="https://steamcommunity.com/openid/login?openid.ns=http://specs.openid.net/auth/2.0&openid.mode=checkid_setup&openid.claimed_id=http://specs.openid.net/auth/2.0/identifier_select&openid.identity=http://specs.openid.net/auth/2.0/identifier_select&openid.return_to=https://localhost/steam&openid.realm=https://localhost">
-                    Привязать аккаунт
-                  </a>
-                )}
-              </div>
-            </div>
-            <Separator />
-            <div className={`${styles.profile__item}`}>
-              <p>Ваш пароль: </p>
-              <div className={styles.profile__row}>
-                <p>******</p>
-                <AlertDialog>
-                  <AlertDialogTrigger>Сменить пароль</AlertDialogTrigger>
-                  <AlertDialogContent>
-                    <AlertDialogHeader>
-                      <AlertDialogTitle>
-                        Вы точно хотите помнять пароль?
-                      </AlertDialogTitle>
-                      <AlertDialogDescription>
-                        <p>Введите текущий пароль</p>
-                        <Input
-                          value={currentPassword}
-                          onChange={(event) => {
-                            setCurrentPassword(event.target.value);
-                            console.log(event.target.value);
-                          }}
-                          className="mt-2"
-                          type="password"
-                        />
-                        <p className="mt-2">Введите новый пароль</p>
-                        <Input
-                          className="mt-2"
-                          type="password"
-                          value={newPassword}
-                          onChange={(event) => {
-                            setNewPassword(event.target.value);
-                            console.log(event.target.value);
-                          }}
-                        />
-                      </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                      <AlertDialogCancel>Отмена</AlertDialogCancel>
-                      <AlertDialogAction onClick={() => HandeChangePassword()}>
-                        Сменить пароль
-                      </AlertDialogAction>
-                    </AlertDialogFooter>
-                  </AlertDialogContent>
-                </AlertDialog>
-              </div>
-            </div>
-            <Separator />
-            <div className={styles.profile__item}>
-              <p>Электронная почта: </p>
-              <div className={styles.profile__row}>
-                <p>{user?.email}</p>
-                <AlertDialog>
-                  <AlertDialogTrigger>Сменить почту</AlertDialogTrigger>
-                  <AlertDialogContent>
-                    <AlertDialogHeader>
-                      <AlertDialogTitle>
-                        Are you absolutely sure?
-                      </AlertDialogTitle>
-                      <AlertDialogDescription>
-                        This action cannot be undone. This will permanently
-                        delete your account and remove your data from our
-                        servers.
-                      </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                      <AlertDialogCancel>Cancel</AlertDialogCancel>
-                      <AlertDialogAction>Continue</AlertDialogAction>
-                    </AlertDialogFooter>
-                  </AlertDialogContent>
-                </AlertDialog>
-              </div>
-            </div>
-            <Separator />
-            <div className={styles.profile__item}>
-              <p>Номер телефона: </p>
-              <div className={styles.profile__row}>
-                <p>{user?.phoneNumber}</p>
-                <AlertDialog>
-                  <AlertDialogTrigger>Сменить номер</AlertDialogTrigger>
-                  <AlertDialogContent>
-                    <AlertDialogHeader>
-                      <AlertDialogTitle>
-                        Are you absolutely sure?
-                      </AlertDialogTitle>
-                      <AlertDialogDescription>
-                        This action cannot be undone. This will permanently
-                        delete your account and remove your data from our
-                        servers.
-                      </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                      <AlertDialogCancel>Cancel</AlertDialogCancel>
-                      <AlertDialogAction>Continue</AlertDialogAction>
-                    </AlertDialogFooter>
-                  </AlertDialogContent>
-                </AlertDialog>
-              </div>
-            </div>
-            <div className="flex flex-col gap-2">
-              Выбор темы:
-              <div className=" grid grid-cols-4 gap-3">
-                <Button
-                  onClick={() => {
-                    removeBodyClasses();
-                    document.querySelector("html")?.classList.add("theme-blue");
-                  }}
-                >
-                  Синяя тема
-                </Button>
-                <Button
-                  onClick={() => {
-                    removeBodyClasses();
-                    document.querySelector("html")?.classList.add("theme-red");
-                  }}
-                >
-                  Красная тема
-                </Button>
-                <Button
-                  onClick={() => {
-                    removeBodyClasses();
-                    document
-                      .querySelector("html")
-                      ?.classList.add("theme-orange");
-                  }}
-                >
-                  Оранжевая тема
-                </Button>
-                <Button
-                  onClick={() => {
-                    removeBodyClasses();
-                    document.querySelector("html")?.classList.add("theme-zink");
-                  }}
-                >
-                  Серая тема
-                </Button>
-                <Button
-                  onClick={() => {
-                    removeBodyClasses();
-                    document
-                      .querySelector("html")
-                      ?.classList.add("theme-violet");
-                  }}
-                >
-                  Фиолетовая тема
-                </Button>
-              </div>
-            </div>
+
         </div>
         <div className={styles.profile__right}>
-                         <div className="">
-              {friendsInvite
-                ? friendsInvite.map((request: any) => (
-                    <Friend
-                      username={request.username}
-                      type="in"
-                      avatar={request.photo}
-                    />
-                  ))
-                : null}
-              <p className={`mt-10 ${styles.friends__title}`}>Список друзей:</p>
-              {friendsData.length > 0 ? (
-                <div className={`${styles.friends__items} mt-5`}>
-                  {friendsData.map((friend: any) => (
-                    <Friend
-                      username={friend.username}
-                      type="current"
-                      avatar={friend.photo}
-                    />
-                  ))}
-                </div>
-              ) : (
-                <p
-                  className={styles.friends__text}
-                >{`У вас пока что нет ни одного друга, но не стоит расстраиваться...`}</p>
-              )}
+          <Link to="/settings"><p>Настройки</p></Link>
+          <p className={`mt-10 ${styles.friends__title}`}>Список друзей:</p>
+          {friendsData.length > 0 ? (
+            <div className={`${styles.friends__items} mt-5`}>
+              {friendsData.map((friend: any) => (
+                <Friend
+                  username={friend.username}
+                  type="current"
+                  avatar={friend.photo}
+                />
+              ))}
             </div>
+          ) : (
+            <p
+              className={styles.friends__text}
+            >{`У вас пока что нет ни одного друга, но не стоит расстраиваться...`}</p>
+          )}
         </div>
       </div>
     </div>

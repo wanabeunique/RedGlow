@@ -18,6 +18,7 @@ import { useAppSelector } from './hooks'
 import axios, { AxiosHeaders } from 'axios'
 import Cookies from 'js-cookie'
 import Steam from './pages/Steam/Steam'
+import ProfileSettings from './pages/Profile/ProfileSettings'
 
 axios.interceptors.request.use(
   function(config) {
@@ -63,6 +64,7 @@ function App() {
             <Route path='/generate' element={<Generate />}></Route>   
             <Route path='/recovery'element={<Recovery />}/>   
             <Route path='/steam' element={<Steam />}/>
+            <Route path='/settings' element={<ProfileSettings />} />
           </Route>
         </Routes>
       <ToastContainer 

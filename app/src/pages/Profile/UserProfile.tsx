@@ -1,13 +1,13 @@
 import getUserProfile from "@/api/getUserProfile";
 import styles from "./Proflie.module.sass";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar } from "antd";
-import { Progress } from "@/components/ui/progress";
 import IProfile from "@/interfaces/IProfile";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import getUserFriends from "@/api/getUserFriends";
 import Friend from "@/components/Friends/Friend/Friend";
+import { IDate } from "@/functions/parseDate";
+import parseDate from "@/functions/parseDate";
 
 interface IUserProfile{
   username: string
@@ -17,11 +17,14 @@ export default function UserProfile({username}: IUserProfile) {
   const navigate = useNavigate();
   const [friendsData, setFriendsData] = useState<any>([]);
   const [user, setUser] = useState<IProfile>();
-  const [photo, setPhoto] = useState<string>()
+  const [parsedDate, setParsedDate] = useState<IDate>()
+
   console.log(user)
   useEffect(() => {
     async function fetchUser() {
       const user = await getUserProfile(username);
+      const parsedDate = parseDate(user.date_joined)
+      setParsedDate(parsedDate)
       if (!user) {
         return navigate("/");
       }
@@ -49,7 +52,7 @@ export default function UserProfile({username}: IUserProfile) {
               {user ? <span>{user.username}</span> : null}
             </p>
             <p className={`${styles.profile__top_registratedTime} text`}>
-              На сайте с 03.01.2005
+               На сайте с {parsedDate?.day} {parsedDate?.month} {parsedDate?.year}
             </p>
           </div>
         </div>
@@ -57,18 +60,6 @@ export default function UserProfile({username}: IUserProfile) {
       <div className={`container ${styles.profile__content} grid grid-cols-6 gap-10`}>
         <div className={`${styles.profile__left} col-span-4 `}>
           <p>История игр</p>
-          <div className="flex w-full gap-10">
-            <div className={`${styles.profile__decency} mt-10 w-1/2`}>
-              <p>Порядочность: {user?.decency} из 1000 </p>
-              <Progress value={user?.decency} />
-            </div>
-            <div className={`${styles.profile__decency} mt-10 w-1/2`}>
-              <p>
-                На {user?.username} было оставлено {user?.reports} жалоб
-              </p>
-              <Progress value={user?.reports} />
-            </div>
-          </div> 
        </div>
        <div className={styles.profile__right}>
           <p className={`mt-10 ${styles.friends__title}`}>Друзья:</p>
