@@ -9,11 +9,7 @@ import ILogin from "../../interfaces/ILogin";
 export default function Login() {
   const dispatch = useAppDispatch();
   const isAuth = useAppSelector((state) => state.authReducer.data);
-
   const { register, handleSubmit } = useForm<ILogin>();
-
-  //const relyingParty = new RelyingParty(
-  //  'http://localhost:3000/login/steam',
 
   if (!isAuth) {
     return (

@@ -1,19 +1,18 @@
-import { useAppSelector } from "@/hooks";
-import { useParams } from "react-router-dom";
-import OwnProfile from "./OwnProfile";
-import UserProfile from "./UserProfile";
+import { useAppSelector } from '@/hooks';
+import { useParams } from 'react-router-dom';
+import OwnProfile from './OwnProfile';
+import UserProfile from './UserProfile';
 
 export default function Profile() {
-  const { searchName } = useParams<{searchName: string}>();
+  const { searchName } = useParams<{ searchName: string }>();
   const username = useAppSelector((state) => state.userReducer.username);
-  return(
+  return (
     <>
       {searchName === username ? (
         <OwnProfile />
-      )
-      :(
-        searchName && <UserProfile username={searchName}/>
+      ) : (
+        searchName && <UserProfile username={searchName} />
       )}
     </>
-  ) 
+  );
 }

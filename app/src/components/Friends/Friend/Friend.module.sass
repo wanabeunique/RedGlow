@@ -11,11 +11,14 @@
 .tools
   display: flex
   align-items: center
+  gap: 10px
 
 .nickname
-  color: hsl(var(--foreground))
+  color: var(--secondary-color)
   font-size: 14px
   margin: 0
+  &_preview
+    color: var(--foreground)
 
 .svg
   path
@@ -24,6 +27,8 @@
 .item
   cursor: pointer
   border: 1px solid hsl(var(--accent))
+  height: 36px
+  width: 36px
   padding: 5px
   &:hover
     background: hsl(var(--border))
@@ -38,3 +43,32 @@
     
 
 .modal
+  padding: 0 !important
+  &__bg
+    position: absolute
+    width: 100%
+    left: 0
+    top: 0
+    height: 100px
+  &__content
+    position: relative
+    z-index: 2
+  &__info
+    height: 100px
+    display: flex
+    align-items: center
+    padding: 10px
+  &__wrapper
+    width: max-content
+    display: flex
+    gap: 10px
+    padding: 7px
+    border-radius: 10px
+    display: flex
+    align-items: center
+    background: rgba(0,0,0,0.6)
+  &__bottom
+    padding: 10px
+    display: flex
+    flex-direction: column
+    gap: 10px

@@ -1,4 +1,10 @@
 import { useEffect } from 'react'
+import ProfileSettings from './pages/Profile/ProfileSettings'
+import Cookies from 'js-cookie'
+import getIsAuth from './api/getIsAuth'
+import connectSockets from './socket/connectSockets'
+import { useAppSelector } from './hooks'
+import axios, { AxiosHeaders } from 'axios'
 import { Routes, Route} from 'react-router-dom'
 import { ToastContainer } from 'react-toastify'
 import Footer from './pages/Footer/Footer'
@@ -12,13 +18,8 @@ import Profile from './pages/Profile/Profile'
 import EmailConfirm from './pages/EmailConfirm/EmailConfirm'
 import Generate from './pages/Genarate/Generate'
 import Recovery from './pages/Recovery/Recovery'
-import getIsAuth from './api/getIsAuth'
-import connectSockets from './socket/connectSockets'
-import { useAppSelector } from './hooks'
-import axios, { AxiosHeaders } from 'axios'
-import Cookies from 'js-cookie'
 import Steam from './pages/Steam/Steam'
-import ProfileSettings from './pages/Profile/ProfileSettings'
+import RecoveryNewPassword from './pages/Recovery/RecoveryNewPassword'
 
 axios.interceptors.request.use(
   function(config) {
@@ -65,6 +66,8 @@ function App() {
             <Route path='/recovery'element={<Recovery />}/>   
             <Route path='/steam' element={<Steam />}/>
             <Route path='/settings' element={<ProfileSettings />} />
+            <Route path='/forgot/password/' element={<RecoveryNewPassword />}></Route>
+            <Route path='/404' element={<NotFound/>}></Route>
           </Route>
         </Routes>
       <ToastContainer 

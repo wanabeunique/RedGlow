@@ -1,4 +1,5 @@
 import Xmark from "@/components/SVG/Xmark";
+import getUserBackground from "@/api/getUserBackground";
 import removeFriend from "../../../api/removeFriend";
 import sendFriendRequest from "../../../api/sendFriendRequest";
 import styles from "./Friend.module.sass";
@@ -44,6 +45,7 @@ export default function Friend({ username, type, avatar }: IFriendProps) {
   const [userData, setUserData] = useState<IProfile>()
   const [parsedDate, setParsedDate] = useState<IDate>()
   const [flagUserProfile, setFlagUserProfile] = useState<boolean>(true)
+  const [userBg, setUserBg] = useState<string>()
   const dispatch = useAppDispatch() 
 
   async function getModal(nickname: string){
@@ -53,8 +55,11 @@ export default function Friend({ username, type, avatar }: IFriendProps) {
     const parsedDate = parseDate(response.date_joined)
     setParsedDate(parsedDate)
     setFlagUserProfile(false)
+    const bg = await getUserBackground(response.username)
+    setUserBg(bg)
+    console.log(bg)
   }
-     
+
   async function HandleAccept(nickname: string) {
     const res = await sendFriendRequest(nickname);
     if (res?.status == 201){
@@ -186,21 +191,27 @@ return (
           ) : (
             <Avatar /> 
           )}
-          <p className={styles.nickname}>{username}</p>
+          <p className={styles.nickname_preview}>{username}</p>
         </Link>
       </HoverCardTrigger>
-      <HoverCardContent>
-        <div className={styles.modal}>
-          {avatar ? (
-            <img src={`${import.meta.env.VITE_API_SERVER}/media/${avatar}`} className={styles.avatar} /> 
-          ) : (
-            <Avatar /> 
-          )}
-          <Link to={`/profile/${username}`} className={styles.nickname}>{username}</Link>
-          <p></p> 
-          {renderSwitch({ type, username, avatar })}
-          {parsedDate && (<p>На сайте с {parsedDate.day} {parsedDate.month} {parsedDate.year} Года</p>)}
-        </div>
+      <HoverCardContent className={styles.modal}>
+        <img className={styles.modal__bg} src={userBg} />
+        <div className={styles.modal__content}>
+          <div className={styles.modal__info}>
+            <Link to={`/profile/${username}`} className={styles.modal__wrapper}>
+              {avatar ? (
+                <img src={`${import.meta.env.VITE_API_SERVER}/media/${avatar}`} className={styles.avatar} /> 
+              ) : (
+                <Avatar /> 
+              )}
+              <p className={styles.nickname}>{username}</p>
+            </Link>
+          </div>
+          <div className={styles.modal__bottom}>
+            {renderSwitch({ type, username, avatar })}
+            {parsedDate && (<p>На сайте с {parsedDate.day} {parsedDate.month} {parsedDate.year}</p>)}
+          </div> 
+        </div> 
       </HoverCardContent>
     </HoverCard>
   );

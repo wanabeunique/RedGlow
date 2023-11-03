@@ -1,35 +1,39 @@
-import { useEffect, useState } from "react";
-import styles from "./Friends.module.sass";
-import getUserFriends from "../../api/getUserFriends";
-import sendFriendRequest from "../../api/sendFriendRequest";
-import getUsersByValue from "../../api/getUsersByValue";
-import { useAppDispatch, useAppSelector, useDebounce } from "../../hooks";
-import getFriendsRequestIn from "../../api/getFriendsRequestIn";
-import getFriendsRequestOut from "../../api/getFriendsRequestOut";
-import Friend from "../../components/Friends/Friend/Friend";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { setFriendsCurrent, setFriendsIn, setFriendsOut } from "@/store/reducers/friendsSlice";
+import { useEffect, useState } from 'react';
+import styles from './Friends.module.sass';
+import getUserFriends from '../../api/getUserFriends';
+import sendFriendRequest from '../../api/sendFriendRequest';
+import getUsersByValue from '../../api/getUsersByValue';
+import { useAppDispatch, useAppSelector, useDebounce } from '../../hooks';
+import getFriendsRequestIn from '../../api/getFriendsRequestIn';
+import getFriendsRequestOut from '../../api/getFriendsRequestOut';
+import Friend from '../../components/Friends/Friend/Friend';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import {
+  setFriendsCurrent,
+  setFriendsIn,
+  setFriendsOut,
+} from '@/store/reducers/friendsSlice';
 
 export default function Friends() {
-  const username: string = useAppSelector(
-    (state) => state.userReducer.username
+  const username = useAppSelector(
+    (state) => state.userReducer.username,
   );
-  
-  const [friendsInPage, setFriendsInPage] = useState<number>(1)
-  const [friendsOutPage, setFriendsOutPage] = useState<number>(1)
-  const [friendsCurrentPage, setFriendsCurrentPage] = useState<number>(1)
+
+  const [friendsInPage, setFriendsInPage] = useState<number>(1);
+  const [friendsOutPage, setFriendsOutPage] = useState<number>(1);
+  const [friendsCurrentPage, setFriendsCurrentPage] = useState<number>(1);
 
   const [searchedUsers, setSearchedUsers] = useState<Array<string>>([]);
-  const [queryNickname, setQueryNickname] = useState("");
+  const [queryNickname, setQueryNickname] = useState('');
 
   const isAuth = useAppSelector((state) => state.authReducer.data);
   const isFriendsActive = useAppSelector((state) => state.menusReduce.friends);
-  const friendsIn = useAppSelector((state) => state.friendsSlice.in)
-  const friendsOut = useAppSelector((state) => state.friendsSlice.out)
-  const friendsCurrent = useAppSelector((state) => state.friendsSlice.current)
-  const dispath = useAppDispatch()
+  const friendsIn = useAppSelector((state) => state.friendsSlice.in);
+  const friendsOut = useAppSelector((state) => state.friendsSlice.out);
+  const friendsCurrent = useAppSelector((state) => state.friendsSlice.current);
+  const dispath = useAppDispatch();
 
   const debouncedSearchUsers = useDebounce(queryNickname);
 
@@ -51,15 +55,16 @@ export default function Friends() {
 
   useEffect(() => {
     const HandleFriends = async () => {
-      await getUserFriends(username, friendsCurrentPage)
-        .then((res) => dispath(setFriendsCurrent(res)));
+      await getUserFriends(username, friendsCurrentPage).then((res) =>
+        dispath(setFriendsCurrent(res)),
+      );
     };
     HandleFriends();
 
     const HandleFriendsInviteIn = async () => {
       getFriendsRequestIn(friendsInPage)
-        .then((res: any) => {
-          dispath(setFriendsIn(res))
+        .then((res) => {
+          dispath(setFriendsIn(res));
         })
         .catch((error) => {
           console.log(error);
@@ -69,8 +74,8 @@ export default function Friends() {
 
     const HandleFriendsInviteOut = async () => {
       getFriendsRequestOut(friendsOutPage)
-        .then((res: any) => {
-          dispath(setFriendsOut(res))
+        .then((res) => {
+          dispath(setFriendsOut(res));
         })
         .catch((error) => {
           console.log(error);
@@ -100,22 +105,22 @@ export default function Friends() {
         </TabsList>
         <TabsContent value="friends">
           {friendsCurrent.length == 0 ? (
-            <p>У вас пока что нет ни одного друга, но не стоит расстраиваться...</p>
-          )
-          : friendsCurrent.map(
-            ((friend: any) => (
+            <p>
+              У вас пока что нет ни одного друга, но не стоит расстраиваться...
+            </p>
+          ) : (
+            friendsCurrent.map((friend) => (
               <Friend
                 username={friend.username}
                 type="current"
                 avatar={friend.photo}
-              /> 
+              />
             ))
-          )
-          }
+          )}
         </TabsContent>
         <TabsContent value="friendsIn">
           {friendsIn
-            ? friendsIn.map((request: any) => (
+            ? friendsIn.map((request) => (
                 <Friend
                   username={request.username}
                   type="in"
@@ -126,7 +131,7 @@ export default function Friends() {
         </TabsContent>
         <TabsContent value="friendsOut">
           {friendsOut
-            ? friendsOut.map((request: any) => (
+            ? friendsOut.map((request) => (
                 <Friend
                   username={request.username}
                   type="out"
@@ -157,7 +162,9 @@ export default function Friends() {
           <div className={`${styles.list_search}`}>
             <>
               {queryNickname.length > 2 && searchedUsers.length == 0 && (
-                <p className='text-center'>Пользователей с таким именем не найдено</p>
+                <p className="text-center">
+                  Пользователей с таким именем не найдено
+                </p>
               )}
               {searchedUsers.map((user: any) => (
                 <Friend
