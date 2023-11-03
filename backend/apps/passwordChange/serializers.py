@@ -115,8 +115,10 @@ class ForgotPasswordChangeSerializer(serializers.Serializer):
         return data
     
     def save(self):
-        user = User.objects.filter(email=self.validated_data['email']).update(password=make_password(self.validated_data['password']))
-        sendInfo.delay(user.email,user.username,
+        user = User.objects.get(email=self.validated_data['email'])
+        user.set_password(self.validated_data['password'])
+        user.save()
+        sendInfo.delay(self.validated_data['email'],user.username,
                 info="Пароль от вашего аккаунта был изменён",
                 subject='Смена пароля'
         )
