@@ -9,8 +9,8 @@
   overflow: hidden
   position: absolute
   top: 0vw
-  right: -50vw
-  min-width: 30vw
+  right: -532px
+  width: 532px 
   padding-top: 100px
   background: hsl(var(--background))
   z-index: 2
@@ -56,6 +56,9 @@
 
 .list
   margin-top: var(--small-offset)
+  display: flex
+  flex-wrap: wrap
+  gap: 20px
   &_search
     margin-top: 20px
     display: flex
@@ -85,3 +88,9 @@
     svg
       cursor: pointer
       fill: var(--secondary-color)
+
+.wrapper
+  display: flex
+  flex-direction: column
+  gap: 20px 
+  align-items: center

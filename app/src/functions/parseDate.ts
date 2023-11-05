@@ -9,7 +9,6 @@ const months = ['Январь', 'Февраль', 'Март', 'Апрель', '�
 
 export default function parseDate(date: string): IDate{
   const parsedDate: Date = new Date(date) 
-    console.log(parsedDate)
     return {
       year: parsedDate.getFullYear(),
       month:  months[parsedDate.getMonth()],

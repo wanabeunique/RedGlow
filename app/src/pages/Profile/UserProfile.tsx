@@ -24,7 +24,6 @@ export default function UserProfile({ username }: IUserProfile) {
   const [userBackground, setUserBackground] = useState<string>();
   const [userPhoto, setUserPhoto] = useState<string>();
 
-  console.log(user);
   useEffect(() => {
     async function fetchUser() {
       const user = await getUserProfile(username);
@@ -44,7 +43,6 @@ export default function UserProfile({ username }: IUserProfile) {
     }
     fetchUser();
   }, [navigate]);
-  console.log(user);
   return (
     <div className={`${styles.profile}`}>
       <div className={styles.profile__top}>

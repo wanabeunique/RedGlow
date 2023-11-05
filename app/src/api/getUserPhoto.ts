@@ -2,7 +2,6 @@ import axios from "axios";
 import { toast } from "react-toastify";
 
 export default async function getUserPhoto(username: string): Promise<string>{
-  console.log(username)
   try {
     const response = await axios.get(
       `${import.meta.env.VITE_API_SERVER}/user/${username}/photo`,

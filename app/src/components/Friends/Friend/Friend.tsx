@@ -38,9 +38,6 @@ interface IFriendProps {
   type: "current" | "in" | "out" | "search";
 }
 
-
-
-
 export default function Friend({ username, type, avatar }: IFriendProps) {
   const [userData, setUserData] = useState<IProfile>()
   const [parsedDate, setParsedDate] = useState<IDate>()
@@ -57,7 +54,6 @@ export default function Friend({ username, type, avatar }: IFriendProps) {
     setFlagUserProfile(false)
     const bg = await getUserBackground(response.username)
     setUserBg(bg)
-    console.log(bg)
   }
 
   async function HandleAccept(nickname: string) {
@@ -177,7 +173,6 @@ export default function Friend({ username, type, avatar }: IFriendProps) {
         return null;
     }
 }
-  console.log(avatar)
 return (
     <HoverCard>
       <HoverCardTrigger>

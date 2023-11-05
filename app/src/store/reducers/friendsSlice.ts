@@ -32,11 +32,11 @@ export const friendsSlice = createSlice({
     },
     removeFriendOut(state, action: PayloadAction<string>) {
       const itemToRemove = action.payload;
-      state.out = state.in.filter(item => item.username !== itemToRemove )
+      state.out = state.out.filter(item => item.username !== itemToRemove )
     },
     removeFriendCurrent(state, action: PayloadAction<string>) {
       const itemToRemove = action.payload;
-      state.current = state.in.filter(item => item.username !== itemToRemove )
+      state.current = state.current.filter(item => item.username !== itemToRemove )
     },
     addFriendIn(state, action: PayloadAction<string>) {
      state.in.push({username: action.payload})

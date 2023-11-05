@@ -32,8 +32,10 @@ import { IDate } from '@/functions/parseDate';
 import parseDate from '@/functions/parseDate';
 import changeBgPhoto from '@/api/changeBgPhoto';
 import getUserBackground from '@/api/getUserBackground';
+import Preloader from '@/components/Preloader';
 
 export default function OwnProfile() {
+  const [isLoading, setIsLoading] = useState(true);
   const userPhoto = useAppSelector((store) => store.userReducer.photo);
   const [userBackground, setUserBackground] = useState<string>();
 
@@ -97,6 +99,7 @@ export default function OwnProfile() {
       };
       HandleFriends();
     }
+    setIsLoading(false)
   }, [user]);
 
   async function changeAvatar() {
@@ -114,7 +117,7 @@ export default function OwnProfile() {
     changeBgPhoto(base64toFile(image, 'bg.png'));
   }
 
-  return user ? (
+  return user && isLoading ? <Preloader /> : 
     <div className={`${styles.profile}`}>
       <div className={styles.profile__top}>
         <img
@@ -278,5 +281,4 @@ export default function OwnProfile() {
         </div>
       </div>
     </div>
-  ) : null;
 }
