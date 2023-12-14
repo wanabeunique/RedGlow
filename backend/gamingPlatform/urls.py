@@ -21,11 +21,12 @@ from django.conf import settings
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('.well-known/pki-validation/file.txt', TemplateView.as_view(template_name='file.txt', content_type='text/plain')),
     path('',include("apps.authentication.urls")),
     path('',include('apps.passwordChange.urls')),
     path('',include('apps.userProfile.urls')),
     path('',include('apps.friends.urls')),
+    path('',include("apps.tools.urls")),
+    path('',include('apps.matchmaking.urls'))
 ]
 
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

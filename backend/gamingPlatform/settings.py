@@ -12,12 +12,10 @@ https://docs.djangoproject.com/en/4.1/ref/settings/
 
 from pathlib import Path
 import os
-from cryptography.fernet import Fernet
 from decouple import config
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-
 
 
 # Quick-start development settings - unsuitable for production
@@ -29,14 +27,11 @@ SECRET_KEY = config('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-CR_KEY = b'ECGIx1Ex2NJTM-_EPF4hWANEZJ-sDDPAt7w0chLLbkY='
-
 ALLOWED_HOSTS = ['127.0.0.1', 'localhost']
 
 # Application definition
 
 INSTALLED_APPS = [
-    "daphne",
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -53,7 +48,8 @@ INSTALLED_APPS = [
     'apps.passwordChange',
     'apps.friends',
     'apps.userProfile',
-    'apps.caching',
+    'apps.tools',
+    'apps.matchmaking'
 ]
 
 MIDDLEWARE = [
@@ -94,8 +90,6 @@ ASGI_APPLICATION = "gamingPlatform.asgi.application"
 
 # Database
 # https://docs.djangoproject.com/en/4.1/ref/settings/#databases
-
-
 
 
 DATABASES = {
@@ -193,7 +187,7 @@ REST_FRAMEWORK = {
 }
 
 CSRF_TRUSTED_ORIGINS = [
-    'https://localhost','https://127.0.0.1:1212'
+    'https://localhost', 'https://127.0.0.1:1212'
 ]
 
 SESSION_COOKIE_HTTPONLY = True
@@ -205,8 +199,10 @@ SESSION_COOKIE_SAMESITE = 'None'
 SESSION_SAVE_EVERY_REQUEST = True
 CORS_ORIGIN_ALLOW_ALL = False
 CORS_ALLOW_CREDENTIALS = True
-CORS_ORIGIN_WHITELIST = ['http://localhost:5173','https://localhost','https://127.0.0.1:1212']
-CORS_ALLOWED_ORIGINS = ['http://localhost:5173','https://localhost','https://127.0.0.1:1212']
+CORS_ORIGIN_WHITELIST = ['http://localhost:5173',
+                         'https://localhost', 'https://127.0.0.1:1212']
+CORS_ALLOWED_ORIGINS = ['http://localhost:5173',
+                        'https://localhost', 'https://127.0.0.1:1212']
 CORS_ALLOWED_METHODS = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS']
 CORS_PREFLIGHT_MAX_AGE = 86400
 CORS_ALLOW_HEADERS = (
@@ -242,3 +238,23 @@ CELERY_RESULT_BACKEND_ALWAYS_RETRY = True
 CELERY_RESULT_BACKEND_MAX_RETRIES = 10
 CELERY_WORKER_SEND_TASK_EVENTS = True
 CELERY_TASK_SEND_SENT_EVENT = True
+
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'file': {
+            'level': 'INFO',
+            'class': 'logging.FileHandler',
+            'filename': 'debug.log',
+        },
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['file'],
+            'level': 'INFO',
+            'propagate': True,
+        },
+    },
+}

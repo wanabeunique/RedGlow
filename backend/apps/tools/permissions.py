@@ -1,7 +1,7 @@
 from rest_framework.permissions import BasePermission
 from steam.webapi import WebAPI
 from decouple import config
-from .models import User
+from ..authentication.models import User
 
 class NotAuthenticated(BasePermission):
     def has_permission(self, request, view):
