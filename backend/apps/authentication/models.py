@@ -3,7 +3,7 @@ from django.contrib.auth.models import AbstractUser, AbstractBaseUser
 
 
 class User(AbstractUser):
-    username = models.CharField(max_length=255,unique=True,error_messages={"unique":"Данное имя пользователя занято"})
+    username = models.CharField(max_length=255,unique=True,error_messages={"unique":"Данное имя пользователя занято"},db_index=True)
     password = models.CharField(max_length=255)
     email = models.EmailField(unique=True,error_messages={"unique":"Данный адрес электронной почты уже зарегистрирован"})
     phoneNumber = models.CharField(max_length=25,unique=True,error_messages={"unique":"Данный номер телефона уже используется"},null=True)
@@ -14,12 +14,12 @@ class User(AbstractUser):
     reportsOwned = models.IntegerField(default=8)
     reportsGot = models.IntegerField(default=0)
     isAdmin = models.BooleanField(default=False)
-    subExpiresIn = models.TimeField(default='00:00:00')
     inGame = models.BooleanField(default=False)
-    country = models.CharField(null=True)
-    banExpiresIn = models.TimeField(default='00:00:00')
-    muteExpiresIn = models.TimeField(default='00:00:00')
-    voteExpiresIn = models.TimeField(default='00:00:00')
+    country = models.CharField(max_length=100,null=True)
+    subExpiresAt = models.DateTimeField(null=True)
+    banExpiresAt = models.DateTimeField(null=True)
+    muteExpiresAt = models.DateTimeField(null=True)
+    voteExpiresAt = models.DateTimeField(null=True)
     first_name = None
     last_name = None
 

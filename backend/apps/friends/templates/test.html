@@ -6,11 +6,14 @@
     <title>Chat Room</title>
 </head>
 <body>
-    <button type="button" onclick="myFunction()">Invite kirinzxc3243</button>
-    <button type="button" onclick="myFunction1()">Accept kirinzx3243</button>
+    <button type="button" onclick="myFunction()">Invite</button>
+    <button type="button" onclick="myFunction1()">Accept</button>
+    <button type="button" onclick="myFunction2()">cancel</button>
+    <button type="button" onclick="myFunction3()">decline</button>
+    <button type="button" onclick="myFunction4()">delete</button>
     <script>
         const chatSocket = new WebSocket(
-            'wss://localhost:8000/ws/friend'
+            'wss://127.0.0.1:8000/ws/friend'
         );
         chatSocket.onopen = function(e){
             console.log('opened')
@@ -26,14 +29,32 @@
         };
         function myFunction() {
             chatSocket.send(JSON.stringify({
-                type: 'invite',
-                target: 'kirinzxc3243'
+                type: 'create_invite',
+                username: 'kirinw8'
             }))
         }
         function myFunction1() {
             chatSocket.send(JSON.stringify({
-                type: 'accept',
-                target: 'kirinzx3243'
+                type: 'accept_invite',
+                username: 'kirin'
+            }))
+        }
+        function myFunction2() {
+            chatSocket.send(JSON.stringify({
+                type: 'cancel_invite',
+                username: 'kirinw8'
+            }))
+        }
+        function myFunction3() {
+            chatSocket.send(JSON.stringify({
+                type: 'decline_invite',
+                username: 'kirin'
+            }))
+        }
+        function myFunction4() {
+            chatSocket.send(JSON.stringify({
+                type: 'delete_friend',
+                username: 'kirin'
             }))
         }
     </script>

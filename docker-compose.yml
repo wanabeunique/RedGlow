@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   db:
-    image: postgres:latest
+    image: postgres:16
     environment:
       POSTGRES_DB: gamingplatform
       POSTGRES_USER: postgres
@@ -30,6 +30,8 @@ services:
       - DJANGO_ALLOWED_HOSTS=127.0.0.1,localhost
       - CELERY_BROKER_URL=redis://redis:6379/2
       - CELERY_RESULT_BACKEND=redis://redis:6379/2
+      - WATCHFILES_FORCE_POLLING=1
+      - PYTHONUNBUFFERED=1
     command:
       - sh
       - -c
@@ -38,13 +40,12 @@ services:
         /usr/local/bin/wait-for-it.sh redis:6379 -t 5 --
         python manage.py makemigrations --noinput
         python manage.py migrate --noinput
-        gunicorn gamingPlatform.asgi -k uvicorn.workers.UvicornWorker -c gunicorn_config.py --reload --access-logfile -
+        gunicorn gamingPlatform.asgi -k gamingPlatform.uvicorn_worker.CustomUvicornWorker -c gunicorn_config.py --reload --access-logfile -
     ports:
       - "8000:8000"
     depends_on:
       - db
       - redis
-    restart: always
     links:
       - db:db
       - redis:redis

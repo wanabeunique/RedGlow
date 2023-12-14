@@ -3,7 +3,7 @@ from rest_framework import serializers
 from apps.authentication.models import User
 from django.core.cache import cache
 from django.contrib.auth.hashers import make_password
-from apps.authentication.tasks import sendInfo, sendLink
+from apps.tools.tasks import sendInfo, sendLink
 import hashlib
 
 

@@ -1,0 +1,38 @@
+<!-- chat/templates/chat/room.html -->
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8"/>
+    <title>Chat Room</title>
+</head>
+<body>
+    <button type="button" onclick="myFunction()">Встать в очередь</button>
+
+    <script>
+        const chatSocket = new WebSocket(
+            'wss://localhost:8000/ws/match_queue'
+        );
+        chatSocket.onopen = function(e){
+            console.log('opened')
+        };
+        chatSocket.onmessage = function(e) {
+            console.log(JSON.parse(e.data))
+        };
+        chatSocket.onerror = function(e){
+            console.log(e.data)
+        }
+        chatSocket.onclose = function(e) {
+            console.error('Chat socket closed unexpectedly');
+        };
+        function myFunction() {
+            chatSocket.send(JSON.stringify({
+                type: 'queued',
+                elo_filter: false,
+                target_players: 6,
+                game: "Sid Meier’s Civilization V"
+            }))
+        }
+
+    </script>
+</body>
+</html>
