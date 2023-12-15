@@ -28,6 +28,10 @@
             console.error('Chat socket closed unexpectedly');
         };
         function myFunction() {
+            console.log(JSON.stringify({
+                type: 'create_invite',
+                username: 'kirinw8'
+            }))
             chatSocket.send(JSON.stringify({
                 type: 'create_invite',
                 username: 'kirinw8'
@@ -36,7 +40,7 @@
         function myFunction1() {
             chatSocket.send(JSON.stringify({
                 type: 'accept_invite',
-                username: 'kirin'
+                username: 'admin'
             }))
         }
         function myFunction2() {
@@ -48,13 +52,13 @@
         function myFunction3() {
             chatSocket.send(JSON.stringify({
                 type: 'decline_invite',
-                username: 'kirin'
+                username: 'admin'
             }))
         }
         function myFunction4() {
             chatSocket.send(JSON.stringify({
                 type: 'delete_friend',
-                username: 'kirin'
+                username: 'admin'
             }))
         }
     </script>
