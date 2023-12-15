@@ -636,170 +636,6 @@
         }
       }
     },
-    "/user/friend/": {
-      "post": {
-        "summary": "Отправка заявки в друзья или ее принятие",
-        "tags": [
-          "Friends"
-        ],
-        "operationId": "inviteFriend",
-        "parameters": [
-          {
-            "in": "header",
-            "name": "X-CSRFToken",
-            "description": "CSRF token",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "example": "saf141kncaskn214"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "required": [
-                  "accepter"
-                ],
-                "properties": {
-                  "accepter": {
-                    "type": "string",
-                    "example": "kirin"
-                  }
-                }
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": "Заявка была успешно отправлена",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/FriendshipStatus"
-                }
-              }
-            }
-          },
-          "202": {
-            "description": "Заявка была отправлена, пользователи стали друзьями, т.к. существовала входящая заявка(принятие заявки, если просто)",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/FriendshipStatus"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Поля не прошли валидацию",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "errors": {
-                      "$ref": "#/components/schemas/NonFieldError"
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Запрос от неавторизованного пользователя"
-          },
-          "default": {
-            "description": "Все остальное"
-          }
-        }
-      },
-      "put": {
-        "summary": "Отменить заявку или удалить друга",
-        "tags": [
-          "Friends"
-        ],
-        "operationId": "changeFriend",
-        "parameters": [
-          {
-            "in": "header",
-            "name": "X-CSRFToken",
-            "description": "CSRF token",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "example": "saf141kncaskn214"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "required": [
-                  "accepter"
-                ],
-                "properties": {
-                  "accepter": {
-                    "type": "string",
-                    "example": "kirin"
-                  }
-                }
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Заявка отменена",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/FriendshipStatus"
-                }
-              }
-            }
-          },
-          "202": {
-            "description": "Пользователь удален из друзей",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/FriendshipStatus"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Поля не прошли валидацию",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "errors": {
-                      "$ref": "#/components/schemas/NonFieldError"
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Запрос от неавторизованного пользователя"
-          },
-          "default": {
-            "description": "Все остальное"
-          }
-        }
-      }
-    },
     "/user/{username}/friend/page/{page}": {
       "get": {
         "summary": "Получить список друзей пользователя",
@@ -1897,6 +1733,14 @@
           "steamIdExists": {
             "type": "boolean",
             "example": true
+          },
+          "photo":{
+            "type": "string",
+            "example": "https://127saf"
+          },
+          "background":{
+            "type": "string",
+            "example": "https://127saf"
           }
         }
       },
@@ -1914,6 +1758,14 @@
           "date_joined": {
             "type": "string",
             "example": "13.08.2023 00:00:00"
+          },
+          "photo":{
+            "type": "string",
+            "example": "https://127saf"
+          },
+          "background":{
+            "type": "string",
+            "example": "https://127saf"
           }
         }
       },

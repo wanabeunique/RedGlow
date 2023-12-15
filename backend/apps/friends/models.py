@@ -11,7 +11,7 @@ class Friendship(models.Model):
     accepter = models.ForeignKey(
         User, on_delete=models.CASCADE, related_name='accepter')
     status = models.PositiveSmallIntegerField(choices=Status.choices)
-    created_at = models.DateField(auto_now_add=True)
+    created_at = models.DateField(auto_now=True)
 
     class Meta:
         unique_together = ('inviter', 'accepter')

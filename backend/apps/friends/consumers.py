@@ -5,7 +5,8 @@ from typing import Iterable
 import json
 from apps.friends.models import Friendship
 from apps.authentication.models import User
-from django.db.models import Q
+from django.db.models import Q, Case, When
+import logging
 
 
 class FriendConsumer(AsyncJsonWebsocketConsumer):
@@ -57,6 +58,22 @@ class FriendConsumer(AsyncJsonWebsocketConsumer):
         if self.group_name:
             await self.channel_layer.group_discard(self.group_name, self.channel_name)
 
+    @database_sync_to_async
+    def filter_exists(self, model: User | Friendship, *args, **kwargs):
+        return model.objects.filter(*args, **kwargs).exists()
+
+    @database_sync_to_async
+    def filter_delete(self, model: User | Friendship, *args, **kwargs):
+        return model.objects.filter(*args, **kwargs).delete()
+
+    @database_sync_to_async
+    def filter_update(self, model: User | Friendship, filters: dict, updates: dict):
+        return model.objects.filter(**filters).update(**updates)
+
+    @database_sync_to_async
+    def delete_friend_query(self, model: User | Friendship, filter, **updates):
+        return model.objects.filter(filter).update(**updates)
+
     async def receive(self, text_data):
 
         user = await get_user(self.scope)
@@ -65,56 +82,65 @@ class FriendConsumer(AsyncJsonWebsocketConsumer):
             return
 
         data_json: dict = json.loads(text_data)
-        if not validate_json(data_json, self.keys):
-            await self.send_status_info(message='Invalid data', status='error')
+        if data_json.get('type') is None or data_json.get('username') is None:
+            await self.send_status_info(message='Invalid data', error=True)
             return
 
         target_username = data_json.get('username')
 
         if user.username == target_username:
-            await self.send_status_info(message='Invalid data', status='error')
+            await self.send_status_info(message='Invalid data', error=True)
             return
 
-        if not User.objects.filter(username=target_username).exists():
-            await self.send_status_info(message='Not found', status='error')
+        user_flag = await self.filter_exists(User, username=target_username)
+
+        if not user_flag:
+            await self.send_status_info(message='Not found', error=True)
             return
 
-        target_user = await User.objects.aget(username=target_username)
+        target_user = await database_sync_to_async(
+            User.objects.get)(username=target_username)
         message_type = data_json.get('type')
         method = getattr(self, message_type)
 
-        method(target_username, target_user, user)
+        await method(target_username, target_user, user)
 
     async def create_invite(self, target_username: str, target_user: User, current_user: User):
+        flag = await self.filter_exists(Friendship, Q(inviter=current_user, accepter=target_user) | Q(inviter=target_user, accepter=current_user))
+        if flag:
+            await self.send_status_info(message=f'Невозможно создать заявку. {flag}', error=True)
+            return
 
-        try:
-            await Friendship.objects.acreate(inviter=current_user, accepter=target_user)
-            await self.send_status_info(message='Заявка успешно создана')
-            await self.channel_layer.group_send(
-                f'friends_{target_username}',
-                {'type': f'incoming_invite', "username": current_user.username,
-                    'photo': current_user.photo_url}
-            )
-        except:
-            await self.send_status_info(message='Ошибка при создании заявки', error=True)
+        await database_sync_to_async(Friendship.objects.create)(
+            inviter=current_user, accepter=target_user, status=Friendship.Status.INVITED)
+        await self.send_status_info(message='Заявка успешно создана')
+        await self.channel_layer.group_send(
+            f'friends_{target_username}',
+            {'type': f'incoming_invite', "username": current_user.username,
+                'photo': current_user.photo_url}
+        )
 
     async def cancel_invite(self, target_username: str, target_user: User, current_user: User):
-        if not Friendship.objects.filter(inviter=current_user, accepter=target_user, status=Friendship.Status.INVITED).exists():
+        flag = await self.filter_exists(Friendship, inviter=current_user, accepter=target_user, status=Friendship.Status.INVITED)
+        if not flag:
             await self.send_status_info(message='Заявки не существует', error=True)
             return
 
-        Friendship.objects.filter(
-            inviter=current_user, accepter=target_user).delete()
+        await self.filter_delete(Friendship, inviter=current_user, accepter=target_user)
 
         await self.send_status_info(message='Заявка успешно отменена')
 
     async def accept_invite(self, target_username: str, target_user: User, current_user: User):
-        if not Friendship.objects.filter(inviter=target_user, accepter=current_user, status=Friendship.Status.INVITED).exists():
+        flag = await self.filter_exists(Friendship, inviter=target_user, accepter=current_user, status=Friendship.Status.INVITED)
+        if not flag:
             await self.send_status_info(message='Заявки не существует', error=True)
             return
 
-        Friendship.objects.filter(inviter=target_user, accepter=current_user).update(
-            status=Friendship.Status.FRIENDS)
+        await self.filter_update(
+            Friendship,
+            dict(inviter=target_user, accepter=current_user),
+            dict(status=Friendship.Status.FRIENDS)
+        )
 
         await self.send_status_info(message='Заявка успешно принята')
 
@@ -125,29 +151,32 @@ class FriendConsumer(AsyncJsonWebsocketConsumer):
         )
 
     async def decline_invite(self, target_username: str, target_user: User, current_user: User):
-        if not Friendship.objects.filter(inviter=target_user, accepter=current_user, status=Friendship.Status.INVITED).exists():
+        flag = await self.filter_exists(Friendship, inviter=target_user, accepter=current_user, status=Friendship.Status.INVITED)
+        if not flag:
             await self.send_status_info(message='Заявки не существует', error=True)
             return
 
-        Friendship.objects.filter(
-            inviter=target_user, accepter=current_user).delete()
+        await self.filter_delete(Friendship, inviter=target_user, accepter=current_user)
 
         await self.send_status_info(message='Заявка успешно отклонена')
 
     async def delete_friend(self, target_username: str, target_user: User, current_user: User):
-
-        if not Friendship.objects.filter(
+        flag = await self.filter_exists(
+            Friendship,
             Q(inviter=target_user, accepter=current_user, status=Friendship.Status.FRIENDS) | Q(
                 inviter=current_user, accepter=target_user, status=Friendship.Status.FRIENDS)
-        ).exists():
+        )
+        if not flag:
             await self.send_status_info(message='Вы не друзья', error=True)
             return
 
-        Friendship.objects.filter(
-            Q(inviter=target_user, accepter=current_user, status=Friendship.Status.FRIENDS) | Q(
-                inviter=current_user, accepter=target_user, status=Friendship.Status.FRIENDS)
-        ).delete()
-
+        await self.delete_friend_query(
+            Friendship,
+            Q(inviter=target_user, accepter=current_user, status=Friendship.Status.FRIENDS) |
+            Q(inviter=current_user, accepter=target_user,
+              status=Friendship.Status.FRIENDS),
+            inviter=target_user, accepter=current_user, status=Friendship.Status.INVITED
+        )
         await self.send_status_info(message='Пользователь успешно удалён из друзей')
 
     async def incoming_invite(self, event):
@@ -163,17 +192,3 @@ class FriendConsumer(AsyncJsonWebsocketConsumer):
                 'message': message
             }
         )
-
-
-def validate_json(json: dict, keys: list) -> bool:
-    if not isinstance(json, dict):
-        return False
-    if not isinstance(keys, Iterable):
-        return False
-
-    for item in json.keys():
-        if item not in keys:
-            return False
-        keys.remove(item)
-
-    return True

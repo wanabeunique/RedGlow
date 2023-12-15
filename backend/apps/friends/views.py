@@ -12,32 +12,6 @@ from django.utils.decorators import method_decorator
 from apps.tools.caching import cache_response, CachedResponse, delete_cache
 
 
-class InviteFriendView(ViewSet):
-    serializer_class = FriendshipSerializer
-    permission_classes = (IsAuthenticated,)
-
-    def create(self, request):
-        inviter = request.user.username
-        accepter = request.data['accepter']
-
-        serializer = self.serializer_class(
-            data={'inviter': inviter, 'accepter': accepter})
-        serializer.is_valid(raise_exception=True)
-        delete_cache('friendship_status',
-                     f'/user/friendship/{accepter}/', inviter)
-        delete_cache('friendship_status',
-                     f'/user/friendship/{inviter}/', accepter)
-        return serializer.create(serializer.validated_data)
-
-    def update(self, request):
-        accepter = request.data['accepter']
-        inviter = request.user.username
-        serializer = self.serializer_class(
-            data={'inviter': inviter, 'accepter': accepter})
-        serializer.is_valid(raise_exception=True)
-        return serializer.update(serializer.validated_data)
-
-
 @method_decorator(cache_response(start_name='friendship_status'), 'get')
 class GetFriendshipStatusView(APIView):
     permission_classes = (IsAuthenticated,)
