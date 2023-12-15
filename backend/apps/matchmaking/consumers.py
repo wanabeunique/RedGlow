@@ -61,7 +61,7 @@ class MatchQueueConsumer(AsyncJsonWebsocketConsumer):
 
     async def disconnect(self, code):
         user = await get_user(self.scope)
-        MatchQueue.objects.filter(user=user.id).update(active=False)
+        UserMatchQueue.objects.filter(user=user.id).update(active=False)
         if self.group_name:
             await self.channel_layer.group_discard(self.group_name, self.channel_name)
 

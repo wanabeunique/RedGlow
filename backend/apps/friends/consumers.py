@@ -19,13 +19,13 @@ class FriendConsumer(AsyncJsonWebsocketConsumer):
     где username - это username пользователя, относительно которого производится действие
     Варианты type:
     - Отправка заявки
-        "type": "create_intive"
+        "type": "create_invite"
     - Отмена отправки
-        "type": "cancel_intive"
+        "type": "cancel_invite"
     - Принятие заявки
-        "type": "accept_intive"
+        "type": "accept_invite"
     - Отклонение заявки
-        "type": "decline_intive"
+        "type": "decline_invite"
     - Удаление друга
         "type": "delete_friend"
     Фронтенд получает сообщение вида:
@@ -36,11 +36,12 @@ class FriendConsumer(AsyncJsonWebsocketConsumer):
         }
     Варианты type:
     - Входящая заявка
-        "type": "incoming_intive"
+        "type": "incoming_invite"
     - Отправленная заявка принята
         "type": "accepted_invite"
     """
-    keys = ['type', 'username']
+    types = ['create_invite', 'accept_invite',
+             "cancel_invite", "decline_invite", "delete_friend"]
 
     async def connect(self):
         user = await get_user(self.scope)
@@ -101,6 +102,12 @@ class FriendConsumer(AsyncJsonWebsocketConsumer):
         target_user = await database_sync_to_async(
             User.objects.get)(username=target_username)
         message_type = data_json.get('type')
+        if not message_type:
+            await self.send_status_info(message='Invalid data', error=True)
+            return
+        if message_type not in self.types:
+            await self.send_status_info(message='Invalid data', error=True)
+            return
         method = getattr(self, message_type)
 
         await method(target_username, target_user, user)
