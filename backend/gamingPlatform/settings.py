@@ -258,3 +258,7 @@ LOGGING = {
         },
     },
 }
+
+
+
+CACHE_TIMEOUT_CUSTOM = 360000

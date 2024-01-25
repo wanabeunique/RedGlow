@@ -27,7 +27,7 @@ from apps.matchmaking.models import *
 elo_subquery = UserElo.objects.filter(user=OuterRef('user')).values('elo')[:1]
 elo = 1300
 # Затем используйте Subquery для аннотации elo в модели MatchQueue
-match_queues = MatchQueue.objects.prefetch_related('user','game').filter(
+match_queues = UserQueue.objects.prefetch_related('user','game').filter(
                     game=1,active=True,eloFilter=True,targetPlayers=4
 ).annotate(elo=Subquery(elo_subquery)).filter(elo__gt=elo-600, elo__lt=elo+600)
 

@@ -4,8 +4,7 @@ from django.http import HttpRequest
 from rest_framework.response import Response
 from rest_framework import status
 from functools import wraps
-
-timeout_global = 360000
+from django.conf import settings
 
 
 class CachedResponse:
@@ -25,7 +24,7 @@ def cache_response(timeout: int | None = None, start_name: str | None = None, fo
                 cache_key = f"{start_name}_cache_{request.path}_{hashlib.sha256(request.user.username.encode('utf-8')).hexdigest()}"
             else:
                 cache_key = f"{start_name}_cache_{request.path}"
-            cachedData: CachedResponse = cache.get(cache_key)
+            cachedData: CachedResponse | None = cache.get(cache_key)
 
             if cachedData is not None:
                 return Response(cachedData.data, status=cachedData.code)
@@ -33,11 +32,7 @@ def cache_response(timeout: int | None = None, start_name: str | None = None, fo
             response: CachedResponse = view_func(request, *args, **kwargs)
 
             if status.is_success(response.code):
-
-                if timeout is None:
-                    timeout = timeout_global
-
-                cache.set(cache_key, response, timeout)
+                cache.set(cache_key, response, timeout if timeout else settings.CACHE_TIMEOUT_CUSTOM)
             return Response(response.data, status=response.code)
         return _wrapped_view
     return decorator
@@ -64,4 +59,4 @@ def change_cached_data(key_to_change, value_to_change, start_name, path, usernam
         return
 
     cached_resp.data[key_to_change] = value_to_change
-    cache.set(key, cached_resp, timeout=timeout_global)
+    cache.set(key, cached_resp, timeout=settings.CACHE_TIMEOUT_CUSTOM)

@@ -23,7 +23,7 @@ class UserBehaviorSerializer(serializers.ModelSerializer):
 class UserForeignSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ('username', 'subExpiresIn',
+        fields = ('username', 'subExpiresAt',
                   'date_joined', 'photo', 'background')
 
 
