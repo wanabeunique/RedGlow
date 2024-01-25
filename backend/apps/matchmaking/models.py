@@ -9,6 +9,7 @@ class Game(models.Model):
     name = models.CharField(max_length=255, unique=True, db_index=True)
     strictNumOfPlayers = models.BooleanField(default=True)
     maxPlayers = models.IntegerField()
+    minPlayers = models.IntegerField()
 
     def __str__(self):
         return self.name
@@ -19,13 +20,14 @@ class HeroToPlay(models.Model):
     game = models.ForeignKey(Game, on_delete=models.CASCADE)
 
 
-class UserMatchQueue(models.Model):
+class UserQueue(models.Model):
     game = models.ForeignKey(Game, on_delete=models.CASCADE)
     eloFilter = models.BooleanField()
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     queuedFrom = models.DateTimeField(auto_now_add=True)
     targetPlayers = models.SmallIntegerField(null=True)
     active = models.BooleanField(default=True)
+    accepted = models.BooleanField(default=False)
 
     def __str__(self):
         return f"{self.game}. {self.user}. {self.active}"

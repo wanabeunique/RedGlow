@@ -2,217 +2,233 @@ from channels.generic.websocket import AsyncJsonWebsocketConsumer
 from channels.auth import get_user
 from channels.db import database_sync_to_async
 from django.db.models import F, Q, OuterRef, Subquery
-from .models import *
+from django.db.models.manager import BaseManager
+from typing import Iterable, List
 import json
-import typing
+from .models import *
+from apps.authentication.models import User
+from apps.tools.db_tools import (
+    async_filter_delete,
+    async_filter_update,
+    async_filter_exists,
+    async_filter_values
+)
+from apps.tools.validators import validate_json
 
 
 class MatchQueueConsumer(AsyncJsonWebsocketConsumer):
     """
-    Получаем сообщение вида:
-    {
-        'type': queued,
-        'elo_filter': bool,
-        'target_players': int,
-        'game': str,
-    }
-    Отправляем, когда найдена игра:
-    {
-        'type': 'game_ready'
-        'count_of_players': int,
-        'hash': str,
-    }
-    После этого все игроки должны принять игру. При принятии, получаем сообщение вида:
-    {
-        'type': 'game_accepted'
-    }
-    Если хотя бы один игрок не принял игру, то принимаем:
-    {
-        'type': 'game_canceled_by_user',
-        'hash': str,
-    }
-    Если таймер принятия истек, и кто-то не принял, принимаем:
-    {
-        'type': 'game_canceled_by_user',
-        'hash': str
-    }
-    А потом отправляем:
-    {
-        'type': 'game_canceled'
-    }
-    Все приняли игру, отправляем:
-    {
-        'type': 'game_created',
-        'hash': str
-    }
+    Получаем сообщения вида:
+    1) При заходе в очередь
+        {
+            'type': enqueued,
+            'eloFilter': bool,
+            'targetPlayers': int,
+            'game': str,
+        }
+    2) Игрок принял игру:
+        {
+            'type': 'game_accepted',
+            'hash': str
+        }
+    3) Если хотя бы один игрок не принял игру:
+        {
+            'type': 'game_canceled_by_user',
+            'hash': str,
+        }
+    4) Если таймер принятия истек, и кто-то не принял:
+        {
+            'type': 'game_canceled_by_user',
+            'hash': str
+        }
+    Отправляем сообщения вида:
+    1) Найдена игра:
+        {
+            'type': 'game_ready'
+            'count_of_players': int,
+            'hash': str,
+        }
+    2) Игра отменена:
+        {
+            'type': 'game_canceled'
+        }
+    3) Все приняли игру:
+        {
+            'type': 'game_created',
+            'hash': str
+        }
     """
-    queued_keys = ('type', 'elo_filter', 'target_players', 'game')
+    acceptable_keys = dict(
+        enqueued=('eloFilter', 'targetPlayers', 'game'),
+        game_accepted=('hash'),
+        game_canceled_by_user=('hash'),
+    )
+    types = ('enqueued', 'game_accepted', 'game_canceled_by_user')
 
     async def connect(self):
 
         user = await get_user(self.scope)
         if user and user.is_authenticated:
             self.username = user.username
-            self.group_name = f'matchQueues_{self.username}'
+            self.group_name = f'matchQueue_{self.username}'
             await self.channel_layer.group_add(self.group_name, self.channel_name)
             await self.accept()
         else:
             await self.close()
 
     async def disconnect(self, code):
-        user = await get_user(self.scope)
-        UserMatchQueue.objects.filter(user=user.id).update(active=False)
         if self.group_name:
+            user = await get_user(self.scope)
+            await async_filter_update(UserQueue, dict(user=user.id), dict(active=False))
             await self.channel_layer.group_discard(self.group_name, self.channel_name)
+
+    @database_sync_to_async
+    def elo_query(self, match_queues, elo_subquery, elo):
+        return match_queues.filter(eloFilter=True).annotate(elo=Subquery(
+            elo_subquery)).filter(elo__gt=elo+250, elo__lt=elo-250)
 
     async def receive(self, text_data):
         user = await get_user(self.scope)
         if not (user and user.is_authenticated):
             await self.close()
 
-        dataJson: dict = json.loads(text_data)
+        data_json: dict = json.loads(text_data)
 
-        if dataJson.get('type') == 'queued':
-            await self.validate_queued(dataJson, user)
+        message_type = data_json.get('type')
 
-        elif dataJson.get('type') == 'game_accepted':
-            pass
-
-        elif dataJson.get('type') == 'game_canceled_by_user':
-            pass
-
-    async def validate_queued(self, dataJson: dict, user):
-        matchQueueInstance = validatedJson(dataJson, self.queued_keys)
-        if not matchQueueInstance:
+        if not message_type:
+            await self.send_status_info('Invalid data', error=True)
             return
 
+        if message_type not in self.types:
+            await self.send_status_info('Invalid data', error=True)
+            return
+
+        is_json_valid = await validate_json(data_json, self.acceptable_keys.get(message_type))
+
+        if not is_json_valid:
+            await self.send_status_info('Invalid data', error=True)
+            return
+        data_json.pop('type')
+        method = getattr(self, message_type)
+
+        await method(data_json, user)
+
+    async def enqueued(self, data_json: dict, user: User):
         # Проверка, есть ли игра в базе данных
-        try:
-            matchQueueInstance['game'] = await Game.objects.aget(name=dataJson.get('game', ''))
-        except Game.DoesNotExist:
+        does_game_exist = await async_filter_exists(name=data_json.get('game', ''))
+        if not does_game_exist:
+            await self.send_status_info('Game not found', error=True)
             return
+        game: Game = await database_sync_to_async(Game.objects.get)(name=data_json.get('game', ''))
+        data_json['game'] = game
 
         # Проверка, есть ли запись юзера в бд
-
-        # Есть - обновляем
         queuedBeforeUser = database_sync_to_async(
-            UserMatchQueue.objects.filter)(user=user)
-
+            UserQueue.objects.filter)(user=user)
+        # Есть - обновляем
         if queuedBeforeUser:
-
+            data_json['active'] = True
             database_sync_to_async(queuedBeforeUser.update)(
-                **matchQueueInstance)
-            queuedUser = await UserMatchQueue.objects.aget(user=user)
+                **data_json)
+            queuedUser = await database_sync_to_async(UserQueue.objects.get)(user=user)
 
         # Если нет, то создаем
         else:
-            matchQueueInstance['user'] = user
-            queuedUser = await UserMatchQueue.objects.acreate(**matchQueueInstance)
+            data_json['user'] = user
+            queuedUser: UserQueue = await database_sync_to_async(UserQueue.objects.create)(**data_json)
 
         # Получение всех игроков в поиске с такой же игрой
-        match_queues = UserMatchQueue.objects.filter(
-            game=queuedUser.game, active=True).prefetch_related('user', 'game').order_by('queuedFrom')
+        match_queues = await database_sync_to_async(UserQueue.objects.filter)(
+            game=game, active=True)
+        await database_sync_to_async(match_queues.prefetch_related)('user', 'game')
+        await database_sync_to_async(match_queues.order_by)('-queuedFrom')
 
+        # Не нашлось игроков - выходим
         if not match_queues:
             return
 
-        await self.filterQueue(queuedUser, match_queues, queuedUser.game)
-
-    async def filterQueue(self, queuedUser: UserMatchQueue, match_queues, game: Game):
-        # Проверка, на фильтрацию по рейтингу
         if queuedUser.eloFilter:
-            elo_subquery = UserElo.objects.filter(
-                user=OuterRef('user')).values('elo')[:1]
-            userElo = await UserElo.objects.aget(user=queuedUser.user)
-            match_queues = match_queues.filter(eloFilter=True).annotate(elo=Subquery(
-                elo_subquery)).filter(elo__gt=userElo.elo+250, elo__lt=userElo.elo-250)
-
+            elo_subquery = await async_filter_values(UserElo, values=('elo'), border=1, user=OuterRef('user'), game=game.id)
+            userElo = await database_sync_to_async(UserElo.objects.get)(user=queuedUser.user)
+            match_queues = await self.elo_query(match_queues, elo_subquery, userElo.elo)
         else:
-            match_queues = match_queues.filter(eloFilter=False)
+            match_queues = await database_sync_to_async(match_queues.filter)(eloFilter=False)
 
         # Проверка, на фильтрацию по кол-ву игроков
         if not queuedUser.targetPlayers:
-
             numOfPlayersQueued = len(match_queues)
+
             if not game.strictNumOfPlayers:
-                if numOfPlayersQueued >= 4:
-                    if numOfPlayersQueued >= game.maxPlayers:
-                        await self.createGame(match_queues, game, game.maxPlayers)
-                    else:
-                        numOfPlayersQueued
+                if numOfPlayersQueued <= game.minPlayers:
+                    return
+
+                if numOfPlayersQueued >= game.maxPlayers:
+                    await self.createGame(match_queues, game, game.maxPlayers)
+                else:
+                    await self.createGame(match_queues, game, numOfPlayersQueued)
+
             elif numOfPlayersQueued == game.strictNumOfPlayers:
                 await self.createGame(match_queues, game, numOfPlayersQueued)
-
         else:
             if not game.strictNumOfPlayers:
-                match_queues = match_queues.filter(
+                match_queues = database_sync_to_async(match_queues.filter)(
                     Q(targetPlayers=queuedUser.targetPlayers) | Q(targetPlayers=None))
-                if len(match_queues) >= queuedUser.targetPlayers:
-                    # Отправить собщение о найденной игре
-                    await self.createGame(match_queues=match_queues, game=game, numOfPlayers=queuedUser.targetPlayers)
-                return
+                if len(match_queues) >= queuedUser.targetPlayers and len(match_queues) >= game.minPlayers:
+                    await self.createGame(match_queues=match_queues, game=game, numOfPlayers=len(match_queues))
 
-    async def createGame(self, match_queues, game, numOfPlayers=None):
-        match = await Match.objects.acreate(game=game)
-        userMatchObjects = []
-        for matchQueue in match_queues:
-            userMatchObjects.append(
-                UserMatch(user=matchQueue.user, match=match)
+    async def createGame(self, match_queues: BaseManager[UserQueue], game, numOfPlayers=None):
+        match: Match = await database_sync_to_async(Match.objects.create)(game=game)
+        user_match_objects = []
+        users_to_send = []
+        count_of_added_players = 0
+        for match_queue in match_queues:
+            if count_of_added_players == numOfPlayers:
+                break
+
+            user_match_objects.append(
+                UserMatch(user=match_queue.user, match=match)
             )
-        await UserMatch.objects.abulk_create(userMatchObjects)
-        match_queues.update(active=False)
-        await self.sendRdyMessages(match_queues)
+            users_to_send.append(match_queue.user.username)
+            count_of_added_players += 1
 
-    async def sendRdyMessages(self, matchQueues, type, hash):
-        for instance in matchQueues:
+        await database_sync_to_async(UserMatch.objects.bulk_create)(user_match_objects)
+        await database_sync_to_async(match_queues.update)(active=False)
+        await self.send_ready_messages(user_match_objects, match.hash)
+
+    async def send_ready_messages(self, users: List[User], hash):
+        for user in users:
             await self.channel_layer.group_send(
-                f'matchQueues_{instance.user.username}',
+                f'matchQueue_{user.username}',
                 {
-                    'type': f'game.ready',
-                    "count_of_players": len(matchQueues),
-                    'gameHash': hash
+                    'type': 'game_ready',
+                    'count_of_players': len(users),
+                    'hash': hash,
                 }
             )
 
-    async def game_ready(self, event):
-        await self.send(text_data=json.dumps(
-            {
-                "type": 'game_ready',
-                'count_of_players': event.get('count_of_players'),
-                'hash': event.get('hash')
-            }
-        ))
-
+    async def game_accepted(self, data_json: dict, user: User):
         pass
 
-    async def game_accepted(self, event):
-        await self.send(text_data=json.dumps({"type": 'game_accepted'}))
+    async def game_canceled_by_user(self, data_json: dict, user: User):
+        pass
+
+    async def game_ready(self, event):
+        await self.send_json(event)
 
     async def game_created(self, event):
-        await self.send(text_data=json.dumps({"type": 'game_created', 'game_hash': event.get('game_hash')}))
+        pass
 
     async def game_canceled(self, event):
         pass
 
-
-def validatedJson(self, json: dict, keys: typing.Iterable) -> dict | None:
-    if not isinstance(json, dict):
-        return None
-    if not isinstance(keys, typing.Iterable):
-        return None
-    tmp = {}
-    for key in keys:
-        if key in json.keys():
-            value = json.get(key, '')
-            if value == '':
-                return None
-            else:
-                if key != 'type':
-                    tmp[key] = value
-        else:
-            return None
-    tmp['active'] = True
-    return tmp
+    async def send_status_info(self, message, error=False):
+        await self.send_json(
+            {
+                'status': 'error' if error else 'success',
+                'message': message
+            }
+        )
 
 
 class MatchConsumer(AsyncJsonWebsocketConsumer):

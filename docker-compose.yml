@@ -60,7 +60,7 @@ services:
       context: ./backend
       dockerfile: Dockerfile.django
     volumes:
-      - /app
+      - ./backend:/app
     command: 
       - sh
       - -c
