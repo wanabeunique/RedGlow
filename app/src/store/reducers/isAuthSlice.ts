@@ -1,13 +1,13 @@
-import { createSlice, PayloadAction } from '@reduxjs/toolkit'
-import { setLogout } from '../../api/setLogout';
+import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { setLogout } from '../../service/setLogout';
 
 type isAuthState = {
-  data: boolean
-}
+  data: boolean;
+};
 
 const initialState: isAuthState = {
   data: false,
-}
+};
 
 export const isAuthSlice = createSlice({
   name: 'isAuth',
@@ -19,6 +19,5 @@ export const isAuthSlice = createSlice({
   },
 });
 
-
-export const { setIsAuth } = isAuthSlice.actions
+export const { setIsAuth } = isAuthSlice.actions;
 export default isAuthSlice.reducer;

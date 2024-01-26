@@ -1,10 +1,9 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import recoveryPassword from '../../api/recoveryPassword';
 import styles from './Recovery.module.sass';
-import { Navigate, useNavigate, useSearchParams } from 'react-router-dom';
-import setForgotPassword from '@/api/setForgotPassword';
+import { Navigate, useSearchParams } from 'react-router-dom';
+import passwordService from '@/service/password.service';
 
 export default function RecoveryNewPassword() {
   const [password, setPassword] = useState('');
@@ -14,7 +13,6 @@ export default function RecoveryNewPassword() {
 
   if (!email || !code) return <Navigate to="/404" />;
 
-  
   return (
     <div className={`contaier ${styles.container}`}>
       <p className={`title`}>Введите новый пароль</p>
@@ -30,7 +28,7 @@ export default function RecoveryNewPassword() {
       <Button
         className="button"
         onClick={() => {
-          setForgotPassword(password, email, code);
+          passwordService.setForgottenPassword(password, email, code);
         }}
       >
         Отправить

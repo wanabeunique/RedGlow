@@ -6,11 +6,9 @@ import IProfile from '@/interfaces/IProfile';
 import { useNavigate } from 'react-router-dom';
 import { IDate } from '@/functions/parseDate';
 import Friend from '@/components/Friends/Friend/Friend';
-import getUserFriends from '@/api/getUserFriends';
 import parseDate from '@/functions/parseDate';
-import getUserBackground from '@/api/getUserBackground';
-import getUserPhoto from '@/api/getUserPhoto';
-import getUserProfile from '@/api/getUserProfile';
+import userService from '@/service/user.service';
+import friendsService from '@/service/friends.service';
 
 interface IUserProfile {
   username: string;
@@ -26,19 +24,18 @@ export default function UserProfile({ username }: IUserProfile) {
 
   useEffect(() => {
     async function fetchUser() {
-      const user = await getUserProfile(username);
+      const user = await userService.getUserProfile(username);
       const parsedDate = parseDate(user.date_joined);
       setParsedDate(parsedDate);
       if (!user) {
         return navigate('/');
       }
-      const friends = await getUserFriends(user?.username, 1);
-
+      const friends = await friendsService.getUserFriends(user?.username, 1);
       setFriendsData(friends);
       setUser(user);
-      const userBackground = await getUserBackground(user.username);
+      const userBackground = await userService.getUserBackground(user.username);
       setUserBackground(userBackground);
-      const photo = await getUserPhoto(user.username);
+      const photo = await userService.getUserPhoto(user.username);
       setUserPhoto(photo);
     }
     fetchUser();

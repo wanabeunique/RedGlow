@@ -1,22 +1,19 @@
-import setSteam from "@/api/setSteam";
-import { Navigate } from "react-router-dom";
+import userService from '@/service/user.service';
+import { Navigate } from 'react-router-dom';
 
 export default function Steam() {
-  let id = null
+  let id = null;
   const searchParams = new URLSearchParams(location.search);
-  console.log(searchParams);
-  const key = searchParams.get("openid.identity");
+  const key = searchParams.get('openid.identity');
   const pattern = /https:\/\/steamcommunity.com\/openid\/id\/(\d+)/;
 
-  if (key){
+  if (key) {
     id = key.match(pattern);
   }
 
-  if (id && id.length > 1){
-    setSteam(id[1])
+  if (id && id.length > 1) {
+    userService.linkSteamAccount(id[1]);
   }
 
-  return (
-    <Navigate to="/" />
-  )
+  return <Navigate to="/" />;
 }

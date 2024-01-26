@@ -3,11 +3,9 @@ import { Link } from 'react-router-dom';
 import ChangePhoto from '@/components/SVG/ChangePhoto';
 import { useState } from 'react';
 import AvatarEditor from 'react-avatar-editor';
-import getProfile from '../../api/getProfile';
 import { useRef } from 'react';
 import { useEffect } from 'react';
 import { Progress } from '@/components/ui/progress';
-import getUserFriends from '@/api/getUserFriends';
 import defaultBg from '@/assets/profile-bg.png';
 import defaultAvatar from '@/assets/profile-photo.png';
 import Friend from '@/components/Friends/Friend/Friend';
@@ -25,14 +23,14 @@ import {
 } from '@/components/ui/alert-dialog';
 
 import { IOwnProfile } from '@/interfaces/IOwnProfile';
-import changePhoto from '@/api/changePhoto';
 import base64toFile from '@/functions/base64toFile';
-import { useAppSelector } from '@/hooks';
+import { useAppSelector } from '@/hooks/useAppSelector';
 import { IDate } from '@/functions/parseDate';
 import parseDate from '@/functions/parseDate';
-import changeBgPhoto from '@/api/changeBgPhoto';
-import getUserBackground from '@/api/getUserBackground';
+import changeBgPhoto from '@/service/changeBgPhoto';
 import Preloader from '@/components/Preloader';
+import userService from '@/service/user.service';
+import friendsService from '@/service/friends.service';
 
 export default function OwnProfile() {
   const [isLoading, setIsLoading] = useState(true);
@@ -71,11 +69,12 @@ export default function OwnProfile() {
 
   useEffect(() => {
     const getUser = async () => {
-      const userData = await getProfile();
+      const userData = await userService.getProfile();
+      console.log(userData);
       setUser(userData);
       const parsedDate = parseDate(userData.date_joined);
       setParsedDate(parsedDate);
-      const userBackground = await getUserBackground(userData.username);
+      const userBackground = await userService.getUserBackground(userData.username);
       setUserBackground(userBackground);
     };
     getUser();
@@ -91,22 +90,20 @@ export default function OwnProfile() {
   useEffect(() => {
     if (user) {
       const HandleFriends = async () => {
-        const friendsDataValue: Array<string> = await getUserFriends(
-          user.username,
-          friendsCurrentPage,
-        );
+        const friendsDataValue: Array<string> =
+          await friendsService.getUserFriends(user.username, friendsCurrentPage);
         setFriendsData(friendsDataValue);
       };
       HandleFriends();
     }
-    setIsLoading(false)
+    setIsLoading(false);
   }, [user]);
 
   async function changeAvatar() {
     setSelectedPhoto(null);
     const canvas = EditorRef.current.getImageScaledToCanvas();
     const image = canvas.toDataURL();
-    changePhoto(base64toFile(image, 'avatar.png'));
+    userService.setUserPhoto(base64toFile(image, 'avatar.png'));
   }
 
   async function changeBg() {
@@ -114,10 +111,12 @@ export default function OwnProfile() {
     const canvas = EditorBgRef.current.getImageScaledToCanvas();
     const image = canvas.toDataURL();
     console.log(image);
-    changeBgPhoto(base64toFile(image, 'bg.png'));
+    userService.setBgPhoto(base64toFile(image, 'bg.png'));
   }
 
-  return user && isLoading ? <Preloader /> : 
+  return user && isLoading ? (
+    <Preloader />
+  ) : (
     <div className={`${styles.profile}`}>
       <div className={styles.profile__top}>
         <img
@@ -125,7 +124,9 @@ export default function OwnProfile() {
           className={styles.profile__top_bg}
         />
         <AlertDialog>
-          <AlertDialogTrigger className={`${styles.profile__top_bg_trigger} ${styles.profile__top_change}`}>
+          <AlertDialogTrigger
+            className={`${styles.profile__top_bg_trigger} ${styles.profile__top_change}`}
+          >
             <ChangePhoto />
           </AlertDialogTrigger>
           <AlertDialogContent>
@@ -281,4 +282,5 @@ export default function OwnProfile() {
         </div>
       </div>
     </div>
+  );
 }

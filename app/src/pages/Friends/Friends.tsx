@@ -1,6 +1,8 @@
 import styles from './Friends.module.sass';
 import { useEffect, useState } from 'react';
-import { useAppDispatch, useAppSelector, useDebounce } from '../../hooks';
+import { useAppDispatch } from '@/hooks/useAppDispatch';
+import { useAppSelector } from '@/hooks/useAppSelector';
+import { useDebounce } from '@/hooks/useDebounce';
 import Friend from '../../components/Friends/Friend/Friend';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
@@ -12,11 +14,8 @@ import {
 } from '@/store/reducers/friendsSlice';
 import Preloader from '@/components/Preloader';
 import Pagination from '@/components/Pagination/Pagination';
-import getUserFriends from '../../api/getUserFriends';
-import getFriendsRequestIn from '../../api/getFriendsRequestIn';
-import getFriendsRequestOut from '../../api/getFriendsRequestOut';
-import getUsersByValue from '../../api/getUsersByValue';
-import sendFriendRequest from '../../api/sendFriendRequest';
+import userService from '@/service/user.service';
+import friendsService from '@/service/friends.service';
 
 export default function Friends() {
   const username = useAppSelector((state) => state.userReducer.username);
@@ -52,7 +51,7 @@ export default function Friends() {
     async function getSearchedUsers() {
       if (queryNickname.length > 2) {
         async function getRequest() {
-          await getUsersByValue(debouncedSearchUsers, 1).then((res) => {
+          await friendsService.searchUsers(debouncedSearchUsers, 1).then((res) => {
             setSearchedUsers(res);
           });
         }
@@ -67,30 +66,35 @@ export default function Friends() {
 
   useEffect(() => {
     const HandleFriends = async () => {
-      await getUserFriends(username, friendsCurrentPage).then((res) => {
-        if (res.length == 20) {
-          getUserFriends(username, friendsCurrentPage + 1).then((res) => {
-            if (res.length > 0) {
-              setFriendsCurrentPageNext(true);
-            } else {
-              setFriendsCurrentPageNext(false);
-            }
-          });
-        } else {
-          setFriendsCurrentPageNext(false);
-        }
-        dispath(setFriendsCurrent(res));
-      });
+      await friendsService
+        .getUserFriends(username, friendsCurrentPage)
+        .then((res) => {
+          if (res.length == 20) {
+            friendsService
+              .getUserFriends(username, friendsCurrentPage + 1)
+              .then((res) => {
+                if (res.length > 0) {
+                  setFriendsCurrentPageNext(true);
+                } else {
+                  setFriendsCurrentPageNext(false);
+                }
+              });
+          } else {
+            setFriendsCurrentPageNext(false);
+          }
+          dispath(setFriendsCurrent(res));
+        });
     };
     HandleFriends();
   }, [friendsCurrentPage]);
 
   useEffect(() => {
     const HandleFriendsInviteIn = async () => {
-      getFriendsRequestIn(friendsInPage)
+      friendsService
+        .getRequestInByPage(friendsInPage)
         .then((res) => {
           if (res.length == 20) {
-            getFriendsRequestIn(friendsInPage + 1).then((res) => {
+            userService.getRequestInByPage(friendsInPage + 1).then((res) => {
               if (res.length > 0) {
                 setFriendsInPageNext(true);
               } else setFriendsInPageNext(false);
@@ -107,14 +111,17 @@ export default function Friends() {
 
   useEffect(() => {
     const HandleFriendsInviteOut = async () => {
-      getFriendsRequestOut(friendsOutPage)
+      friendsService
+        .getRequestOutByPage(friendsOutPage)
         .then((res) => {
           if (res.length == 20) {
-            getFriendsRequestOut(friendsOutPage + 1).then((res) => {
-              if (res.length > 0) {
-                setFriendsOutPageNext(true);
-              } else setFriendsOutPageNext(false);
-            });
+            friendsService
+              .getRequestOutByPage(friendsOutPage + 1)
+              .then((res) => {
+                if (res.length > 0) {
+                  setFriendsOutPageNext(true);
+                } else setFriendsOutPageNext(false);
+              });
           } else setFriendsOutPageNext(false);
           dispath(setFriendsOut(res));
         })
@@ -134,13 +141,25 @@ export default function Friends() {
       <Tabs defaultValue="friends" className="">
         <TabsList>
           <TabsTrigger value="friends">
-            Друзья ( {friendsCurrent.length == 20 || friendsCurrentPage > 1 ? '20+' : friendsCurrent.length} )
+            Друзья ({' '}
+            {friendsCurrent.length == 20 || friendsCurrentPage > 1
+              ? '20+'
+              : friendsCurrent.length}{' '}
+            )
           </TabsTrigger>
           <TabsTrigger value="friendsIn">
-            Заявки в друзья ( {friendsIn.length == 20 || friendsInPage > 1 ? '20+' : friendsIn.length} )
+            Заявки в друзья ({' '}
+            {friendsIn.length == 20 || friendsInPage > 1
+              ? '20+'
+              : friendsIn.length}{' '}
+            )
           </TabsTrigger>
           <TabsTrigger value="friendsOut">
-            Отправленные заявки ( {friendsOut.length == 20 || friendsOutPage > 1 ? '20+' : friendsOut.length} )
+            Отправленные заявки ({' '}
+            {friendsOut.length == 20 || friendsOutPage > 1
+              ? '20+'
+              : friendsOut.length}{' '}
+            )
           </TabsTrigger>
           <TabsTrigger value="search">Поиск</TabsTrigger>
         </TabsList>
@@ -225,7 +244,7 @@ export default function Friends() {
             />
             <Button
               onClick={() => {
-                sendFriendRequest(queryNickname);
+                friendsService.addfriend(queryNickname);
               }}
             >
               Отправить заявку
