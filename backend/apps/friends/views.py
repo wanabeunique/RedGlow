@@ -10,7 +10,7 @@ from django.db.models import Q, F, When, Case, ExpressionWrapper, BigIntegerFiel
 from django.shortcuts import render
 from django.utils.decorators import method_decorator
 from apps.tools.caching import cache_response, CachedResponse, delete_cache
-
+from django.shortcuts import get_object_or_404
 
 @method_decorator(cache_response(start_name='friendship_status'), 'get')
 class GetFriendshipStatusView(APIView):
@@ -51,7 +51,7 @@ class FriendListView(APIView):
 
         targetId = User.objects.get(username=username).id
         friends = Friendship.objects.filter(
-            (Q(accepter=targetId) | Q(inviter=targetId)) & Q(status=1)
+            (Q(accepter=targetId) | Q(inviter=targetId)) & Q(status=Friendship.Status.FRIENDS)
         ).prefetch_related('inviter', 'accepter').order_by(Case(
             When(accepter__id=targetId, then=F('inviter__username')),
             default=F('accepter__username')
@@ -75,7 +75,7 @@ class InviteInListView(APIView):
     def get(self, request, page=None):
 
         friendships = Friendship.objects.filter(
-            Q(accepter=request.user.id) & Q(status=0)
+            Q(accepter=request.user.id) & Q(status=Friendship.Status.INVITED)
         ).prefetch_related('inviter').order_by('inviter__username').values(
             username=F('inviter__username'),
             photo=F('inviter__photo')
@@ -89,7 +89,7 @@ class InviteOutListView(APIView):
     def get(self, request, page=None):
 
         friendships = Friendship.objects.filter(
-            Q(inviter=request.user.id) & Q(status=0)
+            Q(inviter=request.user.id) & Q(status=Friendship.Status.INVITED)
         ).prefetch_related('accepter').order_by('accepter__username').values(
             username=F('accepter__username'),
             photo=F('accepter__photo')
@@ -120,10 +120,11 @@ class SearchFriendView(APIView):
     permission_classes = (IsAuthenticated, )
 
     def get(self, request, username=None, value=None, page=None):
-        targetId = User.objects.get(username=username).id
+        target_user = get_object_or_404(User, username=username)
+        targetId = target_user.id
         friends = Friendship.objects.prefetch_related('inviter', 'accepter').filter(
             ((Q(accepter=targetId) & Q(accepter__username__startswith=value)) | (
-                Q(inviter=targetId) & Q(inviter__username__startswith=value))) & Q(status=1)
+                Q(inviter=targetId) & Q(inviter__username__startswith=value))) & Q(status=Friendship.Status.FRIENDS)
         ).order_by(Case(
             When(accepter__id=targetId, then=F('inviter__username')),
             default=F('accepter__username')
@@ -149,7 +150,7 @@ class SearchInviteInView(APIView):
 
         friendships = Friendship.objects.prefetch_related('inviter', 'accepter').filter(
             Q(accepter=request.user.id) & Q(
-                accepter__username__startswith=value) & Q(status=0)
+                accepter__username__startswith=value) & Q(status=Friendship.Status.INVITED)
         ).order_by('inviter__username').values(
             username=F('inviter__username'),
             photo=F('inviter__photo')
@@ -164,7 +165,7 @@ class SearchInviteOutView(APIView):
 
         friendships = Friendship.objects.prefetch_related('inviter', 'accepter').filter(
             Q(inviter=request.user.id) & Q(
-                inviter__username__startswith=value) & Q(status=0)
+                inviter__username__startswith=value) & Q(status=Friendship.Status.INVITED)
         ).order_by('accepter__username').values(
             username=F('accepter__username'),
             photo=F('accepter__photo')
@@ -182,7 +183,7 @@ class RetrieveCommonFriendsView(APIView):
         targetId = User.objects.get(username=username).id
         currentUserId = request.user.id
 
-        targetFriends = Friendship.objects.prefetch_related('inviter', 'accepter').filter((Q(inviter=targetId) | Q(accepter=targetId)) & Q(status=1)).values(
+        targetFriends = Friendship.objects.prefetch_related('inviter', 'accepter').filter((Q(inviter=targetId) | Q(accepter=targetId)) & Q(status=Friendship.Status.FRIENDS)).values(
             username=Case(
                 When(accepter__id=targetId, then=F('inviter__username')),
                 default=F('accepter__username')
@@ -193,7 +194,7 @@ class RetrieveCommonFriendsView(APIView):
             )
         )
 
-        currentUserFriends = Friendship.objects.prefetch_related('inviter', 'accepter').filter((Q(inviter=currentUserId) | Q(accepter=currentUserId)) & Q(status=1)).values(
+        currentUserFriends = Friendship.objects.prefetch_related('inviter', 'accepter').filter((Q(inviter=currentUserId) | Q(accepter=currentUserId)) & Q(status=Friendship.Status.FRIENDS)).values(
             username=Case(
                 When(accepter__id=currentUserId, then=F('inviter__username')),
                 default=F('accepter__username')
@@ -213,12 +214,14 @@ class SearchCommonFriendsView(APIView):
     permission_classes = (IsAuthenticated,)
 
     def get(self, request, username=None, value=None):
-        targetId = User.objects.get(username=username).id
+        target_user = get_object_or_404(User, username=username)
+        targetId = target_user.id
+
         currentUserId = request.user.id
 
         targetFriends = Friendship.objects.prefetch_related('inviter', 'accepter').filter(
             ((Q(inviter=targetId) & Q(inviter__username__startswith=value)) | (
-                Q(accepter=targetId) & Q(accepter__username__startswith=value))) & Q(status=1)
+                Q(accepter=targetId) & Q(accepter__username__startswith=value))) & Q(status=Friendship.Status.FRIENDS)
         ).values(
             username=Case(
                 When(accepter__id=targetId, then=F('inviter__username')),
@@ -232,7 +235,7 @@ class SearchCommonFriendsView(APIView):
 
         currentUserFriends = Friendship.objects.prefetch_related('inviter', 'accepter').filter(
             ((Q(inviter=currentUserId) & Q(inviter__username__startswith=value)) | (
-                Q(accepter=currentUserId) & Q(accepter__username__startswith=value))) & Q(status=1)
+                Q(accepter=currentUserId) & Q(accepter__username__startswith=value))) & Q(status=Friendship.Status.FRIENDS)
         ).values(
             username=Case(
                 When(accepter__id=currentUserId, then=F('inviter__username')),

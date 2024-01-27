@@ -13,7 +13,7 @@
     <button type="button" onclick="myFunction4()">delete</button>
     <script>
         const chatSocket = new WebSocket(
-            'wss://127.0.0.1:8000/ws/friend'
+            'wss://localhost:8000/ws/friend'
         );
         chatSocket.onopen = function(e){
             console.log('opened')

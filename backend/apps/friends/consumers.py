@@ -7,8 +7,8 @@ import json
 from apps.friends.models import Friendship
 from apps.authentication.models import User
 from apps.tools.db_tools import async_filter_exists, async_filter_update, async_filter_delete
+from apps.tools.caching import delete_cache
 import logging
-
 
 class FriendConsumer(AsyncJsonWebsocketConsumer):
     """
@@ -107,7 +107,7 @@ class FriendConsumer(AsyncJsonWebsocketConsumer):
     async def create_invite(self, target_username: str, target_user: User, current_user: User):
         flag = await async_filter_exists(Friendship, Q(inviter=current_user, accepter=target_user) | Q(inviter=target_user, accepter=current_user))
         if flag:
-            await self.send_status_info(message=f'Невозможно создать заявку. {flag}', error=True)
+            await self.send_status_info(message=f'Невозможно создать заявку', error=True)
             return
 
         await database_sync_to_async(Friendship.objects.create)(
@@ -118,6 +118,8 @@ class FriendConsumer(AsyncJsonWebsocketConsumer):
             {'type': f'incoming_invite', "username": current_user.username,
                 'photo': current_user.photo_url}
         )
+        await self.invalidate_cache(target_username, current_user.username)
+        await self.invalidate_cache(current_user.username, target_username)
 
     async def cancel_invite(self, target_username: str, target_user: User, current_user: User):
         flag = await async_filter_exists(Friendship, inviter=current_user, accepter=target_user, status=Friendship.Status.INVITED)
@@ -128,6 +130,8 @@ class FriendConsumer(AsyncJsonWebsocketConsumer):
         await async_filter_delete(Friendship, inviter=current_user, accepter=target_user)
 
         await self.send_status_info(message='Заявка успешно отменена')
+        await self.invalidate_cache(target_username, current_user.username)
+        await self.invalidate_cache(current_user.username, target_username)
 
     async def accept_invite(self, target_username: str, target_user: User, current_user: User):
         flag = await async_filter_exists(Friendship, inviter=target_user, accepter=current_user, status=Friendship.Status.INVITED)
@@ -149,6 +153,9 @@ class FriendConsumer(AsyncJsonWebsocketConsumer):
                 "photo": current_user.photo_url}
         )
 
+        await self.invalidate_cache(target_username, current_user.username)
+        await self.invalidate_cache(current_user.username, target_username)
+
     async def decline_invite(self, target_username: str, target_user: User, current_user: User):
         flag = await async_filter_exists(Friendship, inviter=target_user, accepter=current_user, status=Friendship.Status.INVITED)
         if not flag:
@@ -158,6 +165,9 @@ class FriendConsumer(AsyncJsonWebsocketConsumer):
         await async_filter_delete(Friendship, inviter=target_user, accepter=current_user)
 
         await self.send_status_info(message='Заявка успешно отклонена')
+
+        await self.invalidate_cache(target_username, current_user.username)
+        await self.invalidate_cache(current_user.username, target_username)
 
     async def delete_friend(self, target_username: str, target_user: User, current_user: User):
         flag = await async_filter_exists(
@@ -177,6 +187,13 @@ class FriendConsumer(AsyncJsonWebsocketConsumer):
             inviter=target_user, accepter=current_user, status=Friendship.Status.INVITED
         )
         await self.send_status_info(message='Пользователь успешно удалён из друзей')
+
+        await self.invalidate_cache(target_username, current_user.username)
+        await self.invalidate_cache(current_user.username, target_username)
+
+    async def invalidate_cache(self, username1, username2):
+        delete_cache('friendship_status', f'/user/friendship/{username1}/',username2)
+        delete_cache('friendship_status', f'/user/friendship/{username2}/',username1)
 
     async def incoming_invite(self, event):
         await self.send_json(event)

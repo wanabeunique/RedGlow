@@ -5,7 +5,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from functools import wraps
 from django.conf import settings
-
+import logging
 
 class CachedResponse:
     def __init__(self, data, code=None):
