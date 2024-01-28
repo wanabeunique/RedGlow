@@ -14,12 +14,12 @@ def async_filter_update(model: Model, *nameless_filters, filters: dict, updates:
 
 
 @database_sync_to_async
-def async_filter_delete(self, model: Model, *nameless_filters, **filters):
+def async_filter_delete(model: Model, *nameless_filters, **filters):
     return model.objects.filter(*nameless_filters, **filters).delete()
 
 
 @database_sync_to_async
-def async_filter_values(self, model: Model, values: Iterable, *nameless_filters, border=None, **filters):
+def async_filter_values(model: Model, values: Iterable, *nameless_filters, border=None, **filters):
     if border is not None:
         return model.objects.filter(*nameless_filters, **filters).values(*values)[:border]
     return model.objects.filter(*nameless_filters, **filters).values(*values)

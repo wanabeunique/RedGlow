@@ -31,7 +31,7 @@ class MatchQueueConsumer(AsyncJsonWebsocketConsumer):
             'type': 'game_accepted',
             'hash': str
         }
-    3) Если хотя бы один игрок не принял игру:
+    3) Игрок не принял игру:
         {
             'type': 'game_canceled_by_user',
             'hash': str,
@@ -50,7 +50,8 @@ class MatchQueueConsumer(AsyncJsonWebsocketConsumer):
         }
     2) Игра отменена:
         {
-            'type': 'game_canceled'
+            'type': 'game_canceled',
+            "hash": str
         }
     3) Все приняли игру:
         {
@@ -141,11 +142,11 @@ class MatchQueueConsumer(AsyncJsonWebsocketConsumer):
         # Получение всех игроков в поиске с такой же игрой
         match_queues = await database_sync_to_async(UserQueue.objects.filter)(
             game=game, active=True)
-        await database_sync_to_async(match_queues.prefetch_related)('user', 'game')
-        await database_sync_to_async(match_queues.order_by)('-queuedFrom')
-
+        match_queues = await database_sync_to_async(match_queues.select_related)('user', 'game')
+        match_queues = await database_sync_to_async(match_queues.order_by)('-queuedFrom')
+        
         # Не нашлось игроков - выходим
-        if not match_queues:
+        if len(match_queues) < game.minPlayers:
             return
 
         if queuedUser.eloFilter:
@@ -155,13 +156,15 @@ class MatchQueueConsumer(AsyncJsonWebsocketConsumer):
         else:
             match_queues = await database_sync_to_async(match_queues.filter)(eloFilter=False)
 
+        if len(match_queues) < game.minPlayers:
+            return
+
         # Проверка, на фильтрацию по кол-ву игроков
         if not queuedUser.targetPlayers:
+            # циклом пройтись по возможным кол-вам игроков
             numOfPlayersQueued = len(match_queues)
 
             if not game.strictNumOfPlayers:
-                if numOfPlayersQueued <= game.minPlayers:
-                    return
 
                 if numOfPlayersQueued >= game.maxPlayers:
                     await self.createGame(match_queues, game, game.maxPlayers)
