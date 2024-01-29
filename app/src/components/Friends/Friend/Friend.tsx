@@ -1,37 +1,19 @@
-import Xmark from '@/components/SVG/Xmark';
 import styles from './Friend.module.sass';
-import AddFriend from '@/components/SVG/AddFriend';
-import RemoveFriend from '@/components/SVG/RemoveFriend';
-import Chat from '@/components/SVG/Chat';
 import { Link } from 'react-router-dom';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from '@/components/ui/alert-dialog';
-import { useAppDispatch } from '@/hooks/useAppDispatch';
-import {
-  addFriendCurrent,
-  addFriendOut,
-  removeFriendIn,
-} from '@/store/reducers/friendsSlice';
-import { sendNotificationFriend } from '@/socket/friendsSocket';
-import Avatar from '@/components/SVG/Avatar';
 import {
   HoverCard,
   HoverCardContent,
   HoverCardTrigger,
 } from '@/components/ui/hover-card';
 import { useState } from 'react';
-import IProfile from '@/interfaces/IProfile';
 import parseDate, { IDate } from '@/functions/parseDate';
 import userService from '@/service/user.service';
-import friendsService from '@/service/friends.service';
+import CurrentFriend from './CurrentFriend';
+import InviteFriend from './InviteFriend';
+import RequestFriend from './RequestFriend';
+import SearchFriend from './SearchFriend';
+import { faUserLarge } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
 interface IFriendProps {
   username: string;
@@ -40,16 +22,13 @@ interface IFriendProps {
 }
 
 export default function Friend({ username, type, avatar }: IFriendProps) {
-  const [userData, setUserData] = useState<IProfile>();
   const [parsedDate, setParsedDate] = useState<IDate>();
   const [flagUserProfile, setFlagUserProfile] = useState<boolean>(true);
   const [userBg, setUserBg] = useState<string>();
-  const dispatch = useAppDispatch();
 
   async function getModal(nickname: string) {
     if (!flagUserProfile) return;
     const response = await userService.getUserProfile(nickname);
-    setUserData(response);
     const parsedDate = parseDate(response.date_joined);
     setParsedDate(parsedDate);
     setFlagUserProfile(false);
@@ -57,106 +36,30 @@ export default function Friend({ username, type, avatar }: IFriendProps) {
     setUserBg(bg);
   }
 
-  async function HandleAccept(nickname: string) {
-    const res = await friendsService.addfriend(nickname);
-    if (res?.status == 201) {
-      dispatch(addFriendOut(nickname));
-      sendNotificationFriend('invite', nickname);
-    }
-    if (res?.status == 202) {
-      dispatch(removeFriendIn(nickname));
-      dispatch(addFriendCurrent(nickname));
-      sendNotificationFriend('accept', nickname);
-    }
-  }
-
   function renderSwitch({ type, username }: IFriendProps) {
     switch (type) {
       // Текущие друзья
       case 'current':
         return (
-          <div className={styles.tools}>
-            <div className={styles.item}>
-              <Chat />
-            </div>
-            <div className={styles.item}>
-              <AlertDialog>
-                <AlertDialogTrigger>
-                  <RemoveFriend />
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>
-                      Вы точно хотите удалить {username} из списка друзей?
-                    </AlertDialogTitle>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel>Отмена</AlertDialogCancel>
-                    <AlertDialogAction
-                      onClick={() => {
-                        userService.removeFriend(username)
-                      }}
-                    >
-                      Удалить
-                    </AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
-            </div>
-          </div>
+          <CurrentFriend username={username}  />  
         );
 
       case 'in':
         // Входяшие
         return (
-          <div className={styles.tools}>
-            <div
-              className={styles.item}
-              onClick={() => {
-                HandleAccept(username);
-              }}
-            >
-              <AddFriend />
-            </div>
-            <div
-              className={styles.item}
-              onClick={() => {
-                userService.removeFriend(username);
-              }}
-            >
-              <RemoveFriend />
-            </div>
-          </div>
+         <InviteFriend username={username} /> 
         );
 
       case 'out':
         // Исходящие
         return (
-          <div className={styles.tools}>
-            <div
-              className={styles.item}
-              onClick={() => {
-                userService.removeFriend(username)
-              }}
-            >
-              <Xmark />
-            </div>
-          </div>
+          <RequestFriend username={username}/> 
         );
 
       case 'search':
         // Друзья в поиске
         return (
-          <div className={styles.tools}>
-            <div
-              className={styles.item}
-              onClick={() => {
-                HandleAccept(username);
-              }}
-            >
-              <AddFriend />
-            </div>
-          </div>
+          <SearchFriend username={username}/> 
         );
 
       default:
@@ -164,14 +67,14 @@ export default function Friend({ username, type, avatar }: IFriendProps) {
     }
   }
   return (
-    <HoverCard>
+    <HoverCard openDelay={100}>
       <HoverCardTrigger>
         <Link
           to={`/profile/${username}`}
           onMouseEnter={() => {
             getModal(username);
           }}
-          className={styles.wrapper}
+          className="flex items-center gap-2 rounded border p-2"
         >
           {avatar ? (
             <img
@@ -179,7 +82,7 @@ export default function Friend({ username, type, avatar }: IFriendProps) {
               className={styles.avatar}
             />
           ) : (
-            <Avatar />
+            <FontAwesomeIcon icon={faUserLarge} />
           )}
           <p className={styles.nickname_preview}>{username}</p>
         </Link>
@@ -195,7 +98,7 @@ export default function Friend({ username, type, avatar }: IFriendProps) {
                   className={styles.avatar}
                 />
               ) : (
-                <Avatar />
+                <FontAwesomeIcon icon={faUserLarge} />
               )}
               <p className={styles.nickname}>{username}</p>
             </Link>

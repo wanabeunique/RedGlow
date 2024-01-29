@@ -13,7 +13,7 @@ class userService {
   };
 
   getUserProfile = async (username: string) => {
-    return await axios.get(`${this.url}/user/${username}/info`).then((res) => {
+    return await axios.get(`${this.url}/${username}/info`).then((res) => {
       return res.data;
     });
   };
@@ -61,7 +61,7 @@ class userService {
     const formData = new FormData();
     formData.append('background', file);
     return await axios
-      .put(`${import.meta.env.VITE_API_SERVER}/user/background/`, formData)
+      .put(`${this.url}/background/`, formData)
       .then((res) => {
         toast.success('Вы успешно сменили фото');
         return res.data;

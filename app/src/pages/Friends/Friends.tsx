@@ -82,6 +82,7 @@ export default function Friends() {
           } else {
             setFriendsCurrentPageNext(false);
           }
+          console.log(res)
           dispath(setFriendsCurrent(res));
         });
     };

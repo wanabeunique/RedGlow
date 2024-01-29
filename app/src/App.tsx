@@ -3,17 +3,16 @@ import { ToastContainer } from 'react-toastify';
 import Footer from '@/components//Footer/Footer';
 import Preloader from '@/components/Preloader';
 import Paths from './components/Paths/Paths';
-import './axiosInterceptor' 
+import './axiosInterceptor';
 import authService from './service/auth.service';
+import { useTheme } from './components/ui/theme-provider';
 
 function App() {
   const [isLoading, setIsLoading] = useState(false);
 
-  const isDarktheme = document
-    .querySelector('html')
-    ?.classList.contains('dark');
+  const { theme } = useTheme();
 
-  authService.getIsAuth() 
+  authService.getIsAuth();
 
   return (
     <>
@@ -24,7 +23,7 @@ function App() {
       ) : (
         <>
           <Paths />
-          <ToastContainer theme={isDarktheme ? 'dark' : 'light'} />
+          <ToastContainer theme={theme} />
           <Footer />
         </>
       )}

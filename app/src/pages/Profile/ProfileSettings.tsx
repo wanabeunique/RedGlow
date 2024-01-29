@@ -3,7 +3,7 @@ import { Input } from '@/components/ui/input';
 import styles from './Proflie.module.sass';
 import { useState, useEffect } from 'react';
 import { IOwnProfile } from '@/interfaces/IOwnProfile';
-import removeBodyClasses from '@/functions/civilization5/removeBodyClasses';
+import removeBodyClasses from '@/functions/removeBodyClasses';
 import { Button } from '@/components/ui/button';
 import {
   AlertDialog,
@@ -20,7 +20,8 @@ import userService from '@/service/user.service';
 import passwordService from '@/service/password.service';
 
 export default function ProfileSettings() {
-  const [user, setUser] = useState<IOwnProfile>(); const [currentPassword, setCurrentPassword] = useState<any>('');
+  const [user, setUser] = useState<IOwnProfile>();
+  const [currentPassword, setCurrentPassword] = useState<any>('');
   const [newPassword, setNewPassword] = useState<any>('');
 
   async function HandeChangePassword() {
@@ -30,7 +31,7 @@ export default function ProfileSettings() {
   }
   useEffect(() => {
     const getUser = async () => {
-      const userData = await userService.getProfile() 
+      const userData = await userService.getProfile();
       setUser(userData);
     };
     getUser();

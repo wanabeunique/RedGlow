@@ -6,7 +6,6 @@ import { toast } from 'react-toastify';
 import connectSockets from '@/socket/connectSockets';
 import ILogin from '@/interfaces/ILogin';
 import IRegistration from '@/interfaces/IRegistration';
-connectSockets();
 
 class authSercive {
   private url = 'user';
@@ -24,15 +23,17 @@ class authSercive {
   };
 
   confirmRegistration = async (email: string, code: string) => {
+    console.log({email, code})
     return await axios.put(`/users/`, {
       email,
       code,
-    });
+    }).then(res => res.status)
+    .catch(e => e.response.status)
   };
 
   registration = async (data: IRegistration) => {
     return await axios
-      .post(`${import.meta.env.VITE_API_SERVER}/users/`, data)
+      .post(`/users/`, data)
       .then(() => {
         toast.success('Потверждение регистрации было отправлено на почту');
       })

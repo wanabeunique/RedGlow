@@ -1,46 +1,65 @@
-import { toast } from "react-toastify";
-import { addFriendCurrent, addFriendIn, removeFriendOut } from "@/store/reducers/friendsSlice";
-import store from "@/store/store";
+import { toast } from 'react-toastify';
+import { acceptedInvite, addFriendCurrent, addFriendIn, incomingInvite, removeFriendOut } from '@/store/reducers/friendsSlice';
+import store from '@/store/store';
 
-export const chatSocket = new WebSocket(
-    'wss://localhost:8000/ws/friend'
-  );
+class FriendSocketManager {
+  private socket: WebSocket;
+  private connected: boolean = false;
 
-export default function friendSockets(){
-  let connected = false
-  chatSocket.onopen = function(){
-    console.log('Friends invite socket active')
-    connected = true
-  };
-
-  chatSocket.onmessage = function(e) {
-    const inviteFrom = JSON.parse(e.data)
-    console.log(inviteFrom)
-    if (inviteFrom.type == 'invite'){
-      toast.warn(`Вам пришла заявка в друзья от ${inviteFrom.target}`)
-      console.log('Диспатчу тут')
-      store.dispatch(addFriendIn(inviteFrom.target))
-    }
-    if (inviteFrom.type == 'accept'){
-      toast.success(`${inviteFrom.target} прянял вашу заявку в друзья`)
-      store.dispatch(addFriendCurrent(inviteFrom.target))
-      store.dispatch(removeFriendOut(inviteFrom.target))
-    }
+  constructor(socketUrl: string) {
+    this.socket = new WebSocket(socketUrl);
+    this.initSocket();
   }
-  chatSocket.onerror = function(){
-    console.log("Error")
+
+  private initSocket() {
+    this.socket.onopen = () => {
+      console.log('Friends invite socket active');
+      this.connected = true;
+    };
+
+    this.socket.onmessage = (event) => {
+      const { type, username, photo } = JSON.parse(event.data);
+
+      switch (type) {
+        case 'accepted_invite':
+          store.dispatch(acceptedInvite(username));
+          toast.success(`${username} принял вашу заявку в друзья`);
+          break;
+        case 'incoming_invite':
+          store.dispatch(incomingInvite(username));
+          toast.warn(`Вам пришла заявка в друзья от ${username}`);
+          break;
+      }
+    };
+
+    this.socket.onerror = () => {
+      console.log('Error');
+    };
+
+    this.socket.onclose = () => {
+      console.error('Friends socket not active');
+    };
   }
-  chatSocket.onclose = function() {
-    console.error('Friends socket not active');
-  };
-  return connected
+
+  public isConnected(): boolean {
+    return this.connected;
+  }
+
+  public sendFriendEvent(type: IFriendSocketEvents, username: string) {
+    console.log(this.socket.send(JSON.stringify({ type, username })))
+    return this.socket.send(JSON.stringify({ type, username }));
+  }
+
+  public close() {
+    this.socket.close();
+  }
 }
 
-type TNotificationType = 'accept' | 'invite'
+export type IFriendSocketEvents =
+  | 'create_invite'
+  | 'accept_invite'
+  | 'cancel_invite'
+  | 'decline_invite'
+  | 'delete_friend';
 
-export function sendNotificationFriend(type: TNotificationType, target: string){
-  chatSocket.send(JSON.stringify({
-    type: type,
-    target: target
-  }));
-}
+export default new FriendSocketManager(`${import.meta.env.VITE_SOCKET_SERVER}/friend`)

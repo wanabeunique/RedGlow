@@ -27,10 +27,11 @@ import base64toFile from '@/functions/base64toFile';
 import { useAppSelector } from '@/hooks/useAppSelector';
 import { IDate } from '@/functions/parseDate';
 import parseDate from '@/functions/parseDate';
-import changeBgPhoto from '@/service/changeBgPhoto';
 import Preloader from '@/components/Preloader';
 import userService from '@/service/user.service';
 import friendsService from '@/service/friends.service';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faGear, faUserGroup } from '@fortawesome/free-solid-svg-icons';
 
 export default function OwnProfile() {
   const [isLoading, setIsLoading] = useState(true);
@@ -74,7 +75,9 @@ export default function OwnProfile() {
       setUser(userData);
       const parsedDate = parseDate(userData.date_joined);
       setParsedDate(parsedDate);
-      const userBackground = await userService.getUserBackground(userData.username);
+      const userBackground = await userService.getUserBackground(
+        userData.username,
+      );
       setUserBackground(userBackground);
     };
     getUser();
@@ -91,7 +94,10 @@ export default function OwnProfile() {
     if (user) {
       const HandleFriends = async () => {
         const friendsDataValue: Array<string> =
-          await friendsService.getUserFriends(user.username, friendsCurrentPage);
+          await friendsService.getUserFriends(
+            user.username,
+            friendsCurrentPage,
+          );
         setFriendsData(friendsDataValue);
       };
       HandleFriends();
@@ -260,25 +266,31 @@ export default function OwnProfile() {
           </div>
         </div>
         <div className={styles.profile__right}>
-          <Link to="/settings">
+          <Link to="/settings" className="flex items-center gap-2 p-2 border rounded">
+            <FontAwesomeIcon icon={faGear} />
             <p>Настройки</p>
           </Link>
-          <p className={`mt-10 ${styles.friends__title}`}>Список друзей:</p>
-          {friendsData.length > 0 ? (
-            <div className={`${styles.friends__items} mt-5`}>
-              {friendsData.map((friend: any) => (
-                <Friend
-                  username={friend.username}
-                  type="current"
-                  avatar={friend.photo}
-                />
-              ))}
+          <div className="mt-10 ">
+            <div className='flex items-center gap-2 '>
+              <FontAwesomeIcon icon={faUserGroup} />
+              <p className={`${styles.friends__title}`}>Список друзей:</p>
             </div>
-          ) : (
-            <p
-              className={styles.friends__text}
-            >{`У вас пока что нет ни одного друга, но не стоит расстраиваться...`}</p>
-          )}
+            {friendsData.length > 0 ? (
+              <div className={`${styles.friends__items} mt-5`}>
+                {friendsData.map((friend: any) => (
+                  <Friend
+                    username={friend.username}
+                    type="current"
+                    avatar={friend.photo}
+                  />
+                ))}
+              </div>
+            ) : (
+              <p
+                className={styles.friends__text}
+              >{`У вас пока что нет ни одного друга, но не стоит расстраиваться...`}</p>
+            )}
+          </div>
         </div>
       </div>
     </div>

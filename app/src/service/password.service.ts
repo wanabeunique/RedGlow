@@ -3,7 +3,7 @@ import { toast } from 'react-toastify';
 
 class passwordService {
   sendPasswordResetLink = async (email: string) => {
-    await axios
+    return await axios
       .post(`user/help/link/`, {
         email,
       })
@@ -19,7 +19,7 @@ class passwordService {
   };
 
   checkEmailCode = async (email: string, code: string) => {
-    axios.get(`email/${email}/code/${code}`).then(() => {
+    return axios.get(`email/${email}/code/${code}`).then(() => {
       return true;
     }); // TODO: Если я не исправлю это до 28.01.2024 я оторву себе руки
   };
@@ -29,7 +29,7 @@ class passwordService {
     email: string,
     code: string,
   ) => {
-    await axios
+    return await axios
       .put(`user/help/password/`, {
         password: password,
         email: email,

@@ -1,17 +1,17 @@
-import { createSlice, PayloadAction } from '@reduxjs/toolkit'
+import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import IUser from '@/interfaces/IUser';
 
 type friendsState = {
-  in: Array<IUser>,
-  out: Array<IUser>,
-  current: Array<IUser>,
-}
+  in: Array<IUser>;
+  out: Array<IUser>;
+  current: Array<IUser>;
+};
 
 const initialState: friendsState = {
   in: [],
   out: [],
   current: [],
-}
+};
 
 export const friendsSlice = createSlice({
   name: 'friend',
@@ -26,29 +26,46 @@ export const friendsSlice = createSlice({
     setFriendsCurrent(state, action: PayloadAction<Array<IUser>>) {
       state.current = action.payload;
     },
-    removeFriendIn(state, action: PayloadAction<string>) {
-      const itemToRemove = action.payload;
-      state.in = state.in.filter(item => item.username !== itemToRemove )
+
+    createInvite(state, action: PayloadAction<string>) {
+      state.out.push({ username: action.payload });
     },
-    removeFriendOut(state, action: PayloadAction<string>) {
-      const itemToRemove = action.payload;
-      state.out = state.out.filter(item => item.username !== itemToRemove )
+    cancelInvite(state, action: PayloadAction<string>) {
+      state.in = state.in.filter((item) => item.username !== action.payload);
     },
-    removeFriendCurrent(state, action: PayloadAction<string>) {
-      const itemToRemove = action.payload;
-      state.current = state.current.filter(item => item.username !== itemToRemove )
+    declineRequest(state, action: PayloadAction<string>) {
+      state.out = state.out.filter((item) => item.username !== action.payload);
     },
-    addFriendIn(state, action: PayloadAction<string>) {
-     state.in.push({username: action.payload})
+    deleteFriend(state, action: PayloadAction<string>) {
+      state.current = state.current.filter(
+        (item) => item.username !== action.payload,
+      );
+      state.in.push({ username: action.payload });
     },
-    addFriendOut(state, action: PayloadAction<string>) {
-     state.out.push({username: action.payload})
+    incomingInvite(state, action: PayloadAction<string>) {
+      state.in.push({ username: action.payload });
     },
-    addFriendCurrent(state, action: PayloadAction<string>) {
-      state.current.push({username: action.payload})
+    acceptInvite(state, action: PayloadAction<string>) {
+      state.in = state.in.filter((item) => item.username !== action.payload);
+      state.current.push({ username: action.payload });
+    },
+    acceptedInvite(state, action: PayloadAction<string>) {
+      state.out = state.out.filter((item) => item.username !== action.payload);
+      state.current.push({ username: action.payload });
     },
   },
 });
 
-export const { setFriendsIn, setFriendsCurrent, setFriendsOut, removeFriendIn, removeFriendOut, removeFriendCurrent, addFriendOut, addFriendCurrent, addFriendIn } = friendsSlice.actions
+export const {
+  setFriendsIn,
+  setFriendsCurrent,
+  setFriendsOut,
+  createInvite,
+  acceptInvite,
+  cancelInvite,
+  declineRequest,
+  deleteFriend,
+  acceptedInvite,
+  incomingInvite,
+} = friendsSlice.actions;
 export default friendsSlice.reducer;

@@ -1,5 +1,5 @@
-import friendSockets from "./friendsSocket";
+import FriendSocketManager from "./friendsSocket"
 
 export default function connectSockets(){
-  friendSockets()
+  FriendSocketManager
 }
