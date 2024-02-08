@@ -3,34 +3,64 @@
 <html>
 <head>
     <meta charset="utf-8"/>
-    <title>Chat Room</title>
+    <title>MM queue</title>
 </head>
 <body>
-    <button type="button" onclick="myFunction()">Встать в очередь</button>
-
+    <h1 id="game_hash_got">Game hash: </h1>
+    <div>
+        <p>type: enqueued</p>
+        <input type="checkbox" id="elo_filter" placeholder="elo_filter"></input>
+        <input type="text" id="target_players" placeholder="target_players"></input>
+        <button type="button" onclick="enqueue()">Встать в очередь</button>
+    </div>
+    <div>
+        <input type="text" id="type" placeholder="type"></input>
+        <input type="text" id="hash" placeholder="hash"></input>
+        <button type="button" onclick="sendMessage()">Принять/Отклонить игру</button>
+    </div>
+    <button type="button" onclick="closesocket()">Выйти из очередь</button>
+    <div id="message_data">
+        <h1>Message recieved</h1>
+    </div>
     <script>
-        const chatSocket = new WebSocket(
+        const socket = new WebSocket(
             'wss://localhost:8000/ws/match_queue'
         );
-        chatSocket.onopen = function(e){
+        socket.onopen = function(e){
             console.log('opened')
         };
-        chatSocket.onmessage = function(e) {
-            console.log(JSON.parse(e.data))
+        socket.onmessage = function(e) {
+            var data = JSON.parse(e.data);
+            for(let [key, value] of Object.entries(data)){
+                if (key == 'hash'){
+                    document.getElementById('game_hash_got').innerText += value;
+                }
+                document.getElementById('message_data').insertAdjacentHTML('beforeEnd',`<p>${key}:${value}</p>`);
+            }
         };
-        chatSocket.onerror = function(e){
+        socket.onerror = function(e){
             console.log(e.data)
         }
-        chatSocket.onclose = function(e) {
+        socket.onclose = function(e) {
             console.error('Chat socket closed unexpectedly');
         };
-        function myFunction() {
+        function enqueue() {
+            var elo_filter = document.getElementById('elo_filter').value;
+            var target_players = document.getElementById('target_players').value;
             chatSocket.send(JSON.stringify({
-                type: 'queued',
-                elo_filter: false,
-                target_players: 6,
-                game: "Sid Meier’s Civilization V"
+                type: "enqueued",
+                elo_filter: elo_filter,
+                target_players: target_players,
+                game: "Sid Meier's Civilization V"
             }))
+        }
+        function closesocket(){
+            chatSocket.close()
+        }
+
+        function sendMessage(){
+            var message_type = document.getElementById('type').value;
+            var hash = document.getElementById('hash').value;
         }
 
     </script>

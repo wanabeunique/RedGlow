@@ -14,7 +14,7 @@ services:
     networks:
       - djangonetwork
   redis:
-    image: redis:latest
+    image: redis:7.2
     ports:
       - "6379:6379"
     networks:
@@ -35,15 +35,18 @@ services:
       - DJANGO_SUPERUSER_EMAIL=tmp@gmail.ru
       - WATCHFILES_FORCE_POLLING=1
       - PYTHONUNBUFFERED=1
+      - PASSWORD_FOR_TEST_USERS=admin1234
     command:
       - sh
       - -c
       - |
-        /usr/local/bin/wait-for-it.sh db:5432 -t 5 --
+        /usr/local/bin/wait-for-it.sh db:5432 -t 15 --
         /usr/local/bin/wait-for-it.sh redis:6379 -t 5 --
         python manage.py makemigrations --noinput
         python manage.py migrate --noinput
         python manage.py createsuperuser --noinput
+        python general_tools/deploy_tools/setup_db.py
+        python general_tools/test_tools/setup_test_db.py
         gunicorn gamingPlatform.asgi -k gamingPlatform.uvicorn_worker.CustomUvicornWorker -c gunicorn_config.py --reload --access-logfile -
     ports:
       - "8000:8000"
