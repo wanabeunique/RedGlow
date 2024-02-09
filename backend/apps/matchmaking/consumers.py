@@ -42,7 +42,11 @@ class MatchQueueConsumer(AsyncJsonWebsocketConsumer):
             'hash': str,
         }
     Отправляем сообщения вида:
-    1) Найдена игра:
+    1) Пользователь был внесен в очередь:
+        {
+            "type": "player_in_queue"
+        }
+    2) Найдена игра:
         {
             'type': 'match_found'
             'count_of_players": int,
@@ -72,11 +76,10 @@ class MatchQueueConsumer(AsyncJsonWebsocketConsumer):
         }
     """
     acceptable_keys = dict(
-        enqueued=('target_players', 'game', 'elo_filter'),
-        game_accepted=('hash'),
-        game_canceled_by_user=('hash'),
+        enqueued={'target_players': int, 'game': str, 'elo_filter': bool},
+        match_accepted={'hash': str},
+        match_declined={'hash': str},
     )
-    types = ('enqueued', 'match_accepted', 'match_declined')
 
     async def connect(self):
 
@@ -103,11 +106,11 @@ class MatchQueueConsumer(AsyncJsonWebsocketConsumer):
         message_type = data_json.pop('type', None)
 
         if message_type is None:
-            await self.send_status_info('Invalid data', error=True)
+            await self.send_status_info('Invalid type', error=True)
             return
 
-        if message_type not in self.types:
-            await self.send_status_info('Invalid data', error=True)
+        if message_type not in self.acceptable_keys.keys():
+            await self.send_status_info('Invalid type', error=True)
             return
 
         is_json_valid = await validate_json(data_json, self.acceptable_keys.get(message_type))
@@ -155,7 +158,9 @@ class MatchQueueConsumer(AsyncJsonWebsocketConsumer):
             data_json['user'] = user
             queued_user: UserQueue = UserQueue(**data_json)
             await database_sync_to_async(queued_user.save)()
-        await self.send_status_info(message='Вы успешно встали в очередь')
+        await self.player_in_queue({
+            "type": "player_in_queue"
+        })
         # Получение всех игроков в поиске с такой же игрой
         match_queues = await self.filter_users_by_game(game, queued_user.pk)
 
@@ -402,6 +407,9 @@ class MatchQueueConsumer(AsyncJsonWebsocketConsumer):
         await self.send_json(event)
 
     async def match_canceled_by_time(self, event):
+        await self.send_json(event)
+
+    async def player_in_queue(self, event):
         await self.send_json(event)
 
     async def send_status_info(self, message, error=False):

@@ -63,7 +63,7 @@ class Match(models.Model):
 
     game = models.ForeignKey(Game, on_delete=models.CASCADE)
     status = models.SmallIntegerField(choices=Status.choices, default=Status.CREATED)
-    date_created = models.DateTimeField(auto_now_add=True)
+    date_created = models.DateTimeField()
     date_to_confirm = models.DateTimeField()
     date_started = models.DateTimeField(null=True)
     date_ended = models.TimeField(null=True)
@@ -73,28 +73,10 @@ class Match(models.Model):
     def make_hash(self):
         self.hash = hashlib.sha256(f"{self.status}-{self.pk}-{self.date_created}-MATCH".encode()).hexdigest()
 
-    @shared_task
-    def cancel_match_by_time(self):
-        self.status = self.Status.CANCELED
-        players = UserMatch.objects.filter(match=self).select_related('user')
-        self.save()
-        channel_layer = get_channel_layer()
-        for player in players:
-            async_to_sync(channel_layer.group_send)(
-                f'matchQueue_{player.user.username}',
-                {
-                    'type': 'match_canceled_by_time',
-                    'hash': self.hash
-                }
-            )
-
     def revoke_task(self):
         task = AsyncResult(self.celery_task_id)
         if not task.ready():
             celery_app.control.revoke(self.celery_task_id, terminate=True)
-
-    def cancel_match(self):
-        UserQueue.objects.filter(user__in=UserMatch.objects.filter(match=self).values('user')).update(game_found=False)
         
 
 
@@ -118,3 +100,23 @@ class UserElo(models.Model):
 
     def __str__(self):
         return f"{self.user}. {self.game}; {self.elo}"
+
+import logging
+
+@shared_task
+def cancel_match_by_time(match_instance: Match):
+    logger = logging.getLogger(__name__)
+    logger.info(match_instance.pk)
+    UserQueue.objects.filter(user__in=UserMatch.objects.filter(match=match_instance).select_related('user').values('user')).update(match_found=False)
+    players = UserMatch.objects.filter(match=match_instance).select_related('user')
+    match_instance.status = match_instance.Status.CANCELED
+    match_instance.save()
+    channel_layer = get_channel_layer()
+    for player in players:
+        async_to_sync(channel_layer.group_send)(
+            f'matchQueue_{player.user.username}',
+            {
+                'type': 'match_canceled_by_time',
+                'hash': match_instance.hash
+            }
+        )

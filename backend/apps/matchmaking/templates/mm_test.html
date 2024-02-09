@@ -8,13 +8,16 @@
 <body>
     <h1 id="game_hash_got">Game hash: </h1>
     <div>
-        <p>type: enqueued</p>
+        <span>type: enqueued</span>
         <input type="checkbox" id="elo_filter" placeholder="elo_filter"></input>
         <input type="text" id="target_players" placeholder="target_players"></input>
         <button type="button" onclick="enqueue()">Встать в очередь</button>
     </div>
     <div>
-        <input type="text" id="type" placeholder="type"></input>
+        <input type="radio" id="match_declined" name="type" value="match_declined"></input>
+        <label for="match_declined">Decline Match</label>
+        <input type="radio" id="match_accepted" name="type" value="match_accepted"></input>
+        <label for="match_accepted">Accept Match</label>
         <input type="text" id="hash" placeholder="hash"></input>
         <button type="button" onclick="sendMessage()">Принять/Отклонить игру</button>
     </div>
@@ -30,6 +33,7 @@
             console.log('opened')
         };
         socket.onmessage = function(e) {
+            document.getElementById('game_hash_got').innerText = '';
             var data = JSON.parse(e.data);
             for(let [key, value] of Object.entries(data)){
                 if (key == 'hash'){
@@ -45,23 +49,24 @@
             console.error('Chat socket closed unexpectedly');
         };
         function enqueue() {
-            var elo_filter = document.getElementById('elo_filter').value;
+            var elo_filter = document.getElementById('elo_filter').checked;
             var target_players = document.getElementById('target_players').value;
-            chatSocket.send(JSON.stringify({
+            
+            socket.send(JSON.stringify({
                 type: "enqueued",
                 elo_filter: elo_filter,
-                target_players: target_players,
+                target_players: parseInt(target_players),
                 game: "Sid Meier's Civilization V"
             }))
         }
         function closesocket(){
-            chatSocket.close()
+            socket.close()
         }
 
         function sendMessage(){
-            var message_type = document.getElementById('type').value;
+            var message_type = document.querySelector('input[name="type"]:checked').value;
             var hash = document.getElementById('hash').value;
-            chatSocket.send(JSON.stringify({
+            socket.send(JSON.stringify({
                 type: message_type,
                 hash: hash
             }))

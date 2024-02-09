@@ -17,11 +17,13 @@ logger = logging.getLogger(__name__)
 
 if User.objects.all().count() <= 1:
     users = create_users(count_of_each_users_part)
+    logger.info('users have been inserted')
 else:
     logger.info("There's already users in db. Run reset_db.py first")
 
 
 if Friendship.objects.all().count() == 0:
     friends = create_friends()
+    logger.info('friendships have been inserted')
 else:
     logger.info("There's already friendships in db. Run reset_db.py first")

@@ -38,4 +38,4 @@ except IntegrityError:
     logger.info("Can't insert Cviilization VI in the db. It's already there")
 
 
-UserQueue.objects.all().update(is_active=False)
+UserQueue.objects.all().update(is_active=False, match_found=False)
