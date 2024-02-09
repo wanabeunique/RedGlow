@@ -61,6 +61,10 @@
         function sendMessage(){
             var message_type = document.getElementById('type').value;
             var hash = document.getElementById('hash').value;
+            chatSocket.send(JSON.stringify({
+                type: message_type,
+                hash: hash
+            }))
         }
 
     </script>

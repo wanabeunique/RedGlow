@@ -16,7 +16,7 @@ count_of_each_users_part = 1000
 logger = logging.getLogger(__name__)
 
 if User.objects.all().count() <= 1:
-    users = create_users()
+    users = create_users(count_of_each_users_part)
 else:
     logger.info("There's already users in db. Run reset_db.py first")
 
