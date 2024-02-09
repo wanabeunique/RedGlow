@@ -33,7 +33,8 @@
             console.log('opened')
         };
         socket.onmessage = function(e) {
-            document.getElementById('game_hash_got').innerText = '';
+            document.getElementById('message_data').innerHTML = '<h1>Message recieved</h1>';
+            document.getElementById('game_hash_got').innerText = 'Game hash: ';
             var data = JSON.parse(e.data);
             for(let [key, value] of Object.entries(data)){
                 if (key == 'hash'){

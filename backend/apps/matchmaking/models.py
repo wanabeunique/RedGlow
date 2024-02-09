@@ -63,12 +63,12 @@ class Match(models.Model):
 
     game = models.ForeignKey(Game, on_delete=models.CASCADE)
     status = models.SmallIntegerField(choices=Status.choices, default=Status.CREATED)
-    date_created = models.DateTimeField()
-    date_to_confirm = models.DateTimeField()
+    date_created = models.DateTimeField(auto_now_add=True)
+    date_to_confirm = models.DateTimeField(null=True)
     date_started = models.DateTimeField(null=True)
     date_ended = models.TimeField(null=True)
     hash = models.CharField(db_index=True, unique=True, null=True)
-    celery_task_id = models.CharField(max_length=255)
+    celery_task_id = models.CharField(max_length=255, null=True)
 
     def make_hash(self):
         self.hash = hashlib.sha256(f"{self.status}-{self.pk}-{self.date_created}-MATCH".encode()).hexdigest()
@@ -104,9 +104,15 @@ class UserElo(models.Model):
 import logging
 
 @shared_task
-def cancel_match_by_time(match_instance: Match):
-    logger = logging.getLogger(__name__)
-    logger.info(match_instance.pk)
+def cancel_match_by_time(match_instance_pk: int):
+    match_instance = Match.objects.filter(pk=match_instance_pk).first()
+    
+    if match_instance is None:
+        return
+    
+    if match_instance.status == Match.Status.CANCELED:
+        return
+    
     UserQueue.objects.filter(user__in=UserMatch.objects.filter(match=match_instance).select_related('user').values('user')).update(match_found=False)
     players = UserMatch.objects.filter(match=match_instance).select_related('user')
     match_instance.status = match_instance.Status.CANCELED

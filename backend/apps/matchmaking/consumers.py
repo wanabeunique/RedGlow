@@ -299,7 +299,7 @@ class MatchQueueConsumer(AsyncJsonWebsocketConsumer):
             await self.send_status_info(message='Invalid data', error=True)
             return False
 
-        if match_instance.date_to_confirm > timezone.now():
+        if match_instance.date_to_confirm < timezone.now():
             await self.send_status_info(message='Time to accept match is over', error=True)
             return False
 

@@ -28,16 +28,6 @@ def setup_dates(sender, **kwargs):
     if match_instance.status == match_instance.Status.ENDED:
         match_instance.date_ended = timezone.now()
 
-    if match_instance.status == match_instance.Status.CREATED:
-        match_instance.date_created = timezone.now()
-        if not match_instance.celery_task_id:
-            match_instance.date_to_confirm = match_instance.date_created + timedelta(seconds=settings.TIME_TO_ACCEPT_A_GAME)
-            task = cancel_match_by_time.apply_async(
-                args=[match_instance],
-                eta=match_instance.date_to_confirm
-            )
-            match_instance.celery_task_id = task.task_id
-
     if match_instance.status == match_instance.Status.PREPARING:
         match_instance.revoke_task()
 
@@ -45,8 +35,17 @@ def setup_dates(sender, **kwargs):
 def make_match_hash(sender, **kwargs):
     if not kwargs.get('created', None):
         return
-    
+
     match_instance: Match = kwargs.get('instance')
+    
+    if match_instance.status == match_instance.Status.CREATED:
+        if not match_instance.celery_task_id:
+            match_instance.date_to_confirm = match_instance.date_created + timedelta(seconds=settings.TIME_TO_ACCEPT_A_GAME)
+            task = cancel_match_by_time.apply_async(
+                args=[match_instance.pk],
+                eta=match_instance.date_to_confirm
+            )
+            match_instance.celery_task_id = task.task_id
 
     match_instance.make_hash()
     match_instance.save()
