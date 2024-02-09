@@ -1,5 +1,6 @@
 from channels.db import database_sync_to_async
-from django.db.models import Model, BaseManager
+from django.db.models import Model
+from django.db.models.manager import BaseManager
 from typing import Iterable
 
 @database_sync_to_async
