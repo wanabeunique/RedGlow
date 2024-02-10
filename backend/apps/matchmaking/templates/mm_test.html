@@ -22,8 +22,9 @@
         <button type="button" onclick="sendMessage()">Принять/Отклонить игру</button>
     </div>
     <button type="button" onclick="closesocket()">Выйти из очередь</button>
-    <div id="message_data">
+    <div>
         <h1>Message recieved</h1>
+        <pre id="message_data"></pre>
     </div>
     <script>
         const socket = new WebSocket(
@@ -40,8 +41,8 @@
                 if (key == 'hash'){
                     document.getElementById('game_hash_got').innerText += value;
                 }
-                document.getElementById('message_data').insertAdjacentHTML('beforeEnd',`<p>${key}:${value}</p>`);
             }
+            document.getElementById('message_data').innerHTML = JSON.stringify(e.data);
         };
         socket.onerror = function(e){
             console.log(e.data)

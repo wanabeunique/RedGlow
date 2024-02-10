@@ -328,7 +328,7 @@ class MatchQueueConsumer(AsyncJsonWebsocketConsumer):
 
         if not is_valid:
             return
-            
+        await self.send_status_info('Match was accepted succesfully')
         await self.check_if_all_accepted(match_instance)
 
     @database_sync_to_async
@@ -375,7 +375,7 @@ class MatchQueueConsumer(AsyncJsonWebsocketConsumer):
         is_valid = await self.validate_and_change_status(match_instance, user, False)
         if not is_valid:
             return
-        
+        await self.send_status_info('Match was declined succesfully')
         user_match_instances_list = await self.cancel_match(match_instance)
         await self.send_match_cancel_messages(user_match_instances_list, match_instance.hash)
 
