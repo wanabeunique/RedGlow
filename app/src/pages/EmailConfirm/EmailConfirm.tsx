@@ -15,6 +15,7 @@ export default function EmailConfirm() {
   const email = searchParams.get('email');
   const code = searchParams.get('code');
   const [status, setStatus] = useState(0);
+  console.log(email, code)
 
   async function fetchData() {
     const response = await authService.confirmRegistration(email, code);

@@ -1,6 +1,5 @@
 import styles from './Login.module.sass';
 import { Link } from 'react-router-dom';
-import login from '../../service/login';
 import { useForm } from 'react-hook-form';
 import { Navigate } from 'react-router-dom';
 import { useAppSelector } from '@/hooks/useAppSelector';

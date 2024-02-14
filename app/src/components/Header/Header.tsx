@@ -30,7 +30,7 @@ export default function Header() {
       <div className={`container ${styles.header__container}`}>
         <div className={`${styles.header__left}`}>
           <Link to={'/'} className={styles.header__logo}>
-             <ReactSVG src="imgs/logo.svg" />
+            <ReactSVG src="imgs/logo.svg" />
           </Link>
           {isAuth ? (
             <>
@@ -40,7 +40,7 @@ export default function Header() {
               <li
                 className={styles.header__item}
                 onClick={() => {
-                  authService.logout()
+                  authService.logout();
                 }}
               >
                 <NavLink to="/headbook" className={`${styles.header__link}`}>
@@ -95,7 +95,7 @@ export default function Header() {
               <>
                 <li className={styles.header__item}>
                   <NavLink
-                    to="/Login"
+                    to="/login"
                     className={`text ${styles.header__link}`}
                   >
                     Войти
@@ -103,7 +103,7 @@ export default function Header() {
                 </li>
                 <li className={styles.header__item}>
                   <NavLink
-                    to="/Registration"
+                    to="/registration"
                     className={`text ${styles.header__link}`}
                   >
                     Регистрация

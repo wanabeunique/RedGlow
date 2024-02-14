@@ -38,11 +38,7 @@ class authSercive {
         toast.success('Потверждение регистрации было отправлено на почту');
       })
       .catch((e) => {
-        if (e.response.status === 400) {
-          for (var key in e.response.data) {
-            toast.error(`${key}: ${e.response.data[key]}`);
-          }
-        } else if (e.response.status === 403) {
+        if (e.response.status === 403) {
           toast.error('Вы уже авторизованы');
         } else {
           toast.error('Ошибка');

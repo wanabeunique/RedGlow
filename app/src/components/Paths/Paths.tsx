@@ -12,12 +12,11 @@ import Steam from '@/pages/Steam/Steam';
 import RecoveryNewPassword from '@/pages/Recovery/RecoveryNewPassword';
 import PrivateRoute from '../PrivateRoute/PrivateRoute';
 import { useAppSelector } from '@/hooks/useAppSelector';
+import Play from '@/pages/Play/Play';
 
 export default function Paths(){
   const isAuth = useAppSelector((state) => state.authReducer.data)
 
-  console.log('Пользователь авторизован' + isAuth)
-  
   return (
     <Routes>
       <Route path="/" element={<Layout />}>
@@ -31,6 +30,7 @@ export default function Paths(){
         <Route path="/steam" element={<Steam />} />
         <Route path="/settings" element={<PrivateRoute isAuth={isAuth}><ProfileSettings /></PrivateRoute>} />
         <Route path="/forgot/password/" element={<RecoveryNewPassword />}></Route>
+        <Route path="/play" element={<Play />}></Route>
         <Route path="/404" element={<NotFound />}></Route>
       </Route>
     </Routes>     
