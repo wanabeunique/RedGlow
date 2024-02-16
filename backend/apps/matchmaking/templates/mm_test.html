@@ -53,7 +53,9 @@
         function enqueue() {
             var elo_filter = document.getElementById('elo_filter').checked;
             var target_players = document.getElementById('target_players').value;
-            
+            if (!target_players){
+                target_players = null;
+            }
             socket.send(JSON.stringify({
                 type: "enqueued",
                 elo_filter: elo_filter,

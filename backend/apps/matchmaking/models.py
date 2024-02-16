@@ -101,8 +101,6 @@ class UserElo(models.Model):
     def __str__(self):
         return f"{self.user}. {self.game}; {self.elo}"
 
-import logging
-
 @shared_task
 def cancel_match_by_time(match_instance_pk: int):
     match_instance = Match.objects.filter(pk=match_instance_pk).first()
@@ -113,7 +111,7 @@ def cancel_match_by_time(match_instance_pk: int):
     if match_instance.status == Match.Status.CANCELED:
         return
     
-    UserQueue.objects.filter(user__in=UserMatch.objects.filter(match=match_instance).select_related('user').values('user')).update(match_found=False)
+    UserQueue.objects.filter(user__in=UserMatch.objects.filter(match=match_instance).select_related('user').values('user')).update(match_found=False, is_active=True)
     players = UserMatch.objects.filter(match=match_instance).select_related('user')
     match_instance.status = match_instance.Status.CANCELED
     match_instance.save()
