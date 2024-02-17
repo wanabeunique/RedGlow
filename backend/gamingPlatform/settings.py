@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/4.1/ref/settings/
 from pathlib import Path
 import os
 from decouple import config
+from datetime import timedelta
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -169,8 +170,8 @@ CHANNEL_LAYERS = {
 
 SESSION_ENGINE = 'django.contrib.sessions.backends.cache'
 
+# EMAIL
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-
 EMAIL_HOST = config('EMAIL_HOST')
 EMAIL_USE_TLS = False
 EMAIL_USE_SSL = True
@@ -178,7 +179,7 @@ EMAIL_HOST_USER = config("EMAIL_HOST_USER")
 EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD')
 EMAIL_PORT = config('EMAIL_PORT')
 
-
+# DRF
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework.authentication.SessionAuthentication',
@@ -186,6 +187,7 @@ REST_FRAMEWORK = {
     'NON_FIELD_ERRORS_KEY': 'errors',
 }
 
+# CORS STUFF
 CSRF_TRUSTED_ORIGINS = [
     'https://localhost', 'https://127.0.0.1:1212'
 ]
@@ -215,6 +217,7 @@ CORS_ALLOW_HEADERS = (
     "x-requested-with",
 )
 
+# SSL
 SECURE_SSL_REDIRECT = True
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 SECURE_HSTS_SECONDS = 3600
@@ -227,6 +230,7 @@ SECURE_BROWSER_XSS_FILTER = True
 SSL_CERTIFICATE = 'server.crt'
 SSL_KEY = 'server.key'
 
+# CELERY
 CELERY_BROKER_URL = f"redis://{config('REDIS_HOST')}:{config('REDIS_PORT')}/2"
 CELERY_RESULT_BACKEND = f"redis://{config('REDIS_HOST')}:{config('REDIS_PORT')}/2"
 CELERY_TASK_ALWAYS_EAGER = False
@@ -244,7 +248,7 @@ CELERY_RESULT_SERIALIZER = 'pickle'
 CELERY_ACCEPT_CONTENT = ['application/json',
                          'application/x-python-serialize']
 
-
+# LOGGING
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
@@ -280,6 +284,21 @@ LOGGING = {
     }
 }
 
-
+# CUSTOM SETTINGS
 TIME_TO_ACCEPT_A_GAME = 20
 CACHE_TIMEOUT_CUSTOM = 360000
+BAN_TYPE_AND_TIMEOUT = {
+    "ADVANTAGE": {
+        1: 'infinity'
+    },
+    "SABOTAGING": {
+        1: timedelta(minutes=15),
+        2: timedelta(minutes=30),
+        3: timedelta(hours=1),
+        4: timedelta(hours=3),
+        5: timedelta(hours=12),
+        6: timedelta(days=1),
+        7: timedelta(days=2),
+        8: timedelta(days=3)
+    }
+}

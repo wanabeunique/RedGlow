@@ -7,6 +7,7 @@ from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
 from celery.result import AsyncResult
 from gamingPlatform.celery import app as celery_app
+from django.conf import settings
 
 class Game(models.Model):
     name = models.CharField(max_length=255, unique=True, db_index=True)
@@ -100,6 +101,17 @@ class UserElo(models.Model):
 
     def __str__(self):
         return f"{self.user}. {self.game}; {self.elo}"
+    
+
+class UserBan(models.Model):
+    class BanType(models.IntegerChoices):
+        ADVANTAGE = 0, "Получение преимущества незаконным путём"
+        SABOTAGING = 1, "Саботирование(Непринятие игры, выход из неё до конца)" 
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    ban_type = models.PositiveSmallIntegerField(choices=BanType)
+    ban_end = models.DateTimeField(null=True)
+    is_active = models.BooleanField(default=True)
+
 
 @shared_task
 def cancel_match_by_time(match_instance_pk: int):
@@ -116,6 +128,7 @@ def cancel_match_by_time(match_instance_pk: int):
     match_instance.status = match_instance.Status.CANCELED
     match_instance.save()
     channel_layer = get_channel_layer()
+    
     for player in players:
         async_to_sync(channel_layer.group_send)(
             f'matchQueue_{player.user.username}',

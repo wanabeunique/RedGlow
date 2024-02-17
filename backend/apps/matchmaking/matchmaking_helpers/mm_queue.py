@@ -72,16 +72,21 @@ class MatchMakingQueue(MatchMakingParent):
         return UserQueue.objects.filter(game=game, is_active=True).exclude(pk=pk).order_by('-queued_from')
     
     @database_sync_to_async
-    def __filter_users_by_elo(self, match_queues: BaseManager[UserQueue], elo_subquery, elo, **filters):
-        return match_queues.filter(**filters).annotate(elo=Subquery(elo_subquery)).filter(elo__gt=elo-250, elo__lt=elo+250)
+    def __filter_users_by_elo(self, elo_subquery, elo, **filters):
+        self.match_queues = self.match_queues.filter(**filters).annotate(
+            elo=Subquery(elo_subquery)
+        ).filter(elo__gt=elo-250, elo__lt=elo+250)
     
     @database_sync_to_async
-    def __tmp_filter(self, match_queues: BaseManager, elo_subquery, elo):
-        return match_queues.annotate(elo=Subquery(elo_subquery)).filter(Q(elo__gt=elo-250, elo__lt=elo+250) | Q(elo_filter=False))
+    def __get_none_elo_filter_players(self, elo_subquery,**filters):
+        self.match_queues = self.match_queues.filter(**filters).annotate(
+            elo=Subquery(elo_subquery)
+        ).filter(elo_filter=False)
 
     async def __check_elo_filter(self):
         num_of_players_queued = await database_sync_to_async(self.match_queues.count)()
         await self._log_info(self.match_queues, 'got in filter_elo with that')
+
         if num_of_players_queued + 1 < self.game.min_players:
             return
         
@@ -89,10 +94,10 @@ class MatchMakingQueue(MatchMakingParent):
         user_elo: UserElo = await database_sync_to_async(UserElo.objects.get)(user=self.user.pk,game=self.game.pk)
 
         if self.queued_user.elo_filter:
-            self.match_queues = await self.__filter_users_by_elo(self.match_queues, elo_subquery, user_elo.elo, elo_filter=True)
+            await self.__filter_users_by_elo(elo_subquery, user_elo.elo)
         else:
-            self.match_queues = await self.__tmp_filter(self.match_queues, elo_subquery, user_elo.elo)
-
+            await self.__get_none_elo_filter_players(elo_subquery)
+        await self._log_info(self.match_queues, 'after_elo_got_filtered')
         await self.__filter_num_of_players()
     
     async def __get_users_by_target_players(self, target_players_needed: int | None = None):
@@ -130,7 +135,7 @@ class MatchMakingQueue(MatchMakingParent):
                         await self.__create_match(players_found, target_players, all_ids)
                         return
                 elif num_of_players_queued >= self.game.min_players and num_of_players_queued <= self.game.max_players:
-                    await self.__create_match(players_found, target_players, all_ids)
+                    await self.__create_match(players_found, num_of_players_queued, all_ids)
                     return
 
             elif num_of_players_queued >= self.game.strict_num_of_players:
@@ -166,12 +171,10 @@ class MatchMakingQueue(MatchMakingParent):
             return
         
         await self._log_info(self.match_queues, 'got in filter_num_of_players with that')
-
+        await self.__get_users_by_target_players(self.queued_user.target_players)
         if not self.queued_user.target_players:
-            await self.__get_users_by_target_players()
             await self.__search_for_none_target_players()
         else:
-            await self.__get_users_by_target_players(self.queued_user.target_players)
             await self.__search_for_exact_target_players()
 
     async def __create_match(self, match_queues: list[UserQueue], num_of_players: int, all_ids: list[int]):
@@ -201,13 +204,12 @@ class MatchMakingQueue(MatchMakingParent):
 
     async def __send_ready_messages(self, users: list[str], match_hash):
         time_to_accept = settings.TIME_TO_ACCEPT_A_GAME
-        for user in users:
-            await self.channel_layer.group_send(
-                f'matchQueue_{user}',
-                {
-                    'type': 'match_found',
-                    'count_of_players': len(users),
-                    'hash': match_hash,
-                    'time_to_accept': time_to_accept
-                }
-            )
+        await self._send_messages_to_ws(
+            users,
+            {
+                'type': 'match_found',
+                'count_of_players': len(users),
+                'hash': match_hash,
+                'time_to_accept': time_to_accept
+            } 
+        )

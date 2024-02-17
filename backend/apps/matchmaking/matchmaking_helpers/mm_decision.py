@@ -2,7 +2,7 @@ from channels.db import database_sync_to_async
 from django.db.models import Q, OuterRef, Subquery
 from django.db.models.manager import BaseManager
 from django.utils import timezone
-from apps.matchmaking.models import UserMatch, UserElo, UserQueue, Game, Match
+from apps.matchmaking.models import UserMatch, UserElo, Match
 from apps.authentication.models import User
 from apps.tools.db_tools import (
     async_filter_first,
@@ -71,15 +71,31 @@ class MatchMakingDecision(MatchMakingParent):
         return Match.objects.filter(hash=hash).select_related('game').first()
 
     async def __accept(self):
-        await self.__check_if_all_accepted()
+        user_match_instances: BaseManager[UserMatch] = await self.__get_user_match_instances_and_elo()
+        await self.__send_count_of_accepted(user_match_instances)
+        await self.__check_if_all_accepted(user_match_instances)
+
+    @database_sync_to_async
+    def __get_count_of_accepted(self, user_match_instances: BaseManager[UserMatch]):
+        return user_match_instances.filter(is_accepted=True).count()
+
+    async def __send_count_of_accepted(self, user_match_instances: BaseManager[UserMatch]):
+        count = await self.__get_count_of_accepted(user_match_instances)
+        await self._send_messages_to_ws(
+            user_match_instances,
+            {
+                'type': 'count_of_accepted',
+                'hash': self.match_instance.hash,
+                'count': count
+            }
+        )
 
     @database_sync_to_async
     def __get_user_match_instances_and_elo(self):
-        elo_subq = UserElo.objects.filter(user=OuterRef('user'), game=self.match.game).values('elo')[:1]
-        return UserMatch.objects.filter(match=self.match).annotate(elo=Subquery(elo_subq)).select_related('user')
+        elo_subq = UserElo.objects.filter(user=OuterRef('user'), game=self.match_instance.game).values('elo')[:1]
+        return UserMatch.objects.filter(match=self.match_instance).annotate(elo=Subquery(elo_subq)).select_related('user')
 
-    async def __check_if_all_accepted(self):
-        user_match_instances: BaseManager[UserMatch] = await self.__get_user_match_instances_and_elo()
+    async def __check_if_all_accepted(self, user_match_instances: BaseManager[UserMatch]):
         count_not_accepted = await async_filter_count(UserMatch, Q(is_accepted=False) | Q(is_accepted=None), base_manager=user_match_instances)
         
         if count_not_accepted != 0:
@@ -101,16 +117,14 @@ class MatchMakingDecision(MatchMakingParent):
                     "date_joined": user_match.user.date_joined.strftime("%Y-%m-%d")
                 }
             )
-
-        async for user_match in to_send:
-            await self.channel_layer.group_send(
-                f'matchQueue_{user_match.user.username}',
-                {
-                    'type': 'match_created',
-                    'hash': self.match_instance.hash,
-                    "players": players_info
-                }
-            )
+        await self._send_messages_to_ws(
+            to_send,
+            {
+                'type': 'match_created',
+                'hash': self.match_instance.hash,
+                "players": players_info
+            }
+        )
 
     async def __decline(self):
         user_match_instances = await self.__cancel_match()
@@ -123,11 +137,10 @@ class MatchMakingDecision(MatchMakingParent):
         return user_match_instances
         
     async def __send_match_cancel_messages(self, to_send: BaseManager[UserMatch]):
-        async for user_match in to_send:
-            await self.channel_layer.group_send(
-                f'matchQueue_{user_match.user.username}',
-                {
-                    'type': 'match_canceled_by_user',
-                    'hash': self.match_instance.hash
-                }
-            )
+        await self._send_messages_to_ws(
+            to_send,
+            {
+                'type': 'match_canceled_by_user',
+                'hash': self.match_instance.hash
+            }
+        )

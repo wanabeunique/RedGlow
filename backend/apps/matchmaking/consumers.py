@@ -74,6 +74,12 @@ class MatchQueueConsumer(ExtendedAsyncConsumer):
         {
             "type": "match_declined"
         }
+    7) Кол-во принятых игру:
+        {
+            'type': 'count_of_accepted',
+            'hash': str,
+            'count': int
+        }
     """
     acceptable_keys = dict(
         enqueued={'target_players': int | None, 'game': str, 'elo_filter': bool},
@@ -154,14 +160,14 @@ class MatchQueueConsumer(ExtendedAsyncConsumer):
     async def match_accepted(self,event):
         await self.send_json(event)
 
+    async def count_of_accepted(self, event):
+        await self.send_json(event)
+
     async def match_declined(self,event):
         await self.send_json(event)
 
     async def player_in_queue(self, event):
         await self.send_json(event)
-
-    
-
 
 class MatchConsumer(ExtendedAsyncConsumer):
     async def connect(self):
