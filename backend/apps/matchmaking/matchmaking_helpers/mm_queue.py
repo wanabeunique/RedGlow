@@ -132,15 +132,15 @@ class MatchMakingQueue(MatchMakingParent):
             if not self.game.strict_num_of_players:
                 if target_players is not None:
                     if num_of_players_queued >= target_players:
-                        await self.__create_match(players_found, target_players, all_ids)
-                        return
+                        return (players_found, target_players, all_ids)
+
                 elif num_of_players_queued >= self.game.min_players and num_of_players_queued <= self.game.max_players:
-                    await self.__create_match(players_found, num_of_players_queued, all_ids)
-                    return
+                    return (players_found, num_of_players_queued, all_ids)
 
             elif num_of_players_queued >= self.game.strict_num_of_players:
-                await self.__create_match(players_found, self.game.strict_num_of_players, all_ids)
-                return
+                return (players_found, self.game.strict_num_of_players, all_ids)
+            
+        return None, None, None
             
     async def __search_for_exact_target_players(self):
         players_found = list()
@@ -157,12 +157,13 @@ class MatchMakingQueue(MatchMakingParent):
          
         if not self.game.strict_num_of_players:
             if num_of_players_queued >= self.queued_user.target_players and num_of_players_queued >= self.game.min_players:
-                await self.__create_match(players_found, self.queued_user.target_players, all_ids)
-                return
+                return (players_found, self.queued_user.target_players, all_ids)
             
         elif num_of_players_queued >= self.game.strict_num_of_players:
-            await self.__create_match(players_found, self.game.strict_num_of_players, all_ids)
-            return
+            return (players_found, self.game.strict_num_of_players, all_ids)
+        
+        return None, None, None
+            
 
     async def __filter_num_of_players(self):
         num_of_players_queued = await database_sync_to_async(self.match_queues.count)()
@@ -173,9 +174,15 @@ class MatchMakingQueue(MatchMakingParent):
         await self._log_info(self.match_queues, 'got in filter_num_of_players with that')
         await self.__get_users_by_target_players(self.queued_user.target_players)
         if not self.queued_user.target_players:
-            await self.__search_for_none_target_players()
+            players_found, num_of_players, ids = await self.__search_for_none_target_players()
         else:
-            await self.__search_for_exact_target_players()
+            players_found, num_of_players, ids = await self.__search_for_exact_target_players()
+
+        if players_found is None:
+            return
+        
+        ids.append(self.queued_user.pk)
+        await self.__create_match(players_found, num_of_players, ids)
 
     async def __create_match(self, match_queues: list[UserQueue], num_of_players: int, all_ids: list[int]):
         match_instance: Match = await database_sync_to_async(Match.objects.create)(game=self.game)

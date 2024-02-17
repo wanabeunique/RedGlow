@@ -123,7 +123,7 @@ def cancel_match_by_time(match_instance_pk: int):
     if match_instance.status == Match.Status.CANCELED:
         return
     
-    UserQueue.objects.filter(user__in=UserMatch.objects.filter(match=match_instance).select_related('user').values('user')).update(match_found=False, is_active=True)
+    UserQueue.objects.filter(user__in=UserMatch.objects.filter(match=match_instance).select_related('user').values('user')).update(match_found=False, is_active=False)
     players = UserMatch.objects.filter(match=match_instance).select_related('user')
     match_instance.status = match_instance.Status.CANCELED
     match_instance.save()
