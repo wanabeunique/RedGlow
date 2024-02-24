@@ -46,7 +46,6 @@ INSTALLED_APPS = [
     'django.contrib.postgres',
     'corsheaders',
     'apps.authentication',
-    'apps.passwordChange',
     'apps.friends',
     'apps.userProfile',
     'apps.tools',
@@ -231,12 +230,11 @@ SSL_CERTIFICATE = 'server.crt'
 SSL_KEY = 'server.key'
 
 # CELERY
-CELERY_BROKER_URL = f"redis://{config('REDIS_HOST')}:{config('REDIS_PORT')}/2"
+CELERY_BROKER_URL = f"amqp://{config('RABBITMQ_USER')}:{config('RABBITMQ_PASSWORD')}@{config('RABBITMQ_HOST')}:{config('RABBITMQ_PORT')}"
 CELERY_RESULT_BACKEND = f"redis://{config('REDIS_HOST')}:{config('REDIS_PORT')}/2"
 CELERY_TASK_ALWAYS_EAGER = False
 CELERY_TASK_EAGER_PROPAGATES = False
 CELERY_BROKER_CONNECTION_RETRY_ON_STARTUP = True
-CELERY_CACHE_BACKEND = 'django-cache'
 CELERY_TASK_TRACK_STARTED = True
 CELERY_RESULT_BACKEND_ALWAYS_RETRY = True
 CELERY_RESULT_BACKEND_MAX_RETRIES = 10
@@ -289,16 +287,18 @@ TIME_TO_ACCEPT_A_GAME = 20
 CACHE_TIMEOUT_CUSTOM = 360000
 BAN_TYPE_AND_TIMEOUT = {
     "ADVANTAGE": {
-        1: 'infinity'
+        1: timedelta(weeks=4),
+        2: 'infinity'
     },
     "SABOTAGING": {
-        1: timedelta(minutes=15),
-        2: timedelta(minutes=30),
-        3: timedelta(hours=1),
-        4: timedelta(hours=3),
-        5: timedelta(hours=12),
-        6: timedelta(days=1),
-        7: timedelta(days=2),
-        8: timedelta(days=3)
+        1: timedelta(minutes=5),
+        2: timedelta(minutes=15),
+        3: timedelta(minutes=30),
+        4: timedelta(hours=1),
+        5: timedelta(hours=3),
+        6: timedelta(hours=12),
+        7: timedelta(days=1),
+        8: timedelta(days=2),
+        9: timedelta(days=3)
     }
 }

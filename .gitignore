@@ -6,6 +6,9 @@
 # C extensions
 *.so
 
+**/migrations/*
+!**/migrations/__init__.py
+
 # Distribution / packaging
 .Python
 build/

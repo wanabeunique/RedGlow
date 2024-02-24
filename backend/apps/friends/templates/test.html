@@ -28,13 +28,9 @@
             console.error('Chat socket closed unexpectedly');
         };
         function myFunction() {
-            console.log(JSON.stringify({
-                type: 'create_invite',
-                username: 'kirinw8'
-            }))
             chatSocket.send(JSON.stringify({
                 type: 'create_invite',
-                username: 'kirinw8'
+                username: 'admin'
             }))
         }
         function myFunction1() {

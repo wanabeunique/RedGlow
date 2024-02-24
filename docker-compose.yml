@@ -19,6 +19,15 @@ services:
       - "6379:6379"
     networks:
       - djangonetwork
+  rabbitmq:
+    image: rabbitmq:3.12
+    ports:
+      - "5672:5672"
+    environment:
+      RABBITMQ_DEFAULT_USER: root
+      RABBITMQ_DEFAULT_PASS: root
+    networks:
+      - djangonetwork
   web:
     build:
       context: ./backend
@@ -28,20 +37,22 @@ services:
       - ./backend:/app 
     environment:
       - DJANGO_ALLOWED_HOSTS=127.0.0.1,localhost
-      - CELERY_BROKER_URL=redis://redis:6379/2
-      - CELERY_RESULT_BACKEND=redis://redis:6379/2
       - DJANGO_SUPERUSER_PASSWORD=admin
       - DJANGO_SUPERUSER_USERNAME=admin
       - DJANGO_SUPERUSER_EMAIL=tmp@gmail.ru
       - WATCHFILES_FORCE_POLLING=1
       - PYTHONUNBUFFERED=1
       - PASSWORD_FOR_TEST_USERS=admin1234
+      - FLOWER_UNAUTHENTICATED_API=True
+      - CELERY_BROKER_URL=amqp://root:root@rabbitmq:5672
+      - CELERY_RESULT_BACKEND=redis://redis:6379/2
     command:
       - sh
       - -c
       - |
         /usr/local/bin/wait-for-it.sh db:5432 -t 15 --
         /usr/local/bin/wait-for-it.sh redis:6379 -t 5 --
+        /usr/local/bin/wait-for-it.sh rabbitmq:5672 -t 15 --
         python manage.py makemigrations --noinput
         python manage.py migrate --noinput
         python manage.py createsuperuser --noinput
@@ -53,9 +64,11 @@ services:
     depends_on:
       - db
       - redis
+      - rabbitmq
     links:
       - db:db
       - redis:redis
+      - rabbitmq:rabbitmq
     networks:
       - djangonetwork
   celery:
@@ -64,15 +77,19 @@ services:
       dockerfile: Dockerfile.django
     volumes:
       - ./backend:/app
+    environment:
+      - FLOWER_UNAUTHENTICATED_API=True
+      - CELERY_BROKER_URL=amqp://root:root@rabbitmq:5672
+      - CELERY_RESULT_BACKEND=redis://redis:6379/2
     command: 
       - sh
       - -c
       - start-celery.sh
-    environment:
-      - CELERY_BROKER_URL=redis://redis:6379/2
-      - CELERY_RESULT_BACKEND=redis://redis:6379/2
     ports:
       - "5555:5555"
+    links:
+      - redis:redis
+      - rabbitmq:rabbitmq
     depends_on:
       - db
       - redis

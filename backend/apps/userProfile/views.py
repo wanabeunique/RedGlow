@@ -1,13 +1,13 @@
 from rest_framework.generics import RetrieveAPIView, UpdateAPIView
 from rest_framework.views import APIView
-from .serializers import UserProfileSerializer, UserPhotoSerializer, UserSteamSerializer, UserBackgroundSerializer, UserForeignSerializer, UserBehaviorSerializer
+from .serializers import UserProfileSerializer, UserPhotoSerializer, UserSteamSerializer, UserBackgroundSerializer, UserForeignSerializer
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status
 from apps.authentication.models import User
 from steam.webapi import WebAPI
 from decouple import config
-from apps.tools.permissions import HasSteam, DoesntHaveSteam
+from apps.tools.permissions import HasSteam
 from apps.tools.caching import delete_cache, cache_response, CachedResponse, change_cached_data
 from django.utils.decorators import method_decorator
 
@@ -63,14 +63,6 @@ class RetirieveForeignUserProfileView(RetrieveAPIView):
         return CachedResponse(serializer.data)
 
 
-class RetrieveUserBehaviorView(RetrieveAPIView):
-    serializer_class = UserBehaviorSerializer
-    permission_classes = (IsAuthenticated, )
-
-    def get_object(self, queryset=None):
-        return self.request.user
-
-
 @method_decorator(cache_response(start_name='user_photo', for_all=True), name='get')
 class RetrieveUserPhotoView(RetrieveAPIView):
     serializer_class = UserPhotoSerializer
@@ -110,7 +102,7 @@ class UpdateUserBackgroundView(UpdateAPIView):
     def put(self, request, *args, **kwargs):
         response: Response = self.update(request, *args, **kwargs)
         if status.is_success(response.status_code):
-            self.invalidate_cache(response, self.instance.username)
+            invalidate_cache(response, self.instance.username)
         return response
 
 
@@ -129,7 +121,7 @@ class RetrieveUserBackgroundView(RetrieveAPIView):
 
 class UpdateSteamIdView(UpdateAPIView):
     serializer_class = UserSteamSerializer
-    permission_classes = (IsAuthenticated, DoesntHaveSteam)
+    permission_classes = [IsAuthenticated & ~HasSteam]
 
     def get_object(self, queryset=None):
         self.instance = self.request.user
@@ -137,14 +129,16 @@ class UpdateSteamIdView(UpdateAPIView):
 
     def put(self, request, *args, **kwargs):
         response = self.update(request, *args, **kwargs)
+
         if status.is_success(response.status_code):
             change_cached_data(
-                'steamIdExists', True, 'current_user_profile', 'user/info', self.instance.username)
+                'steamIdExists', True, 'current_user_profile', 'user/info', self.instance.username
+            )
         return response
 
 
 class RetrieveUserSteamNameView(APIView):
-    permission_classes = (IsAuthenticated, HasSteam)
+    permission_classes = (IsAuthenticated & HasSteam,)
 
     def get(self, request, username=None):
         try:

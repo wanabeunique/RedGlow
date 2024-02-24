@@ -28,12 +28,13 @@
     </div>
     <script>
         const socket = new WebSocket(
-            'wss://localhost:8000/ws/match_queue'
+            'wss://localhost:8000/ws/match_queue/1/'
         );
         socket.onopen = function(e){
             console.log('opened')
         };
         socket.onmessage = function(e) {
+            console.log(e.data);
             document.getElementById('message_data').innerHTML = '<h1>Message recieved</h1>';
             document.getElementById('game_hash_got').innerText = 'Game hash: ';
             var data = JSON.parse(e.data);

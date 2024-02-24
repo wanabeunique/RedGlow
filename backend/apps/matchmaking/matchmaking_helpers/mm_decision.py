@@ -2,12 +2,11 @@ from channels.db import database_sync_to_async
 from django.db.models import Q, OuterRef, Subquery
 from django.db.models.manager import BaseManager
 from django.utils import timezone
-from apps.matchmaking.models import UserMatch, UserElo, Match
+from apps.matchmaking.models import UserMatch, UserElo, Match, UserBan, ban_players
 from apps.authentication.models import User
 from apps.tools.db_tools import (
-    async_filter_first,
     async_filter_count,
-    async_filter_select_related
+    async_filter_select_related_first
 )
 from apps.tools.exceptions import ValidationError
 from .mm_parent import MatchMakingParent
@@ -52,7 +51,7 @@ class MatchMakingDecision(MatchMakingParent):
                 'Time to accept match is over'
             )
 
-        self.user_match_instance: UserMatch | None = await async_filter_first(UserMatch, match=self.match_instance, user=self.user)
+        self.user_match_instance: UserMatch | None = await async_filter_select_related_first(UserMatch, select_related=['user'], match=self.match_instance, user=self.user)
 
         if self.user_match_instance is None:
             raise ValidationError(
@@ -127,20 +126,5 @@ class MatchMakingDecision(MatchMakingParent):
         )
 
     async def __decline(self):
-        user_match_instances = await self.__cancel_match()
-        await self.__send_match_cancel_messages(user_match_instances)
-
-    async def __cancel_match(self):
-        user_match_instances: BaseManager[UserMatch] = await async_filter_select_related(UserMatch, ['user'], match=self.match_instance)
-        self.match_instance.status = self.match_instance.Status.CANCELED
-        await database_sync_to_async(self.match_instance.save)()
-        return user_match_instances
-        
-    async def __send_match_cancel_messages(self, to_send: BaseManager[UserMatch]):
-        await self._send_messages_to_ws(
-            to_send,
-            {
-                'type': 'match_canceled_by_user',
-                'hash': self.match_instance.hash
-            }
-        )
+        await database_sync_to_async(self.match_instance.cancel_match)('match_canceled_by_user')
+        await database_sync_to_async(ban_players)([self.user], self.channel_layer, self.match_instance.game, UserBan.BanType.SABOTAGING)

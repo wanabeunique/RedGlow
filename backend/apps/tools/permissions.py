@@ -11,10 +11,6 @@ class HasSteam(BasePermission):
     def has_permission(self, request, view):
         return bool(request.user.steamId)
     
-class DoesntHaveSteam(BasePermission):
-    def has_object_permission(self, request, view):
-        return not bool(request.user.steamId)
-    
 class HasCivilizationV(BasePermission):
     def has_permission(self, request, view):
         steamId = request.user.steamId
@@ -24,18 +20,3 @@ class HasCivilizationV(BasePermission):
             if game.get('name') == "Sid Meier’s Civilization V":
                 return True
         return False
-        
-    
-class HasCivilizationVI(BasePermission):
-    def has_permission(self, request, view):
-        steamId = request.user.steamId
-        steamApi = WebAPI(key=config('STEAM_KEY'),https=True)
-        for game in steamApi.IPlayerService.GetOwnedGames(steamid=steamId,include_appinfo=False,include_played_free_games=False,
-            include_free_sub=True,include_extended_appinfo=True,appids_filter=0,language='ru',skip_unvetted_apps=True).get('response').get('games'):
-            if game.get('name') == "Sid Meier’s Civilization VI":
-                return True
-        return False
-    
-class HasSub(BasePermission):
-    def has_permission(self, request, view):
-        return bool(request.user.subExpiresIn)

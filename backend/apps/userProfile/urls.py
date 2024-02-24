@@ -9,6 +9,5 @@ urlpatterns = [
     path('user/background/', UpdateUserBackgroundView.as_view()),
     path('user/<str:username>/background', RetrieveUserBackgroundView.as_view()),
     path('user/steamId/', UpdateSteamIdView.as_view()),
-    path('user/<str:username>/steamName',RetrieveUserSteamNameView.as_view()),
-    path('user/behavior', RetrieveUserBehaviorView.as_view())
+    path('user/<str:username>/steamName',RetrieveUserSteamNameView.as_view())
 ]

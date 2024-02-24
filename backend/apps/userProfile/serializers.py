@@ -14,12 +14,6 @@ class UserProfileSerializer(serializers.ModelSerializer):
         return obj.steamId is not None
 
 
-class UserBehaviorSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = User
-        fields = ('decency', 'reportsOwned', 'reportsGot')
-
-
 class UserForeignSerializer(serializers.ModelSerializer):
     class Meta:
         model = User

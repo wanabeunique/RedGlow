@@ -15,7 +15,7 @@ class CachedResponse:
         self.code = code
 
 
-def cache_response(timeout: int | None = None, start_name: str | None = None, for_all: bool = False):
+def cache_response(timeout: int | None = settings.CACHE_TIMEOUT_CUSTOM, start_name: str | None = None, for_all: bool = False):
     def decorator(view_func):
         @wraps(view_func)
         def _wrapped_view(request: HttpRequest, *args, **kwargs):
@@ -32,7 +32,7 @@ def cache_response(timeout: int | None = None, start_name: str | None = None, fo
             response: CachedResponse = view_func(request, *args, **kwargs)
 
             if status.is_success(response.code):
-                cache.set(cache_key, response, timeout if timeout else settings.CACHE_TIMEOUT_CUSTOM)
+                cache.set(cache_key, response, timeout)
             return Response(response.data, status=response.code)
         return _wrapped_view
     return decorator

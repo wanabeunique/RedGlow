@@ -6,11 +6,11 @@ from typing import Iterable
 import json
 from apps.friends.models import Friendship
 from apps.authentication.models import User
-from apps.tools.db_tools import async_filter_exists, async_filter_update, async_filter_delete
+from apps.tools.db_tools import async_filter_exists, async_filter_update, async_filter_delete, async_filter_first
 from apps.tools.caching import delete_cache
-import logging
+from apps.tools.extended_consumer import ExtendedAsyncConsumer
 
-class FriendConsumer(AsyncJsonWebsocketConsumer):
+class FriendConsumer(ExtendedAsyncConsumer):
     """
     Фронтенд отправляет сообщение вида:
         {
@@ -43,137 +43,117 @@ class FriendConsumer(AsyncJsonWebsocketConsumer):
     """
     types = ['create_invite', 'accept_invite',
              "cancel_invite", "decline_invite", "delete_friend"]
+    acceptable_keys = dict(
+        create_invite={'username': str},
+        accept_invite={'username': str},
+        cancel_invite={'username': str},
+        decline_invite={'username': str},
+        delete_friend={'username': str}
+    )
+    group_name_prefix = 'friends'
+    target_user: User | None = None
 
     async def connect(self):
-        user = await get_user(self.scope)
-        if not (user and user.is_authenticated):
-            await self.close()
-            return
+        method_to_call = await self.general_connect()
 
-        self.username = user.username
-        self.group_name = f'friends_{self.username}'
-        await self.channel_layer.group_add(self.group_name, self.channel_name)
-
-        await self.accept()
+        await method_to_call()
 
     async def disconnect(self, close_code):
-        if hasattr(self,"group_name"):
-            await self.channel_layer.group_discard(self.group_name, self.channel_name)
+        await self.discard_group()
 
     @database_sync_to_async
     def delete_friend_query(self, model: User | Friendship, filter, **updates):
         return model.objects.filter(filter).update(**updates)
 
-    async def receive(self, text_data):
+    async def receive_json(self, data_json: dict, **kwargs):
 
-        user = await get_user(self.scope)
-        if not (user and user.is_authenticated):
-            await self.close()
+        method_to_call = await super().receive_json(data_json, **kwargs)
+        if method_to_call is None:
             return
-
-        data_json: dict = json.loads(text_data)
-        if data_json.get('type', None) is None or data_json.get('username', None) is None:
-            await self.send_status_info(message='Invalid data', error=True)
-            return
-
         target_username = data_json.get('username')
-
-        if user.username == target_username:
+        
+        if target_username == self.user.username:
             await self.send_status_info(message='Invalid data', error=True)
             return
+        
+        self.target_user: User | None = await async_filter_first(User, username=target_username)
 
-        user_flag = await async_filter_exists(User, username=target_username)
-
-        if not user_flag:
+        if self.target_user is None:
             await self.send_status_info(message='Not found', error=True)
             return
 
-        target_user = await database_sync_to_async(
-            User.objects.get)(username=target_username)
-        message_type = data_json.get('type')
+        await method_to_call()
 
-        if not message_type:
-            await self.send_status_info(message='Invalid data', error=True)
-            return
-
-        if message_type not in self.types:
-            await self.send_status_info(message='Invalid data', error=True)
-            return
-
-        method = getattr(self, message_type)
-
-        await method(target_username, target_user, user)
-
-    async def create_invite(self, target_username: str, target_user: User, current_user: User):
-        flag = await async_filter_exists(Friendship, Q(inviter=current_user, accepter=target_user) | Q(inviter=target_user, accepter=current_user))
+    async def create_invite(self):
+        flag = await async_filter_exists(Friendship, Q(inviter=self.user, accepter=self.target_user) | Q(inviter=self.target_user, accepter=self.user))
         if flag:
             await self.send_status_info(message=f'Невозможно создать заявку', error=True)
             return
 
         await database_sync_to_async(Friendship.objects.create)(
-            inviter=current_user, accepter=target_user, status=Friendship.Status.INVITED)
+            inviter=self.user, accepter=self.target_user, status=Friendship.Status.INVITED)
         await self.send_status_info(message='Заявка успешно создана')
         await self.channel_layer.group_send(
-            f'friends_{target_username}',
-            {'type': f'incoming_invite', "username": current_user.username,
-                'photo': current_user.photo_url}
+            f'friends_{self.target_user.username}',
+            {'type': f'incoming_invite', "username": self.user.username,
+                'photo': self.user.photo_url}
         )
-        await self.invalidate_cache(target_username, current_user.username)
-        await self.invalidate_cache(current_user.username, target_username)
+        await self.invalidate_cache(self.target_user.username, self.user.username)
+        await self.invalidate_cache(self.user.username, self.target_user.username)
 
-    async def cancel_invite(self, target_username: str, target_user: User, current_user: User):
-        flag = await async_filter_exists(Friendship, inviter=current_user, accepter=target_user, status=Friendship.Status.INVITED)
+    async def cancel_invite(self):
+        flag = await async_filter_exists(Friendship, inviter=self.user, accepter=self.target_user, status=Friendship.Status.INVITED)
         if not flag:
             await self.send_status_info(message='Заявки не существует', error=True)
             return
 
-        await async_filter_delete(Friendship, inviter=current_user, accepter=target_user)
+        await async_filter_delete(Friendship, inviter=self.user, accepter=self.target_user)
 
         await self.send_status_info(message='Заявка успешно отменена')
-        await self.invalidate_cache(target_username, current_user.username)
-        await self.invalidate_cache(current_user.username, target_username)
+        await self.invalidate_cache(self.target_user.username, self.user.username)
+        await self.invalidate_cache(self.user.username, self.target_user.username)
 
-    async def accept_invite(self, target_username: str, target_user: User, current_user: User):
-        flag = await async_filter_exists(Friendship, inviter=target_user, accepter=current_user, status=Friendship.Status.INVITED)
+    async def accept_invite(self):
+        flag = await async_filter_exists(Friendship, inviter=self.target_user, accepter=self.user, status=Friendship.Status.INVITED)
         if not flag:
             await self.send_status_info(message='Заявки не существует', error=True)
             return
 
         await async_filter_update(
             Friendship,
-            filters=dict(inviter=target_user, accepter=current_user),
+            filters=dict(inviter=self.target_user, accepter=self.user),
             updates=dict(status=Friendship.Status.FRIENDS)
         )
 
         await self.send_status_info(message='Заявка успешно принята')
 
         await self.channel_layer.group_send(
-            f'friends_{target_username}',
-            {'type': f'accepted_invite', "username": current_user.username,
-                "photo": current_user.photo_url}
+            f'friends_{self.target_user.username}',
+            {'type': f'accepted_invite', "username": self.user.username,
+                "photo": self.user.photo_url}
         )
 
-        await self.invalidate_cache(target_username, current_user.username)
-        await self.invalidate_cache(current_user.username, target_username)
+        await self.invalidate_cache(self.target_user.username, self.user.username)
+        await self.invalidate_cache(self.user.username, self.target_user.username)
 
-    async def decline_invite(self, target_username: str, target_user: User, current_user: User):
-        flag = await async_filter_exists(Friendship, inviter=target_user, accepter=current_user, status=Friendship.Status.INVITED)
+    async def decline_invite(self):
+        flag = await async_filter_exists(Friendship, inviter=self.target_user, accepter=self.user, status=Friendship.Status.INVITED)
         if not flag:
             await self.send_status_info(message='Заявки не существует', error=True)
             return
 
-        await async_filter_delete(Friendship, inviter=target_user, accepter=current_user)
+        await async_filter_delete(Friendship, inviter=self.target_user, accepter=self.user)
 
         await self.send_status_info(message='Заявка успешно отклонена')
 
-        await self.invalidate_cache(target_username, current_user.username)
-        await self.invalidate_cache(current_user.username, target_username)
+        await self.invalidate_cache(self.target_user.username, self.user.username)
+        await self.invalidate_cache(self.user.username, self.target_user.username)
 
-    async def delete_friend(self, target_username: str, target_user: User, current_user: User):
+    async def delete_friend(self):
         flag = await async_filter_exists(
             Friendship,
-            Q(inviter=target_user, accepter=current_user, status=Friendship.Status.FRIENDS) | Q(
-                inviter=current_user, accepter=target_user, status=Friendship.Status.FRIENDS)
+            Q(inviter=self.target_user, accepter=self.user, status=Friendship.Status.FRIENDS) | Q(
+                inviter=self.user, accepter=self.target_user, status=Friendship.Status.FRIENDS)
         )
         if not flag:
             await self.send_status_info(message='Вы не друзья', error=True)
@@ -181,15 +161,15 @@ class FriendConsumer(AsyncJsonWebsocketConsumer):
 
         await self.delete_friend_query(
             Friendship,
-            Q(inviter=target_user, accepter=current_user, status=Friendship.Status.FRIENDS) |
-            Q(inviter=current_user, accepter=target_user,
+            Q(inviter=self.target_user, accepter=self.user, status=Friendship.Status.FRIENDS) |
+            Q(inviter=self.user, accepter=self.target_user,
               status=Friendship.Status.FRIENDS),
-            inviter=target_user, accepter=current_user, status=Friendship.Status.INVITED
+            inviter=self.target_user, accepter=self.user, status=Friendship.Status.INVITED
         )
         await self.send_status_info(message='Пользователь успешно удалён из друзей')
 
-        await self.invalidate_cache(target_username, current_user.username)
-        await self.invalidate_cache(current_user.username, target_username)
+        await self.invalidate_cache(self.target_user.username, self.user.username)
+        await self.invalidate_cache(self.user.username, self.target_user.username)
 
     async def invalidate_cache(self, username1, username2):
         delete_cache('friendship_status', f'/user/friendship/{username1}/',username2)

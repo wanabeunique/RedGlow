@@ -12,6 +12,10 @@ def async_filter_first(model: Model, *nameless_filters, **filters):
     return model.objects.filter(*nameless_filters, **filters).first()
 
 @database_sync_to_async
+def async_filter_select_related_first(model: Model, *nameless_filters, select_related: list[str],**filters):
+    return model.objects.filter(*nameless_filters, **filters).select_related(*select_related).first()
+
+@database_sync_to_async
 def async_filter_update(model: Model, *nameless_filters, filters: dict, updates: dict):
     return model.objects.filter(*nameless_filters, **filters).update(**updates)
 

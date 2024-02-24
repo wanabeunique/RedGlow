@@ -1,8 +1,8 @@
 from channels.db import database_sync_to_async
-from django.db.models import Q, OuterRef, Subquery
+from django.db.models import OuterRef, Subquery
 from django.db.models.manager import BaseManager
 from apps.matchmaking.models import Game, Match, UserMatch, UserQueue, UserElo
-from apps.tools.db_tools import async_filter_first
+from apps.tools.db_tools import async_filter_select_related_first, async_filter_first
 from django.conf import settings
 from .mm_parent import MatchMakingParent
 from apps.tools.exceptions import ValidationError
@@ -29,7 +29,7 @@ class MatchMakingQueue(MatchMakingParent):
         self.data_json['game'] = game
 
         # Проверка, есть ли запись юзера в бд
-        queued_user: UserQueue | None = await async_filter_first(UserQueue, user=self.user.pk)
+        queued_user: UserQueue | None = await async_filter_select_related_first(UserQueue, select_related=['user'], user=self.user.pk)
         # Есть - обновляем
         if queued_user:
             if queued_user.is_active:
@@ -85,7 +85,6 @@ class MatchMakingQueue(MatchMakingParent):
 
     async def __check_elo_filter(self):
         num_of_players_queued = await database_sync_to_async(self.match_queues.count)()
-        await self._log_info(self.match_queues, 'got in filter_elo with that')
 
         if num_of_players_queued + 1 < self.game.min_players:
             return
@@ -171,7 +170,6 @@ class MatchMakingQueue(MatchMakingParent):
         if num_of_players_queued + 1 < self.game.min_players:
             return
         
-        await self._log_info(self.match_queues, 'got in filter_num_of_players with that')
         await self.__get_users_by_target_players(self.queued_user.target_players)
         if not self.queued_user.target_players:
             players_found, num_of_players, ids = await self.__search_for_none_target_players()
@@ -186,7 +184,6 @@ class MatchMakingQueue(MatchMakingParent):
 
     async def __create_match(self, match_queues: list[UserQueue], num_of_players: int, all_ids: list[int]):
         match_instance: Match = await database_sync_to_async(Match.objects.create)(game=self.game)
-        await self._log_info(match_queues, 'got into create_game with that:')
         user_match_objects = [UserMatch(user=self.user, match=match_instance)]
         users_to_send = [self.user.username]
         count_of_added_players = 1
