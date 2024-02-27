@@ -5,6 +5,8 @@ import userReducer from './reducers/userSlice';
 import socketsReducer from './reducers/isSocketsActive';
 import menusReduce from './reducers/isMenusActiveSlice';
 import gameReducer from './reducers/gameSlice';
+import gameAcceptReducer from './reducers/gameAcceptingSlice'
+import settingsReducer from './reducers/settingsSlice'
 
 const rootReducer = combineReducers({
   friendsSlice,
@@ -13,6 +15,8 @@ const rootReducer = combineReducers({
   socketsReducer,
   menusReduce,
   gameReducer,
+  gameAcceptReducer,
+  settingsReducer
 });
 
 export default rootReducer;

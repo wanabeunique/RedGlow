@@ -9,7 +9,8 @@ import {
 } from '@/store/reducers/isMenusActiveSlice';
 import { ModeToggle } from '@/components/ui/mode-toggle';
 import { ReactSVG } from 'react-svg';
-import authService from '@/service/auth.service';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faGear } from '@fortawesome/free-solid-svg-icons';
 
 export default function Header() {
   const dispatch = useAppDispatch();
@@ -35,18 +36,10 @@ export default function Header() {
           {isAuth ? (
             <>
               <li className={styles.header__item}>
-                <NavLink to="/Play">Играть</NavLink>
+                <NavLink to="/play">Играть</NavLink>
               </li>
-              <li
-                className={styles.header__item}
-                onClick={() => {
-                  authService.logout();
-                }}
-              >
-                <NavLink to="/headbook" className={`${styles.header__link}`}>
-                  Выйти
-                </NavLink>
-              </li>
+
+              
             </>
           ) : (
             <></>
@@ -70,6 +63,11 @@ export default function Header() {
                   >
                     <ReactSVG src="/imgs/friends.svg" />
                   </div>
+                </li>
+                <li className={styles.header__item}>
+                  <NavLink to="settings">
+                    <FontAwesomeIcon icon={faGear} />
+                  </NavLink>
                 </li>
                 <li className={`${styles.header__item}`}>
                   <NavLink

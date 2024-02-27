@@ -21,19 +21,19 @@ import { setSelectedGame } from '@/store/reducers/gameSlice';
 
 const games = [
   {
-    value: 'civilization5',
+    value: `civ5`,
     label: 'Сivilization 5',
   },
   {
-    value: 'civilization6',
+    value: 'civ6',
     label: 'Civilization 6',
   },
 ];
 
 export default function ChooseGame() {
   const [open, setOpen] = React.useState(false);
-  const value = useAppSelector((state) => state.gameReducer.selectedGame)
-  const dispatch = useAppDispatch()
+  const value = useAppSelector((state) => state.gameReducer.selectedGame);
+  const dispatch = useAppDispatch();
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -60,7 +60,9 @@ export default function ChooseGame() {
                 key={game.value}
                 value={game.value}
                 onSelect={(currentValue) => {
-                  dispatch(setSelectedGame(currentValue === value ? '' : currentValue));
+                  dispatch(
+                    setSelectedGame(currentValue === value ? '' : currentValue),
+                  );
                   setOpen(false);
                 }}
               >

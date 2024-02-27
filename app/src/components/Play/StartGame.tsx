@@ -18,38 +18,30 @@ const countPlayers = [2, 4, 8];
 
 export default function StartGame() {
   const dispatch = useAppDispatch();
-  const count = useAppSelector((state) => state.gameReducer.countPlayers);
-  const game = useAppSelector((state) => state.gameReducer.selectedGame)
-  const [timer, setTimer] = useState(0);
-  const [searchRunning, setSearchRunning] = useState(false);
+  const {
+    eloFilter,
+    selectedGame: game,
+    countPlayers: count,
+  } = useAppSelector((state) => state.gameReducer);
 
-  const onOptionChange = (e) => {
+  const searchRunning = useAppSelector(
+    (state) => state.gameReducer.activeSearch,
+  );
+
+  const onOptionChange = (e: React.ChangeEvent<any>) => {
     dispatch(setCountPlayers(e.target.value));
   };
 
-  useEffect(() => {
-    function enableCounter(e) {
-      if (e.type !== 'player_in_queue') return;
-      setSearchRunning(true);
-      const startCounter = (e) => {
-        setTimer((prev) => prev + 1);
-      };
-      setInterval(startCounter, 1000);
-    }
-    matchmakingSocket.onMessage(enableCounter);
-  }, []);
-
   return (
     <Drawer>
-      {searchRunning ? (
-        <Button disabled className="rounded">
-          Время поиска: {timer}
+      <DrawerTrigger disabled={!game}>
+        <Button
+          disabled={!game || searchRunning}
+          className="rounded bg-green-500 hover:bg-green-600"
+        >
+          Начать игру
         </Button>
-      ) : (
-        <DrawerTrigger disabled={!game}>
-          <Button disabled={!game} className="rounded bg-green-500 hover:bg-green-600">Начать игру</Button>
-        </DrawerTrigger>
-      )}
+      </DrawerTrigger>
       <DrawerContent>
         <DrawerHeader className="container">
           <DrawerTitle className="text-2xl">
@@ -80,7 +72,7 @@ export default function StartGame() {
           <DrawerClose>
             <Button
               onClick={() => {
-                matchmakingSocket.startSearch(count, game);
+                matchmakingSocket.startSearch(Number(count), game, eloFilter);
               }}
               className="rounded w-full"
             >

@@ -3,7 +3,6 @@ import { Input } from '@/components/ui/input';
 import styles from './Proflie.module.sass';
 import { useState, useEffect } from 'react';
 import { IOwnProfile } from '@/interfaces/IOwnProfile';
-import removeBodyClasses from '@/functions/removeBodyClasses';
 import { Button } from '@/components/ui/button';
 import {
   AlertDialog,
@@ -18,11 +17,15 @@ import {
 } from '@/components/ui/alert-dialog';
 import userService from '@/service/user.service';
 import passwordService from '@/service/password.service';
+import { useColorSheme } from '@/hooks/useColorSheme';
+import authService from '@/service/auth.service';
+import { Link } from 'react-router-dom';
 
 export default function ProfileSettings() {
   const [user, setUser] = useState<IOwnProfile>();
   const [currentPassword, setCurrentPassword] = useState<any>('');
   const [newPassword, setNewPassword] = useState<any>('');
+  const { setColorTheme } = useColorSheme();
 
   async function HandeChangePassword() {
     await passwordService.changePassword(currentPassword, newPassword);
@@ -37,7 +40,7 @@ export default function ProfileSettings() {
     getUser();
   }, []);
   return (
-    <div className="container">
+    <div className="container h-full">
       <div className={`mt-10 ${styles.profile__item}`}>
         <div className={`${styles.profile__row}`}>
           <p>Steam аккаунт</p>
@@ -144,47 +147,26 @@ export default function ProfileSettings() {
       <div className="flex flex-col gap-2">
         Выбор темы:
         <div className=" grid grid-cols-4 gap-3">
-          <Button
-            onClick={() => {
-              removeBodyClasses();
-              document.querySelector('html')?.classList.add('theme-blue');
-            }}
-          >
-            Синяя тема
-          </Button>
-          <Button
-            onClick={() => {
-              removeBodyClasses();
-              document.querySelector('html')?.classList.add('theme-red');
-            }}
-          >
-            Красная тема
-          </Button>
-          <Button
-            onClick={() => {
-              removeBodyClasses();
-              document.querySelector('html')?.classList.add('theme-orange');
-            }}
-          >
+          <Button onClick={() => setColorTheme('blue')}>Синяя тема</Button>
+          <Button onClick={() => setColorTheme('red')}>Красная тема</Button>
+          <Button onClick={() => setColorTheme('orange')}>
             Оранжевая тема
           </Button>
-          <Button
-            onClick={() => {
-              removeBodyClasses();
-              document.querySelector('html')?.classList.add('theme-zink');
-            }}
-          >
-            Серая тема
-          </Button>
-          <Button
-            onClick={() => {
-              removeBodyClasses();
-              document.querySelector('html')?.classList.add('theme-violet');
-            }}
-          >
+          <Button onClick={() => setColorTheme('gray')}>Серая тема</Button>
+          <Button onClick={() => setColorTheme('violet')}>
             Фиолетовая тема
           </Button>
         </div>
+      </div>
+      <div
+        className="mt-auto"
+        onClick={() => {
+          authService.logout();
+        }}
+      >
+        <Button className="w-full mt-5 bg-red-600">
+          <Link to="/login">Выйти из аккаунта</Link>
+        </Button>
       </div>
     </div>
   );

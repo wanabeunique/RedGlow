@@ -11,7 +11,7 @@ export default function Layout() {
     <div className="wrapper">
       <Header />
       <Outlet />
-      {isAuth ? <Friends /> : null}
+      {isAuth && <Friends />}
       <Footer />
     </div>
   );
