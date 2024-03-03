@@ -20,12 +20,15 @@ services:
     networks:
       - djangonetwork
   rabbitmq:
-    image: rabbitmq:3.12
+    image: rabbitmq:3.12-management
+    hostname: rabbitmq
     ports:
+      - "15672:15672"
       - "5672:5672"
     environment:
       RABBITMQ_DEFAULT_USER: root
       RABBITMQ_DEFAULT_PASS: root
+      RABBITMQ_SERVER_ADDITIONAL_ERL_ARGS: -rabbit disk_free_limit 2147483648
     networks:
       - djangonetwork
   web:
@@ -36,29 +39,14 @@ services:
     volumes:
       - ./backend:/app 
     environment:
-      - DJANGO_ALLOWED_HOSTS=127.0.0.1,localhost
+      - DJANGO_ALLOWED_HOSTS=localhost
       - DJANGO_SUPERUSER_PASSWORD=admin
       - DJANGO_SUPERUSER_USERNAME=admin
       - DJANGO_SUPERUSER_EMAIL=tmp@gmail.ru
-      - WATCHFILES_FORCE_POLLING=1
-      - PYTHONUNBUFFERED=1
-      - PASSWORD_FOR_TEST_USERS=admin1234
-      - FLOWER_UNAUTHENTICATED_API=True
-      - CELERY_BROKER_URL=amqp://root:root@rabbitmq:5672
-      - CELERY_RESULT_BACKEND=redis://redis:6379/2
     command:
       - sh
       - -c
-      - |
-        /usr/local/bin/wait-for-it.sh db:5432 -t 15 --
-        /usr/local/bin/wait-for-it.sh redis:6379 -t 5 --
-        /usr/local/bin/wait-for-it.sh rabbitmq:5672 -t 15 --
-        python manage.py makemigrations --noinput
-        python manage.py migrate --noinput
-        python manage.py createsuperuser --noinput
-        python general_tools/deploy_tools/setup_db.py
-        python general_tools/test_tools/setup_test_db.py
-        gunicorn gamingPlatform.asgi -k gamingPlatform.uvicorn_worker.CustomUvicornWorker -c gunicorn_config.py --reload --access-logfile -
+      - start-django.sh
     ports:
       - "8000:8000"
     depends_on:
@@ -78,9 +66,8 @@ services:
     volumes:
       - ./backend:/app
     environment:
-      - FLOWER_UNAUTHENTICATED_API=True
-      - CELERY_BROKER_URL=amqp://root:root@rabbitmq:5672
-      - CELERY_RESULT_BACKEND=redis://redis:6379/2
+      - FLOWER_BROKER_URL=amqp://root:root@rabbitmq:5672
+      - FLOWER_RESULT_BACKEND=redis://redis:6379/2
     command: 
       - sh
       - -c
@@ -96,17 +83,6 @@ services:
       - web
     networks:
       - djangonetwork
-  # nginx_backend:
-  #   image: nginx:latest
-  #   container_name: nginx_backend
-  #   volumes:
-  #     - ./nginx/nginx.conf:/etc/nginx/nginx.conf
-  #     - ./nginx/ssl:/etc/nginx/ssl
-  #   ports:
-  #     - "1212:1212"
-  #   depends_on:
-  #     - web
-  #     - celery
 volumes:
   pgdbdata: null
 networks:

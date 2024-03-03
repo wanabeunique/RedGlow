@@ -16,3 +16,5 @@ COPY wait-for-it.sh /usr/local/bin/
 RUN chmod +x /usr/local/bin/wait-for-it.sh
 COPY start-celery.sh /usr/local/bin/
 RUN chmod +x /usr/local/bin/start-celery.sh
+COPY start-django.sh /usr/local/bin/
+RUN chmod +x /usr/local/bin/start-django.sh
