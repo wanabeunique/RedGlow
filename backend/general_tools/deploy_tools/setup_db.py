@@ -78,7 +78,7 @@ def create_user_behaviors():
             )
         except IntegrityError:
             pass
-    UserBehavior.objects.bulk_create(instances)
+    UserBehavior.objects.bulk_create(instances,ignore_conflicts=True)
     logger.info('All necessary userBehabiors have been created')
 
 

@@ -21,10 +21,11 @@ def create_friends():
         'invites_out': [[] for _ in range(len(main_users))],
         'invites_in': [[] for _ in range(len(main_users))]
     }
+    friendship_count = len(help_users) // 5
     for item in range(len(main_users)):
         user = main_users[item]
         for key in friendships.keys():
-            while len(friendships[key][item]) < 150:
+            while len(friendships[key][item]) < friendship_count:
                 random_user = help_users[random.randint(0,len(help_users)-1)]
                 if random_user in friendships['friends'][item] or random_user in friendships['invites_out'][item] or random_user in friendships['invites_in'][item]:
                     continue
@@ -59,4 +60,4 @@ def create_friends():
                             status=Friendship.Status.FRIENDS
                         )
                     )
-    return Friendship.objects.bulk_create(friendship_list)
+    return Friendship.objects.bulk_create(friendship_list, ignore_conflicts=True)

@@ -245,7 +245,6 @@ CELERY_EVENT_SERIALIZER = 'pickle'
 CELERY_RESULT_SERIALIZER = 'pickle'
 CELERY_ACCEPT_CONTENT = ['application/json',
                          'application/x-python-serialize']
-
 # LOGGING
 LOGGING = {
     'version': 1,
