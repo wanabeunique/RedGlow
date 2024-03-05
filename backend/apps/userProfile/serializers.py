@@ -7,8 +7,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ('username', 'phoneNumber', 'email',
-                  'subExpiresAt', 'date_joined', 'steamIdExists', 'photo', 'background')
+        fields = ('username', 'phoneNumber', 'email', 'date_joined', 'steamIdExists', 'photo', 'background')
 
     def get_steamIdExists(self, obj):
         return obj.steamId is not None
@@ -17,8 +16,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
 class UserForeignSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ('username', 'subExpiresAt',
-                  'date_joined', 'photo', 'background')
+        fields = ('username', 'date_joined', 'photo', 'background')
 
 
 class UserPhotoSerializer(serializers.ModelSerializer):
