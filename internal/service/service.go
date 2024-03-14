@@ -1,7 +1,7 @@
 package service
 
 import (
-	"redGlow/internal/database/model"
+	"redGlow/internal/model"
 )
 
 type AuthService interface{

@@ -1,17 +1,20 @@
 package auth
 
 import (
-	"database/sql"
-	"redGlow/internal/database/model"
+	"redGlow/internal/database"
+	"redGlow/internal/model"
+	"redGlow/internal/repository"
 )
 
+var _ repository.AuthRepository = (*authRepository)(nil)
+
 type authRepository struct{
-	db *sql.DB
+	DB database.Database
 }
 
-func NewAuthRepository(db *sql.DB) *authRepository{
+func NewAuthRepository(DB database.Database) *authRepository{
 	return &authRepository{
-		db: db,
+		DB: DB,
 	}
 }
 

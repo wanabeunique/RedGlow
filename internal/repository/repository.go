@@ -1,10 +1,10 @@
 package repository
 
 import (
-	"redGlow/internal/database/model"
+	"redGlow/internal/model"
 )
 
-type AuthenticationRepository interface{
+type AuthRepository interface{
 	Create(email, username, password string) error
 	Commit(email string) (*model.User, error)
 	CheckByCredentials(email, password string) (*model.User, error)

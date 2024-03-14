@@ -1,19 +1,21 @@
 package router
 
 import (
-	"net/http"
+	"redGlow/internal/handler"
+	"redGlow/internal/middleware"
 
 	"github.com/go-chi/chi/v5"
 )
 
-func NewChiRouter(routes []Route, middlewares ...func(http.Handler) http.Handler) chi.Router {
+func NewChiRouter(handlers []handler.Handler, middlewares []middleware.Middleware) chi.Router {
 	router := chi.NewRouter()
-	for _, route := range routes{
-		router.Handle(route.Pattern(), route)
+	for _, middleware := range middlewares{
+		router.Use(middleware.GetMiddlewareFunc())
 	}
-
-	// for _, middleware := range middlewares{
-	// 	router.Use(middleware)
-	// }
+	
+	for _, handler := range handlers{
+		router.Method(handler.HTTPMethod(),handler.Pattern(),handler)
+	}
+	
 	return router
 }

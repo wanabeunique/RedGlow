@@ -1,12 +1,12 @@
 package config
 
 import (
-	"log"
 	"os"
 	"time"
 
-	"github.com/ilyakaznacheev/cleanenv"
 	"github.com/joho/godotenv"
+	"go.uber.org/zap"
+	"gopkg.in/yaml.v3"
 )
 
 type Config struct {
@@ -29,26 +29,22 @@ type PostgresDB struct {
     DatabaseName string `yaml:"db_name"`
 }
 
-func NewConfig() *Config {
+func NewConfig(logger *zap.Logger) *Config {
     if err := godotenv.Load(); err != nil {
-        log.Fatal("No .env file found")
+        logger.Fatal("No .env file found")
     }
     
-    configPath := os.Getenv("CONFIG_PATH")
-    if configPath == "" {
-        log.Fatal("CONFIG_PATH environment variable is not set")
+    path := os.Getenv("CONFIG_PATH")
+    if path == "" {
+        logger.Fatal("CONFIG_PATH environment variable is not set")
     }
-
-    if _, err := os.Stat(configPath); err != nil {
-        log.Fatalf("error opening config file: %s", err)
-    }
-
-    var cfg Config
-
-    err := cleanenv.ReadConfig(configPath, &cfg)
+    
+    data, err := os.ReadFile(path)
     if err != nil {
-        log.Fatalf("error reading config file: %s", err)
+        return nil
     }
-
-    return &cfg
+    replaced := os.ExpandEnv(string(data))
+    cfg := &Config{}
+    err = yaml.Unmarshal([]byte(replaced), cfg)
+    return cfg
 }
