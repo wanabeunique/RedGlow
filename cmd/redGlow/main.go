@@ -24,6 +24,7 @@ import (
 
 func main(){
     fx.New(
+        
         fx.WithLogger(func (logger *zap.Logger) fxevent.Logger  {
             return &fxevent.ZapLogger{Logger: logger}
         }),
